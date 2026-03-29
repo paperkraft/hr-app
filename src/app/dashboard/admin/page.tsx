@@ -7,14 +7,11 @@ export const dynamic = 'force-dynamic';
 
 async function getAdminStats() {
   const totalEmployees = await prisma.user.count();
-  const pendingLeavesSystemWide = await prisma.leaveRequest.count({
-    where: { status: "PENDING" }
-  });
 
-  const leaderRequests = await prisma.leaveRequest.findMany({
+  // Fetch ALL pending requests across the entire system
+  const allPendingRequests = await prisma.leaveRequest.findMany({
     where: {
-      status: "PENDING",
-      user: { role: { in: ["MANAGER", "ACCOUNTANT"] } }
+      status: "PENDING"
     },
     include: { user: true },
     orderBy: { createdAt: "asc" }
@@ -22,11 +19,11 @@ async function getAdminStats() {
 
   return {
     totalEmployees,
-    pendingLeavesSystemWide,
-    attendanceRate: "100%", // Assuming 100% for scoped scaffold
-    leaderRequests: leaderRequests.map((req: any) => ({
+    pendingLeavesSystemWide: allPendingRequests.length,
+    attendanceRate: "100%", // Scaffold
+    allPendingRequests: allPendingRequests.map((req: any) => ({
       id: req.id,
-      employeeName: req.user.name || req.user.email,
+      employeeName: `${req.user.name || req.user.email} (${req.user.role})`, // Show role next to name
       startDate: new Date(req.startDate).toISOString().split('T')[0],
       endDate: new Date(req.endDate).toISOString().split('T')[0],
       duration: req.duration,
@@ -74,7 +71,7 @@ export default async function AdminOverviewPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-amber-600">{stats.pendingLeavesSystemWide}</div>
-            <p className="text-xs text-muted-foreground mt-1">System-wide awaiting manager approval</p>
+            <p className="text-xs text-muted-foreground mt-1">System-wide awaiting approval</p>
           </CardContent>
         </Card>
 
@@ -92,31 +89,31 @@ export default async function AdminOverviewPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Manager & Accountant Requests */}
-        <Card className="shadow-sm border-border/50">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* All Leave Requests (Spans 2 columns on extra large screens) */}
+        <Card className="shadow-sm border-border/50 xl:col-span-2">
           <CardHeader>
-            <CardTitle>Manager & Accountant Requests</CardTitle>
-            <CardDescription>Leaves requiring Admin level approval.</CardDescription>
+            <CardTitle>All Pending Leave Requests</CardTitle>
+            <CardDescription>Leaves requiring approval across the entire organization.</CardDescription>
           </CardHeader>
           <CardContent>
-            {stats.leaderRequests.length === 0 ? (
+            {stats.allPendingRequests.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <Check className="w-12 h-12 mb-4 text-border" />
-                <p>No pending leader requests.</p>
+                <p>No pending requests in the system.</p>
               </div>
             ) : (
               <div className="relative w-full overflow-auto">
                 <table className="w-full caption-bottom text-sm">
                   <thead className="[&_tr]:border-b">
                     <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Leader</th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Employee</th>
                       <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Dates</th>
                       <th className="h-12 align-middle font-medium text-muted-foreground text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="[&_tr:last-child]:border-0">
-                    {stats.leaderRequests.map((req: any) => (
+                    {stats.allPendingRequests.map((req: any) => (
                       <LeaveApprovalRow key={req.id} request={req} />
                     ))}
                   </tbody>
@@ -126,7 +123,7 @@ export default async function AdminOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-border/50">
+        <Card className="shadow-sm border-border/50 xl:col-span-1">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>System log of important HR events</CardDescription>
@@ -135,11 +132,10 @@ export default async function AdminOverviewPage() {
             <div className="space-y-6">
               {stats.recentActivity.map((activity) => (
                 <div key={activity.id} className="flex items-start gap-4">
-                  <div className={`p-2 rounded-full mt-1 ${
-                    activity.type === 'alert' ? 'bg-amber-100 text-amber-600' :
+                  <div className={`p-2 rounded-full mt-1 ${activity.type === 'alert' ? 'bg-amber-100 text-amber-600' :
                     activity.type === 'policy' ? 'bg-blue-100 text-blue-600' :
-                    'bg-secondary text-foreground'
-                  }`}>
+                      'bg-secondary text-foreground'
+                    }`}>
                     {activity.type === 'alert' ? <ShieldAlert className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
                   </div>
                   <div className="flex-1 space-y-1">

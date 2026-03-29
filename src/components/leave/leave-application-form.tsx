@@ -37,7 +37,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
     try {
       const result = await submitLeaveRequest(data);
       if (result.error) throw new Error(result.error);
-      
+
       if (onSuccess) onSuccess();
     } catch (error: any) {
       setServerError(error.message || "Failed to submit leave request.");
@@ -69,13 +69,13 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
 
       {/* Policy Category Selection */}
       <div className="space-y-3">
-        <Label>Leave Category (Select Policy)</Label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <Label>Leave Category</Label>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <label className={`relative flex cursor-pointer rounded-lg border bg-background p-4 shadow-sm focus:outline-none ${selectedCategory === "MONTHLY_POLICY_1" ? "border-primary ring-1 ring-primary" : "border-border"}`}>
             <input type="radio" value="MONTHLY_POLICY_1" className="sr-only" {...register("category")} />
             <div className="flex flex-col">
               <span className="block text-sm font-medium">Monthly (Policy 1)</span>
-              <span className="mt-1 flex items-center text-xs text-muted-foreground">Uses your 2 Full / 1 Short balance.</span>
+              <span className="mt-1 flex items-center text-xs text-muted-foreground">Paid: 2 Full / 1 Short.</span>
             </div>
           </label>
 
@@ -83,7 +83,16 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
             <input type="radio" value="SEMI_ANNUAL_POLICY_2" className="sr-only" {...register("category")} />
             <div className="flex flex-col">
               <span className="block text-sm font-medium">Semi-Annual (Policy 2)</span>
-              <span className="mt-1 flex items-center text-xs text-muted-foreground">Uses your 6-month cycle balance.</span>
+              <span className="mt-1 flex items-center text-xs text-muted-foreground">Paid: 6-month cycle.</span>
+            </div>
+          </label>
+
+          {/* NEW: Unpaid Leave Option */}
+          <label className={`relative flex cursor-pointer rounded-lg border bg-background p-4 shadow-sm focus:outline-none ${selectedCategory === "UNPAID" ? "border-destructive ring-1 ring-destructive" : "border-border"}`}>
+            <input type="radio" value="UNPAID" className="sr-only" {...register("category")} />
+            <div className="flex flex-col">
+              <span className="block text-sm font-medium text-destructive">Leave Without Pay</span>
+              <span className="mt-1 flex items-center text-xs text-muted-foreground">Unpaid emergency/medical.</span>
             </div>
           </label>
         </div>
@@ -113,11 +122,11 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
       {/* Reason Textarea */}
       <div className="space-y-2">
         <Label htmlFor="reason">Reason for Leave</Label>
-        <Textarea 
-          id="reason" 
-          placeholder="Briefly explain your reason for requesting leave..." 
+        <Textarea
+          id="reason"
+          placeholder="Briefly explain your reason for requesting leave..."
           className="min-h-25 resize-none"
-          {...register("reason")} 
+          {...register("reason")}
         />
         {errors.reason && <p className="text-sm text-destructive">{errors.reason.message}</p>}
       </div>

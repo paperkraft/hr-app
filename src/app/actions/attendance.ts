@@ -11,13 +11,15 @@ export async function punchInOutAction() {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) return { success: false, error: "Unauthorized" }
 
-    const { start } = getTodayRange()
+    const { start, end } = getTodayRange()
 
+    // STRICT BOUNDARIES APPLIED HERE
     const existingLog = await prisma.attendance.findFirst({
       where: {
         userId: session.user.id,
         date: {
           gte: start,
+          lte: end,
         }
       }
     })
@@ -32,7 +34,7 @@ export async function punchInOutAction() {
       await prisma.attendance.create({
         data: {
           userId: session.user.id,
-          date: start,
+          date: start, // Mark the log for the start of "today"
           punchIn: punchInTime,
           isLate,
         }
@@ -47,10 +49,6 @@ export async function punchInOutAction() {
     }
 
     revalidatePath("/dashboard", "layout")
-    revalidatePath("/dashboard/employee")
-    revalidatePath("/dashboard/manager")
-    revalidatePath("/dashboard/accountant")
-    
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to process punch: " + error.message }

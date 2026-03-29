@@ -31,80 +31,81 @@ enum LeaveDuration {
 enum LeaveCategory {
   MONTHLY_POLICY_1
   SEMI_ANNUAL_POLICY_2
+  UNPAID
 }
 
 // --- MODELS ---
 
 model User {
-  id            String         @id @default(cuid())
-  name          String?
-  email         String         @unique
-  password      String?        // Required for NextAuth Credentials provider
-  role          Role           @default(EMPLOYEE)
-  
+  id       String  @id @default(cuid())
+  name     String?
+  email    String  @unique
+  password String? // Required for NextAuth Credentials provider
+  role     Role    @default(EMPLOYEE)
+
   // Self-relation for the Chain of Command (Manager -> Employees)
-  managerId     String?
-  manager       User?          @relation("ManagerToEmployee", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  employees     User[]         @relation("ManagerToEmployee")
-  
+  managerId String?
+  manager   User?   @relation("ManagerToEmployee", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  employees User[]  @relation("ManagerToEmployee")
+
   // Relations to HRMS features
   attendances   Attendance[]
   leaveRequests LeaveRequest[]
   leaveBalances LeaveBalance[]
-  
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Attendance {
-  id        String    @id @default(cuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  date      DateTime  @db.Date 
-  punchIn   DateTime
-  punchOut  DateTime?
-  isLate    Boolean   @default(false)
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date     DateTime  @db.Date
+  punchIn  DateTime
+  punchOut DateTime?
+  isLate   Boolean   @default(false)
+
   @@unique([userId, date]) // Strict constraint: One attendance record per user per day
 }
 
 model LeaveRequest {
-  id          String        @id @default(cuid())
-  userId      String
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   startDate   DateTime
   endDate     DateTime
-  duration    LeaveDuration 
-  category    LeaveCategory 
+  duration    LeaveDuration
+  category    LeaveCategory
   status      LeaveStatus   @default(PENDING)
   reason      String?       @db.Text
   managerNote String?       @db.Text
-  
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model LeaveBalance {
-  id                  String   @id @default(cuid())
-  userId              String
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  month               Int      // e.g., 1 for January, 12 for December
-  year                Int      // e.g., 2026
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  month Int // e.g., 1 for January, 12 for December
+  year  Int // e.g., 2026
+
   // Policy 1: The Monthly Cycle
-  remainingFull       Float    @default(2.0)
-  remainingShort      Int      @default(1)
-  carriedForward      Float    @default(0.0)
-  encashed            Float    @default(0.0)
+  remainingFull  Float @default(2.0)
+  remainingShort Int   @default(1)
+  carriedForward Float @default(0.0)
+  encashed       Float @default(0.0)
 
   // Policy 2: The Semi-Annual Cycle
-  semiAnnualRemaining Int      @default(3)
+  semiAnnualRemaining Int @default(3)
 
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, month, year]) // Strict constraint: Only one balance record per month per user
 }

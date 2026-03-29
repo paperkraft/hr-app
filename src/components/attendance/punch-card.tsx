@@ -2,80 +2,87 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { punchInOutAction } from "@/app/actions/attendance";
-// Assuming you have these shadcn components installed:
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, CheckCircle2 } from "lucide-react";
+import { Clock, CheckCircle2, Loader2 } from "lucide-react";
 
 export function PunchCard({ initialStatus }: { initialStatus: "PENDING" | "PUNCHED_IN" | "PUNCHED_OUT" }) {
   const [status, setStatus] = useState(initialStatus);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  // Sync state with props when switching menus or revalidating
+  // Keep state perfectly in sync with the server prop
   useEffect(() => {
     setStatus(initialStatus);
   }, [initialStatus]);
 
-  // Client-side clock
   useEffect(() => {
     setCurrentTime(new Date());
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
 
-  const [isPending, startTransition] = useTransition();
-
   const handlePunch = () => {
-    // Optimistic update
-    const nextStatus = status === "PENDING" ? "PUNCHED_IN" : "PUNCHED_OUT";
-    setStatus(nextStatus);
+    // Determine target state
+    const targetStatus = status === "PENDING" ? "PUNCHED_IN" : "PUNCHED_OUT";
+    setStatus(targetStatus); // Optimistic Update
 
     startTransition(async () => {
       const result = await punchInOutAction();
       if (!result.success) {
-        // Rollback on error
-        setStatus(initialStatus);
+        setStatus(initialStatus); // Revert on failure
         console.error(result.error);
-        alert(result.error);
+        alert("Failed to record punch: " + result.error);
       }
     });
   };
 
   return (
-    <Card className="col-span-1 shadow-sm border-border/50">
-      <CardHeader className="pb-2">
+    <Card className="h-full shadow-sm border-border/40 flex flex-col">
+      <CardHeader className="pb-2 border-b border-border/40 bg-muted/10">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <Clock className="w-5 h-5 text-muted-foreground" />
+          <Clock className="w-5 h-5 text-primary" />
           Today's Attendance
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col items-center justify-center py-6 gap-4">
-        <div className="text-4xl font-bold tabular-nums tracking-tight">
+      <CardContent className="flex-1 flex flex-col items-center justify-center py-8 gap-5">
+        <div className="text-5xl font-bold tabular-nums tracking-tighter text-foreground">
           {currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--"}
         </div>
-        
+
         {status === "PUNCHED_OUT" ? (
-          <div className="flex items-center gap-2 text-emerald-600 font-medium bg-emerald-50 px-4 py-2 rounded-full">
-            <CheckCircle2 className="w-5 h-5" />
-            Shift Completed
+          <div className="flex flex-col items-center justify-center gap-2 mt-2">
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-500/10 px-5 py-2.5 rounded-full border border-emerald-200 dark:border-emerald-500/20">
+              <CheckCircle2 className="w-5 h-5" />
+              Shift Completed
+            </div>
+            <p className="text-xs text-muted-foreground">Great work today!</p>
           </div>
         ) : (
-          <Button 
-            size="lg" 
-            className={`w-full max-w-50 text-lg rounded-full transition-all ${
-              status === "PUNCHED_IN" ? "bg-amber-500 hover:bg-amber-600 text-white" : ""
-            }`}
+          <Button
+            size="lg"
+            className={`w-full max-w-55 h-14 text-lg rounded-full font-semibold transition-all duration-300 shadow-md ${status === "PUNCHED_IN"
+              ? "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
+              : "bg-primary hover:bg-primary/90 shadow-primary/20"
+              }`}
             disabled={isPending}
             onClick={handlePunch}
           >
-            {status === "PENDING" ? "Punch In" : "Punch Out"}
+            {isPending ? (
+              <Loader2 className="w-6 h-6 animate-spin" />
+            ) : status === "PENDING" ? (
+              "Punch In"
+            ) : (
+              "Punch Out"
+            )}
           </Button>
         )}
-        
-        {status === "PUNCHED_IN" && (
-          <p className="text-sm text-muted-foreground mt-2">
-            You are currently clocked in.
-          </p>
+
+        {status === "PUNCHED_IN" && !isPending && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1 bg-secondary/50 px-3 py-1 rounded-full">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+            You are clocked in
+          </div>
         )}
       </CardContent>
     </Card>

@@ -6,7 +6,7 @@ export const leaveApplicationSchema = z.object({
   duration: z.enum(["FULL", "HALF", "SHORT"], {
     required_error: "Please select a leave duration.",
   }),
-  category: z.enum(["MONTHLY_POLICY_1", "SEMI_ANNUAL_POLICY_2"], {
+  category: z.enum(["MONTHLY_POLICY_1", "SEMI_ANNUAL_POLICY_2", "UNPAID"], {
     required_error: "Please select which policy to deduct this leave from.",
   }),
   reason: z.string().min(10, "Please provide a reason (minimum 10 characters).").max(500),

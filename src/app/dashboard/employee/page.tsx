@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PunchCard } from "@/components/attendance/punch-card";
-import { CalendarDays, AlertCircle } from "lucide-react";
+import { CalendarDays, AlertCircle, Clock as ClockIcon, CheckCircle2 } from "lucide-react";
 import { RequestLeaveButton } from "@/components/leave/request-leave-button";
 import { LeaveBalanceCard } from "@/components/leave/leave-balance-card";
 import { RecentRequestsCard } from "@/components/leave/recent-requests-card";
@@ -16,12 +16,12 @@ export const dynamic = 'force-dynamic';
 async function getEmployeeData() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return { 
-      attendanceStatus: "PENDING" as const, 
-      balances: { monthlyFull: 0, monthlyShort: 0, semiAnnual: 0 }, 
-      recentLogs: [], 
+    return {
+      attendanceStatus: "PENDING" as const,
+      balances: { monthlyFull: 0, monthlyShort: 0, semiAnnual: 0 },
+      recentLogs: [],
       recentRequests: [],
-      userName: "Employee" 
+      userName: "Employee"
     };
   }
 
@@ -38,25 +38,32 @@ async function getEmployeeData() {
     }
   });
 
+  // 1. Fetch exactly today's log using strict boundaries to guarantee state accuracy
+  const { start, end } = getTodayRange();
+  const todaysLog = await prisma.attendance.findFirst({
+    where: {
+      userId: session.user.id,
+      date: { gte: start, lte: end }
+    }
+  });
+
+  let attendanceStatus: "PENDING" | "PUNCHED_IN" | "PUNCHED_OUT" = "PENDING";
+  if (todaysLog) {
+    if (todaysLog.punchOut) attendanceStatus = "PUNCHED_OUT";
+    else attendanceStatus = "PUNCHED_IN";
+  }
+
+  // 2. Fetch recent logs separately for the history table
   const recentLogs = await prisma.attendance.findMany({
     where: { userId: session.user.id },
     orderBy: { date: 'desc' },
     take: 5
   });
 
-  const { start } = getTodayRange();
-  const todaysLog = recentLogs.find((log: any) => new Date(log.date) >= start);
-  
-  let attendanceStatus: "PENDING" | "PUNCHED_IN" | "PUNCHED_OUT" = "PENDING";
-  if (todaysLog) {
-    if (todaysLog.punchOut) attendanceStatus = "PUNCHED_OUT";
-    else if (todaysLog.punchIn) attendanceStatus = "PUNCHED_IN";
-  }
-
   const formattedLogs = recentLogs.map((log: any) => ({
     date: new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    in: log.punchIn ? new Date(log.punchIn).toLocaleTimeString('en-US', { hour: '2-digit', minute:'2-digit' }) : "N/A",
-    out: log.punchOut ? new Date(log.punchOut).toLocaleTimeString('en-US', { hour: '2-digit', minute:'2-digit' }) : "---",
+    in: log.punchIn ? new Date(log.punchIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : "N/A",
+    out: log.punchOut ? new Date(log.punchOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : "---",
     late: log.isLate
   }));
 
@@ -86,63 +93,77 @@ async function getEmployeeData() {
 
 export default async function EmployeeDashboard() {
   const data = await getEmployeeData();
+  const currentHour = new Date().getHours();
+  const greeting = currentHour < 12 ? "Good morning" : currentHour < 18 ? "Good afternoon" : "Good evening";
 
   return (
-    <>
-        <div className="flex flex-col gap-8 p-6 md:p-10 max-w-7xl mx-auto">
-            <div className="flex justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Welcome back, {data.userName}</h1>
-                    <p className="text-muted-foreground mt-1">Here is your overview for today.</p>
-                </div>
-                <RequestLeaveButton />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Punch Card Custom Component */}
-                <PunchCard initialStatus={data.attendanceStatus} />
-
-                <LeaveBalanceCard balances={data.balances} />
-            </div>
-
-            {/* Recent Attendance Log & Leave Requests */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="shadow-sm border-border/50">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-semibold">Recent Attendance</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="divide-y">
-                            {data.recentLogs.length === 0 ? (
-                                <p className="py-4 text-center text-muted-foreground text-sm">No attendance records yet.</p>
-                            ) : (
-                                data.recentLogs.map((log: any, i: number) => (
-                                <div key={i} className="flex items-center justify-between py-3">
-                                    <div className="flex flex-col">
-                                    <span className="font-medium">{log.date}</span>
-                                    <span className="text-sm text-muted-foreground">
-                                        {log.in} — {log.out}
-                                    </span>
-                                    </div>
-                                    {log.late ? (
-                                    <Badge variant="destructive" className="flex items-center gap-1">
-                                        <AlertCircle className="w-3 h-3" /> Late Mark
-                                    </Badge>
-                                    ) : (
-                                    <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
-                                        On Time
-                                    </Badge>
-                                    )}
-                                </div>
-                                ))
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <RecentRequestsCard requests={data.recentRequests} />
-            </div>
+    <div className="p-6 md:p-8 lg:p-10 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            {greeting}, {data.userName.split(' ')[0]} 👋
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">
+            Here's your attendance and leave overview for today.
+          </p>
         </div>
-    </>
+        <RequestLeaveButton />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1">
+          <PunchCard initialStatus={data.attendanceStatus} />
+        </div>
+        <div className="lg:col-span-2">
+          <LeaveBalanceCard balances={data.balances} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="shadow-sm border-border/40 hover:shadow-md transition-shadow duration-200">
+          <CardHeader className="pb-3 border-b border-border/40 bg-muted/10">
+            <div className="flex items-center gap-2">
+              <ClockIcon className="w-5 h-5 text-primary" />
+              <CardTitle className="text-lg font-semibold">Recent Attendance</CardTitle>
+            </div>
+            <CardDescription>Your check-in and check-out logs for the past 5 days.</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-border/40">
+              {data.recentLogs.length === 0 ? (
+                <div className="py-8 flex flex-col items-center justify-center text-muted-foreground">
+                  <CalendarDays className="w-8 h-8 mb-2 opacity-20" />
+                  <p className="text-sm">No attendance records yet.</p>
+                </div>
+              ) : (
+                data.recentLogs.map((log: any, i: number) => (
+                  <div key={i} className="flex items-center justify-between p-4 hover:bg-muted/20 transition-colors">
+                    <div className="flex flex-col gap-1">
+                      <span className="font-medium text-sm">{log.date}</span>
+                      <div className="flex items-center text-xs text-muted-foreground font-mono bg-secondary/30 px-2 py-1 rounded-md w-fit">
+                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{log.in}</span>
+                        <span className="mx-2 text-border">—</span>
+                        <span>{log.out}</span>
+                      </div>
+                    </div>
+                    {log.late ? (
+                      <Badge variant="outline" className="text-destructive border-destructive/30 bg-destructive/10">
+                        <AlertCircle className="w-3 h-3 mr-1" /> Late
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-500/10 dark:border-emerald-500/20">
+                        <CheckCircle2 className="w-3 h-3 mr-1" /> On Time
+                      </Badge>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <RecentRequestsCard requests={data.recentRequests} />
+      </div>
+    </div>
   );
 }

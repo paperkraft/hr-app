@@ -20,7 +20,7 @@ async function main() {
   // 1. Create ADMIN
   const admin = await prisma.user.create({
     data: {
-      name: 'Michael Scott',
+      name: 'Rajesh Sharma',
       email: 'admin@sigma.com',
       password: defaultPassword,
       role: Role.ADMIN,
@@ -29,12 +29,13 @@ async function main() {
       }
     },
   });
+  console.log(`✅ Created Admin: ${admin.name}`);
 
-  // 2. Create MANAGERS
-  const manager1 = await prisma.user.create({
+  // 2. Create MANAGER (Reports to Admin)
+  const manager = await prisma.user.create({
     data: {
-      name: 'Jim Halpert',
-      email: 'manager1@sigma.com',
+      name: 'Priya Patel',
+      email: 'manager@sigma.com',
       password: defaultPassword,
       role: Role.MANAGER,
       managerId: admin.id,
@@ -43,24 +44,12 @@ async function main() {
       }
     },
   });
+  console.log(`✅ Created Manager: ${manager.name}`);
 
-  const manager2 = await prisma.user.create({
-    data: {
-      name: 'Dwight Schrute',
-      email: 'manager2@sigma.com',
-      password: defaultPassword,
-      role: Role.MANAGER,
-      managerId: admin.id,
-      leaveBalances: {
-        create: { month: currentMonth, year: currentYear, remainingFull: 2.0, remainingShort: 1, semiAnnualRemaining: 3 }
-      }
-    },
-  });
-
-  // 3. Create ACCOUNTANT
+  // 3. Create ACCOUNTANT (Reports to Admin)
   const accountant = await prisma.user.create({
     data: {
-      name: 'Angela Martin',
+      name: 'Amit Kumar',
       email: 'accountant@sigma.com',
       password: defaultPassword,
       role: Role.ACCOUNTANT,
@@ -70,42 +59,31 @@ async function main() {
       }
     },
   });
+  console.log(`✅ Created Accountant: ${accountant.name}`);
 
-  // 4. Create EMPLOYEES
-  const employeesData = [
-    { name: 'Pam Beesly', email: 'pam@sigma.com', mgr: manager1.id },
-    { name: 'Stanley Hudson', email: 'stanley@sigma.com', mgr: manager1.id },
-    { name: 'Kevin Malone', email: 'kevin@sigma.com', mgr: manager2.id },
-    { name: 'Oscar Martinez', email: 'oscar@sigma.com', mgr: manager2.id },
-    { name: 'Kelly Kapoor', email: 'kelly@sigma.com', mgr: manager2.id },
-  ];
-
-  const employees = [];
-  for (const emp of employeesData) {
-    const created = await prisma.user.create({
-      data: {
-        name: emp.name,
-        email: emp.email,
-        password: defaultPassword,
-        role: Role.EMPLOYEE,
-        managerId: emp.mgr,
-        leaveBalances: {
-          createMany: {
-            data: [
-              { month: currentMonth, year: currentYear, remainingFull: 2.0, remainingShort: 1, semiAnnualRemaining: 3 },
-              { month: currentMonth + 1 > 12 ? 1 : currentMonth + 1, year: currentMonth + 1 > 12 ? currentYear + 1 : currentYear, remainingFull: 2.0, remainingShort: 1, semiAnnualRemaining: 3 }
-            ]
-          }
+  // 4. Create EMPLOYEE (Reports to Manager)
+  const employee = await prisma.user.create({
+    data: {
+      name: 'Sneha Desai',
+      email: 'employee@sigma.com',
+      password: defaultPassword,
+      role: Role.EMPLOYEE,
+      managerId: manager.id,
+      leaveBalances: {
+        createMany: {
+          data: [
+            { month: currentMonth, year: currentYear, remainingFull: 2.0, remainingShort: 1, semiAnnualRemaining: 3 },
+            { month: currentMonth + 1 > 12 ? 1 : currentMonth + 1, year: currentMonth + 1 > 12 ? currentYear + 1 : currentYear, remainingFull: 2.0, remainingShort: 1, semiAnnualRemaining: 3 }
+          ]
         }
       }
-    });
-    employees.push(created);
-    console.log(`✅ Created Employee: ${created.name}`);
-  }
+    }
+  });
+  console.log(`✅ Created Employee: ${employee.name}`);
 
   // 5. Create ATTENDANCE (Last 7 days for everyone)
   console.log('🕒 Generating attendance records...');
-  for (const user of [admin, manager1, manager2, accountant, ...employees]) {
+  for (const user of [admin, manager, accountant, employee]) {
     for (let i = 0; i < 7; i++) {
         const date = new Date();
         date.setDate(date.getDate() - i);
@@ -132,10 +110,10 @@ async function main() {
   // 6. Create LEAVE REQUESTS
   console.log('📝 Generating leave requests...');
   
-  // Pending Employee Request for Manager 1
+  // Pending Employee Request for Manager
   await prisma.leaveRequest.create({
     data: {
-      userId: employees[0].id, // Pam
+      userId: employee.id, // Sneha
       startDate: new Date(),
       endDate: new Date(),
       duration: LeaveDuration.FULL,
@@ -148,31 +126,31 @@ async function main() {
   // Approved Request (already deducted manually in seed balance for demo)
   await prisma.leaveRequest.create({
     data: {
-      userId: manager1.id, // Jim
+      userId: manager.id, // Priya
       startDate: new Date(),
       endDate: new Date(),
       duration: LeaveDuration.HALF,
       category: LeaveCategory.MONTHLY_POLICY_1,
       status: LeaveStatus.APPROVED,
-      reason: "Personal appointment."
+      reason: "Personal appointment at the bank."
     }
   });
 
-  // Pending Manager Request for Admin
+  // Pending Accountant Request for Admin
   await prisma.leaveRequest.create({
     data: {
-      userId: manager2.id, // Dwight
+      userId: accountant.id, // Amit
       startDate: new Date(now.getTime() + 86400000 * 2), // 2 days from now
       endDate: new Date(now.getTime() + 86400000 * 2),
       duration: LeaveDuration.FULL,
       category: LeaveCategory.SEMI_ANNUAL_POLICY_2,
       status: LeaveStatus.PENDING,
-      reason: "Going to a beet convention."
+      reason: "Attending a family wedding out of town."
     }
   });
 
   console.log('🎉 Seeding finished successfully! All roles have been initialized with realistic data.');
-  console.log('👉 Login: admin@sigma.com | manager1@sigma.com | accountant@sigma.com | employee@sigma.com');
+  console.log('👉 Login: admin@sigma.com | manager@sigma.com | accountant@sigma.com | employee@sigma.com');
   console.log('👉 Password: password123');
 }
 
@@ -184,4 +162,4 @@ main()
     console.error('❌ Seeding failed:', e);
     await prisma.$disconnect();
     process.exit(1);
-  });
+  });

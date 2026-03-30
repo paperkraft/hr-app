@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { ExportLedgerButton } from "@/components/accountant/export-ledger-button";
+import { MasterReportTable } from "@/components/accountant/master-report-table";
 
 export const dynamic = 'force-dynamic';
 
@@ -195,74 +196,7 @@ export default async function AccountantDashboard() {
           <CardDescription>Consolidated data required for end-of-month salary calculations.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="relative w-full overflow-auto">
-            <Table>
-              <TableHeader className="bg-muted/5">
-                <TableRow className="border-border/40 hover:bg-transparent">
-                  <TableHead className="h-12 font-semibold text-foreground">Employee Name</TableHead>
-                  <TableHead className="h-12 font-semibold text-foreground text-center">Role</TableHead>
-                  <TableHead className="h-12 font-semibold text-foreground text-center">Days Present</TableHead>
-                  <TableHead className="h-12 font-semibold text-foreground text-center">Late Marks</TableHead>
-                  {/* New LWP Column */}
-                  <TableHead className="h-12 font-semibold text-destructive bg-destructive/5 text-center">LWP (Unpaid)</TableHead>
-                  <TableHead className="h-12 font-semibold text-foreground text-center border-l border-border/50">Remaining Full (Pol 1)</TableHead>
-                  <TableHead className="h-12 font-semibold text-emerald-600 bg-emerald-500/5 text-center">Encashable (Pol 1)</TableHead>
-                  <TableHead className="h-12 font-semibold text-foreground text-center border-l border-border/50">Remaining Short (Pol 1)</TableHead>
-                  <TableHead className="h-12 font-semibold text-foreground text-right pr-6">Remaining Semi-Annual (Pol 2)</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className="divide-y divide-border/40">
-                {reportData.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
-                      No staff data found for this month.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  reportData.map((row) => (
-                    <TableRow key={row.id} className="hover:bg-muted/20 transition-colors">
-                      <TableCell className="font-medium">{row.name}</TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant="secondary" className="text-[10px] uppercase tracking-wider bg-secondary/50">
-                          {row.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-center font-semibold text-foreground">
-                        {row.totalPresent}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {row.totalLate > 0 ? (
-                          <Badge variant="outline" className="text-destructive border-destructive/30 bg-destructive/10">
-                            {row.totalLate}
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-
-                      {/* LWP Value Cell */}
-                      <TableCell className="text-center font-bold text-destructive bg-destructive/5">
-                        {row.lwpDays > 0 ? row.lwpDays : "0"}
-                      </TableCell>
-
-                      <TableCell className="text-center font-mono border-l border-border/50">
-                        {row.balances.full}
-                      </TableCell>
-                      <TableCell className="text-center font-mono font-bold text-emerald-600 bg-emerald-500/5">
-                        {row.encashableDays > 0 ? `+${row.encashableDays}` : "0"}
-                      </TableCell>
-                      <TableCell className="text-center font-mono border-l border-border/50">
-                        {row.balances.short}
-                      </TableCell>
-                      <TableCell className="text-right font-mono pr-6">
-                        {row.balances.semiAnnual}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+            <MasterReportTable data={reportData} />
         </CardContent>
       </Card>
 

@@ -1,0 +1,141 @@
+"use client";
+
+import React, { useState } from "react";
+import { 
+  Table, 
+  TableHeader, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableRow 
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Settings2 } from "lucide-react";
+import { SplitActionRow } from "./split-action-row";
+
+type ReportData = {
+  id: string;
+  name: string;
+  role: string;
+  totalPresent: number;
+  totalLate: number;
+  lwpDays: number;
+  encashableDays: number;
+  balances: {
+    full: number;
+    short: number;
+    semiAnnual: number;
+  };
+};
+
+export function MasterReportTable({ data }: { data: ReportData[] }) {
+  const [activeSplitId, setActiveSplitId] = useState<string | null>(null);
+
+  return (
+    <div className="relative w-full overflow-auto">
+      <Table>
+        <TableHeader className="bg-muted/5">
+          <TableRow className="border-border/40 hover:bg-transparent">
+            <TableHead className="h-12 font-semibold text-foreground">Employee Name</TableHead>
+            <TableHead className="h-12 font-semibold text-foreground text-center">Role</TableHead>
+            <TableHead className="h-12 font-semibold text-foreground text-center">Days Present</TableHead>
+            <TableHead className="h-12 font-semibold text-foreground text-center">Late Marks</TableHead>
+            <TableHead className="h-12 font-semibold text-destructive bg-destructive/5 text-center">LWP (Unpaid)</TableHead>
+            <TableHead className="h-12 font-semibold text-foreground text-center border-l border-border/50">Remaining Full (Pol 1)</TableHead>
+            <TableHead className="h-12 font-semibold text-emerald-600 bg-emerald-500/5 text-center">Encashable (Pol 1)</TableHead>
+            <TableHead className="h-12 font-semibold text-foreground text-center border-l border-border/50">Rem Short</TableHead>
+            <TableHead className="h-12 font-semibold text-foreground text-center">Semi-Annual</TableHead>
+            <TableHead className="h-12 font-semibold text-foreground text-right pr-6">Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody className="divide-y divide-border/40">
+          {data.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={10} className="h-24 text-center text-muted-foreground">
+                No staff data found for this month.
+              </TableCell>
+            </TableRow>
+          ) : (
+            data.map((row) => (
+              <React.Fragment key={row.id}>
+                <TableRow className="hover:bg-muted/10 transition-colors group">
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      {row.name}
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => setActiveSplitId(activeSplitId === row.id ? null : row.id)}
+                      >
+                        <Settings2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant="secondary" className="text-[10px] uppercase tracking-wider bg-secondary/50">
+                      {row.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center font-semibold text-foreground">
+                    {row.totalPresent}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {row.totalLate > 0 ? (
+                      <Badge variant="outline" className="text-destructive border-destructive/30 bg-destructive/10">
+                        {row.totalLate}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">-</span>
+                    )}
+                  </TableCell>
+
+                  <TableCell className="text-center font-bold text-destructive bg-destructive/5">
+                    {row.lwpDays > 0 ? row.lwpDays : "0"}
+                  </TableCell>
+
+                  <TableCell className="text-center font-mono border-l border-border/50">
+                    {row.balances.full}
+                  </TableCell>
+                  <TableCell className="text-center font-mono font-bold text-emerald-600 bg-emerald-500/5">
+                    {row.encashableDays > 0 ? `+${row.encashableDays}` : "0"}
+                  </TableCell>
+                  <TableCell className="text-center font-mono border-l border-border/50 text-muted-foreground">
+                    {row.balances.short}
+                  </TableCell>
+                  <TableCell className="text-center font-mono text-muted-foreground">
+                    {row.balances.semiAnnual}
+                  </TableCell>
+                  <TableCell className="text-right pr-6">
+                    <Button 
+                      variant={activeSplitId === row.id ? "default" : "outline"}
+                      size="sm"
+                      className="h-8 text-[10px] font-bold uppercase tracking-tight"
+                      onClick={() => setActiveSplitId(activeSplitId === row.id ? null : row.id)}
+                    >
+                      {activeSplitId === row.id ? "Close" : "Adjust Split"}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+                
+                {activeSplitId === row.id && (
+                  <SplitActionRow 
+                    employee={{
+                      userId: row.id,
+                      name: row.name,
+                      remainingBalance: row.balances.full
+                    }}
+                    onSuccess={() => {
+                      setTimeout(() => setActiveSplitId(null), 2000);
+                    }}
+                  />
+                )}
+              </React.Fragment>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}

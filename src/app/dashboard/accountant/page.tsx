@@ -1,13 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Download, Users, Clock, FileText, Calculator, IndianRupee } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Users, Clock, FileText, Calculator, IndianRupee } from "lucide-react";
 
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { ExportLedgerButton } from "@/components/accountant/export-ledger-button";
 
 export const dynamic = 'force-dynamic';
 
@@ -129,10 +129,7 @@ export default async function AccountantDashboard() {
             Comprehensive attendance and leave report for {stats.currentMonthName} {new Date().getFullYear()}.
           </p>
         </div>
-        <Button variant="outline" className="flex items-center gap-2 bg-background hover:bg-secondary">
-          <Download className="w-4 h-4" />
-          Export CSV
-        </Button>
+        <ExportLedgerButton data={reportData} month={stats.currentMonthName} />
       </div>
 
       {/* Quick Stats Row */}

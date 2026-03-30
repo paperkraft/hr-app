@@ -25,10 +25,17 @@ export async function punchInOutAction() {
     })
 
     if (!existingLog) {
+      // FETCH GLOBAL CONFIG FOR LATE CALCULATION
+      const config = await prisma.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } })
+      const startTime = config?.officeStartTime || "09:00"
+      const graceMinutes = config?.graceTimeMinutes ?? 15
+
       const punchInTime = new Date()
-      // Determine if late (e.g. after 9:15 AM)
+      // Determine if late based on config (THESE VALUES ARE NOW DYNAMIC FROM CONFIG)
       const lateThreshold = new Date(start)
-      lateThreshold.setHours(9, 15, 0, 0)
+      const [hours, minutes] = startTime.split(":").map(Number)
+      lateThreshold.setHours(hours, minutes + graceMinutes, 0, 0)
+      
       const isLate = punchInTime > lateThreshold;
 
       await prisma.attendance.create({

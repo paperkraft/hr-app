@@ -109,3 +109,16 @@ model LeaveBalance {
 
   @@unique([userId, month, year]) // Strict constraint: Only one balance record per month per user
 }
+
+model SystemConfig {
+  id String @id @default("GLOBAL_CONFIG") // Only one record ever
+
+  officeStartTime String @default("09:00") // 24h format HH:mm
+  officeEndTime   String @default("18:00") // 24h format HH:mm
+  graceTimeMinutes Int    @default(15)
+
+  // Future expansion:
+  // weekendDays Int[] @default([6, 0]) // 0=Sunday, 6=Saturday
+  
+  updatedAt DateTime @updatedAt
+}

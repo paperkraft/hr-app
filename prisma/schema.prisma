@@ -45,7 +45,7 @@ model User {
 
   // Self-relation for the Chain of Command (Manager -> Employees)
   managerId String?
-  manager   User?   @relation("ManagerToEmployee", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  manager   User?   @relation("ManagerToEmployee", fields: [managerId], references: [id], onDelete: SetNull, onUpdate: NoAction)
   employees User[]  @relation("ManagerToEmployee")
 
   // Relations to HRMS features

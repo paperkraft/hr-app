@@ -64,7 +64,8 @@ async function getEmployeeData() {
     date: new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     in: log.punchIn ? new Date(log.punchIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : "N/A",
     out: log.punchOut ? new Date(log.punchOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : "---",
-    late: log.isLate
+    late: log.isLate,
+    lateSpecialCase: log.isLateSpecialCase
   }));
 
   const recentRequests = await prisma.leaveRequest.findMany({
@@ -97,7 +98,7 @@ export default async function EmployeeDashboard() {
   const greeting = currentHour < 12 ? "Good morning" : currentHour < 18 ? "Good afternoon" : "Good evening";
 
   return (
-    <div className="p-6 md:p-8 lg:p-10 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="flex flex-col gap-8 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
@@ -146,7 +147,11 @@ export default async function EmployeeDashboard() {
                         <span>{log.out}</span>
                       </div>
                     </div>
-                    {log.late ? (
+                    {log.lateSpecialCase ? (
+                      <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50">
+                        <ClockIcon className="w-3 h-3 mr-1" /> Covered
+                      </Badge>
+                    ) : log.late ? (
                       <Badge variant="outline" className="text-destructive border-destructive/30 bg-destructive/10">
                         <AlertCircle className="w-3 h-3 mr-1" /> Late
                       </Badge>

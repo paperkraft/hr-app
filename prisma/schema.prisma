@@ -65,7 +65,8 @@ model Attendance {
   date     DateTime  @db.Date
   punchIn  DateTime
   punchOut DateTime?
-  isLate   Boolean   @default(false)
+  isLate           Boolean   @default(false)
+  isLateSpecialCase Boolean   @default(false)
 
   @@unique([userId, date]) // Strict constraint: One attendance record per user per day
 }

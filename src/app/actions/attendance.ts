@@ -47,10 +47,33 @@ export async function punchInOutAction() {
         }
       })
     } else if (!existingLog.punchOut) {
+      const punchOutTime = new Date();
+      
+      // LOGIC: If user was late, check if they covered their shift duration
+      let isSpecialCase = false;
+      if (existingLog.isLate) {
+        const config = await prisma.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
+        const startTime = config?.officeStartTime || "09:00";
+        const endTime = config?.officeEndTime || "18:00";
+        
+        // Calculate standard duration in minutes
+        const [sH, sM] = startTime.split(":").map(Number);
+        const [eH, eM] = endTime.split(":").map(Number);
+        const standardMinutes = (eH * 60 + eM) - (sH * 60 + sM);
+        
+        // Calculate actual duration in minutes
+        const actualMinutes = Math.floor((punchOutTime.getTime() - existingLog.punchIn.getTime()) / (1000 * 60));
+        
+        if (actualMinutes >= standardMinutes) {
+          isSpecialCase = true;
+        }
+      }
+
       await prisma.attendance.update({
         where: { id: existingLog.id },
         data: {
-          punchOut: new Date()
+          punchOut: punchOutTime,
+          isLateSpecialCase: isSpecialCase
         }
       })
     }

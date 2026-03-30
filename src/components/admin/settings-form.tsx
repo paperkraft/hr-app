@@ -42,8 +42,8 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Timing Configuration Card */}
         <Card className="shadow-sm border-border/40">
@@ -121,10 +121,10 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
 
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-border/40">
+      <div className="flex items-center justify-between pt-6 border-t border-border/40">
         <div className="flex-1">
           {success && (
-            <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm animate-in fade-in zoom-in-95">
+            <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm">
               <CheckCircle className="w-5 h-5" />
               Configuration updated successfully!
             </div>
@@ -140,7 +140,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
         <Button 
           type="submit" 
           disabled={loading}
-          className="h-12 px-10 gap-2 bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all font-bold"
+          className="h-12 px-10 gap-2 font-bold shadow-sm"
         >
           {loading ? (
             <Loader2 className="w-5 h-5 animate-spin" />

@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Users, FileText, Activity, ShieldAlert, CheckCircle2, Check } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { LeaveApprovalRow } from "@/components/manager/leave-approval-row";
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const dynamic = 'force-dynamic';
 
@@ -42,17 +43,17 @@ export default async function AdminOverviewPage() {
   const stats = await getAdminStats();
 
   return (
-    <div className="flex flex-col gap-8 p-6 md:p-10 max-w-7xl mx-auto">
+    <div className="flex flex-col gap-8 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">System Overview</h1>
         <p className="text-muted-foreground mt-1">High-level administration and system metrics.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="shadow-sm border-border/50">
+        <Card className="shadow-sm border-border/40">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Users className="w-4 h-4" />
+              <Users className="w-4 h-4 text-primary" />
               Total Employees
             </CardTitle>
           </CardHeader>
@@ -62,10 +63,10 @@ export default async function AdminOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-border/50">
+        <Card className="shadow-sm border-border/40">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <FileText className="w-4 h-4" />
+              <FileText className="w-4 h-4 text-amber-500" />
               Pending Leaves
             </CardTitle>
           </CardHeader>
@@ -75,10 +76,10 @@ export default async function AdminOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-border/50">
+        <Card className="shadow-sm border-border/40">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               Today's Attendance
             </CardTitle>
           </CardHeader>
@@ -91,7 +92,7 @@ export default async function AdminOverviewPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* All Leave Requests (Spans 2 columns on extra large screens) */}
-        <Card className="shadow-sm border-border/50 xl:col-span-2">
+        <Card className="shadow-sm border-border/40 xl:col-span-2">
           <CardHeader>
             <CardTitle>All Pending Leave Requests</CardTitle>
             <CardDescription>Leaves requiring approval across the entire organization.</CardDescription>
@@ -103,27 +104,25 @@ export default async function AdminOverviewPage() {
                 <p>No pending requests in the system.</p>
               </div>
             ) : (
-              <div className="relative w-full overflow-auto">
-                <table className="w-full caption-bottom text-sm">
-                  <thead className="[&_tr]:border-b">
-                    <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Employee</th>
-                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Dates</th>
-                      <th className="h-12 align-middle font-medium text-muted-foreground text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="[&_tr:last-child]:border-0">
-                    {stats.allPendingRequests.map((req: any) => (
-                      <LeaveApprovalRow key={req.id} request={req} />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <Table>
+                <TableHeader className="bg-muted/50">
+                  <TableRow>
+                    <TableHead className="w-[300px]">Employee</TableHead>
+                    <TableHead>Dates</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {stats.allPendingRequests.map((req: any) => (
+                    <LeaveApprovalRow key={req.id} request={req} />
+                  ))}
+                </TableBody>
+              </Table>
             )}
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-border/50 xl:col-span-1">
+        <Card className="shadow-sm border-border/40 xl:col-span-1">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>System log of important HR events</CardDescription>

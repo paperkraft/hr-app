@@ -2,6 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Users, Inbox, Check, Clock } from "lucide-react";
 import { LeaveApprovalRow } from "@/components/manager/leave-approval-row";
 import { Badge } from "@/components/ui/badge";
+import { 
+  Table, 
+  TableHeader, 
+  TableBody, 
+  TableHead, 
+  TableRow, 
+  TableCell
+} from "@/components/ui/table";
 
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
@@ -72,7 +80,7 @@ export default async function ManagerDashboard() {
   const activeNow = teamStatus.filter(t => t.status === "PUNCHED_IN").length;
 
   return (
-    <div className="flex flex-col gap-8 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="flex flex-col gap-8 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Team Management</h1>
@@ -137,23 +145,21 @@ export default async function ManagerDashboard() {
                   <p className="text-xs">No pending leave requests to review.</p>
                 </div>
               ) : (
-                <div className="relative w-full overflow-auto">
-                  <table className="w-full caption-bottom text-sm">
-                    <thead className="[&_tr]:border-b bg-muted/5">
-                      <tr className="border-b border-border/40 transition-colors">
-                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Employee</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Dates & Policy</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Reason</th>
-                        <th className="h-12 px-4 align-middle font-medium text-muted-foreground text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="[&_tr:last-child]:border-0 divide-y divide-border/40">
-                      {pendingRequests.map((req: any) => (
-                        <LeaveApprovalRow key={req.id} request={req} />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <Table>
+                  <TableHeader className="bg-muted/50">
+                    <TableRow>
+                      <TableHead>Employee</TableHead>
+                      <TableHead>Dates & Policy</TableHead>
+                      <TableHead>Reason</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pendingRequests.map((req: any) => (
+                      <LeaveApprovalRow key={req.id} request={req} />
+                    ))}
+                  </TableBody>
+                </Table>
               )}
             </CardContent>
           </Card>

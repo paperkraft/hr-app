@@ -20,6 +20,8 @@ type ReportData = {
   role: string;
   totalPresent: number;
   totalLate: number;
+  specialCaseLate: number;
+  punishableLate: number;
   lwpDays: number;
   encashableDays: number;
   balances: {
@@ -82,13 +84,21 @@ export function MasterReportTable({ data }: { data: ReportData[] }) {
                     {row.totalPresent}
                   </TableCell>
                   <TableCell className="text-center">
-                    {row.totalLate > 0 ? (
-                      <Badge variant="outline" className="text-destructive border-destructive/30 bg-destructive/10">
-                        {row.totalLate}
-                      </Badge>
-                    ) : (
-                      <span className="text-muted-foreground text-xs">-</span>
-                    )}
+                    <div className="flex flex-col items-center gap-1">
+                      {row.punishableLate > 0 ? (
+                        <Badge variant="outline" className="text-destructive border-destructive/30 bg-destructive/10">
+                          {row.punishableLate} Late
+                        </Badge>
+                      ) : row.totalLate === 0 ? (
+                        <span className="text-muted-foreground text-xs">-</span>
+                      ) : null}
+                      
+                      {row.specialCaseLate > 0 && (
+                        <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50 text-[9px] h-4">
+                          {row.specialCaseLate} Covered
+                        </Badge>
+                      )}
+                    </div>
                   </TableCell>
 
                   <TableCell className="text-center font-bold text-destructive bg-destructive/5">

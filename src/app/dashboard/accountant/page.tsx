@@ -1,7 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Users, Clock, FileText, Calculator, IndianRupee } from "lucide-react";
+import { Users, Clock, FileText, IndianRupee } from "lucide-react";
 
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
@@ -67,18 +65,29 @@ async function getPayrollReportData() {
     const attendances = user.attendances;
     const balance = user.leaveBalances[0];
 
+    // Count both standard and special case late marks
     const totalLate = attendances.filter(a => a.isLate).length;
+    const specialCaseLate = attendances.filter(a => a.isLate && a.isLateSpecialCase).length;
+    const punishableLate = totalLate - specialCaseLate;
+
     totalLatesSystemWide += totalLate;
 
+    // RULE: If user has late mark, first three counts are exempted, later three are considered as half-day.
+    // Every 3 punishable late marks (after the first 3) result in 0.5 LWP.
+    const lateDeduction = punishableLate > 3 ? Math.ceil((punishableLate - 3) / 3) * 0.5 : 0;
+
     // Calculate Explicit LWP (Unpaid Leaves)
-    let lwpDays = 0;
+    let explicitLwp = 0;
     user.leaveRequests.forEach(req => {
       if (req.category === "UNPAID") {
         const diffDays = getDaysDifference(req.startDate, req.endDate);
         const actualDays = req.duration === "HALF" ? 0.5 * diffDays : diffDays;
-        lwpDays += actualDays;
+        explicitLwp += actualDays;
       }
     });
+
+    // Total LWP = Explicit LWP + Late Mark Penalties
+    const lwpDays = explicitLwp + lateDeduction;
     totalLwpSystemWide += lwpDays;
 
     const remainingFull = balance?.remainingFull ?? 0;
@@ -91,6 +100,8 @@ async function getPayrollReportData() {
       role: user.role,
       totalPresent: attendances.length,
       totalLate: totalLate,
+      specialCaseLate,
+      punishableLate,
       lwpDays: lwpDays,
       encashableDays,
       balances: {
@@ -117,13 +128,12 @@ export default async function AccountantDashboard() {
   const { reportData, stats } = await getPayrollReportData();
 
   return (
-    <div className="flex flex-col gap-8 p-6 md:p-10 max-w-375 mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="flex flex-col gap-8 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
 
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
-            <Calculator className="w-8 h-8 text-primary" />
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
             Payroll & Processing
           </h1>
           <p className="text-muted-foreground mt-1 text-sm md:text-base">
@@ -196,7 +206,7 @@ export default async function AccountantDashboard() {
           <CardDescription>Consolidated data required for end-of-month salary calculations.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-            <MasterReportTable data={reportData} />
+          <MasterReportTable data={reportData} />
         </CardContent>
       </Card>
 

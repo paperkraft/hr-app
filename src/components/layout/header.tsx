@@ -27,7 +27,7 @@ export function Header({ userName, userRole }: { userName: string; userRole: str
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
             <div className="h-16 flex items-center px-6 border-b border-border/50 bg-muted/30">
               <Activity className="w-6 h-6 text-primary mr-2" />
-              <span className="font-bold text-lg tracking-tight">Nexus HRMS</span>
+              <span className="font-bold text-lg tracking-tight">Sigma HRMS</span>
             </div>
             <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4 px-2">
@@ -39,11 +39,10 @@ export function Header({ userName, userRole }: { userName: string; userRole: str
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      isActive 
-                        ? "bg-primary/10 text-primary shadow-sm" 
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+                        ? "bg-primary/10 text-primary shadow-sm"
                         : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     <item.icon className={`w-4 h-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
                     {item.title}

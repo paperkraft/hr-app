@@ -6,6 +6,7 @@ interface Request {
   dates: string;
   status: string;
   category: string;
+  managerNote?: string | null;
 }
 
 interface RecentRequestsCardProps {
@@ -28,6 +29,12 @@ export function RecentRequestsCard({ requests }: RecentRequestsCardProps) {
                 <div className="flex flex-col">
                   <span className="font-medium">{req.dates}</span>
                   <span className="text-sm text-muted-foreground">{req.category}</span>
+                  {req.managerNote && (
+                    <div className={`mt-2 p-2 rounded text-xs border ${req.status === 'REJECTED' ? 'bg-destructive/5 border-destructive/20 text-destructive' : 'bg-muted/50 border-border text-muted-foreground'} italic animate-in fade-in slide-in-from-left-2 duration-300`}>
+                      <span className="font-semibold block mb-0.5">Note:</span>
+                      {req.managerNote}
+                    </div>
+                  )}
                 </div>
                 <Badge 
                   variant={req.status === "APPROVED" ? "secondary" : req.status === "REJECTED" ? "destructive" : "outline"}

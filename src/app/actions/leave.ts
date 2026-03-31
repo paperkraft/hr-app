@@ -12,6 +12,42 @@ function getDaysDifference(start: Date, end: Date) {
   return Math.floor((endUtc - startUtc) / (1000 * 60 * 60 * 24)) + 1;
 }
 
+function getCycleRange(month: number, year: number) {
+  // H1: Apr (4) to Sep (9)
+  // H2: Oct (10) to Mar (next year 3)
+  if (month >= 4 && month <= 9) {
+    return {
+      start: new Date(year, 3, 1), // April 1st
+      end: new Date(year, 8, 30, 23, 59, 59) // Sep 30th
+    };
+  } else if (month >= 10) {
+    return {
+      start: new Date(year, 9, 1), // Oct 1st
+      end: new Date(year + 1, 2, 31, 23, 59, 59) // Mar 31st
+    };
+  } else {
+    // Jan-Mar belongs to previous year's Oct cycle
+    return {
+      start: new Date(year - 1, 9, 1), // Oct 1st Prev Year
+      end: new Date(year, 2, 31, 23, 59, 59) // Mar 31st
+    };
+  }
+}
+
+async function getCyclePendingDays(userId: string, cycleStart: Date, cycleEnd: Date) {
+  const pendingRequests = await prisma.leaveRequest.findMany({
+    where: {
+      userId,
+      status: "PENDING",
+      category: "SEMI_ANNUAL_POLICY_2",
+      startDate: { gte: cycleStart },
+      endDate: { lte: cycleEnd }
+    }
+  });
+
+  return pendingRequests.reduce((acc, req) => acc + getDaysDifference(req.startDate, req.endDate), 0);
+}
+
 export async function ensureBalance(userId: string, month: number, year: number) {
   const existing = await prisma.leaveBalance.findUnique({
     where: { userId_month_year: { userId, month, year } }
@@ -157,14 +193,28 @@ export async function submitLeaveRequest(formData: unknown) {
   try {
     const diffDays = getDaysDifference(startDate, endDate);
     
-    // Policy 2 Enforcement: Minimum 3 continuous leaves
-    if (data.category === "SEMI_ANNUAL_POLICY_2" && diffDays < 3) {
-      return { 
-        error: "Policy 2 (Semi-Annual) requires a minimum of 3 consecutive leave days. Single or 2-day requests are not allowed for this category." 
-      };
-    }
+    const balance = await ensureBalance(userId, month, year);
 
-    await ensureBalance(userId, month, year);
+    // Policy 2 Enforcement
+    if (data.category === "SEMI_ANNUAL_POLICY_2") {
+      // 1. Minimum 3 continuous leaves
+      if (diffDays < 3) {
+        return { 
+          error: "Policy 2 (Semi-Annual) requires a minimum of 3 consecutive leave days. Single or 2-day requests are not allowed for this category." 
+        };
+      }
+
+      // 2. Quota Enforcement
+      const cycle = getCycleRange(month, year);
+      const pendingDays = await getCyclePendingDays(userId, cycle.start, cycle.end);
+      const available = balance.semiAnnualRemaining - pendingDays;
+
+      if (diffDays > available) {
+        return { 
+          error: `Policy 2 quota exceeded. Available semi-annual balance: ${balance.semiAnnualRemaining} days. Already pending in this cycle: ${pendingDays} days. Remaining quota: ${available} days. You are trying to apply for ${diffDays} days.` 
+        };
+      }
+    }
 
     // Overlap Check: Prevent multiple active leaves for the same date range
     const existingOverlap = await prisma.leaveRequest.findFirst({
@@ -205,7 +255,7 @@ export async function submitLeaveRequest(formData: unknown) {
   }
 }
 
-export async function updateLeaveStatus(requestId: string, status: "APPROVED" | "REJECTED") {
+export async function updateLeaveStatus(requestId: string, status: "APPROVED" | "REJECTED", note?: string) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id || (session.user.role !== "MANAGER" && session.user.role !== "ADMIN")) {
     return { error: "Unauthorized. Managers or Admins only." };
@@ -238,7 +288,10 @@ export async function updateLeaveStatus(requestId: string, status: "APPROVED" | 
       if (status === "REJECTED") {
         await tx.leaveRequest.update({ 
           where: { id: requestId }, 
-          data: { status: "REJECTED" } 
+          data: { 
+            status: "REJECTED",
+            managerNote: note || null
+          } 
         });
         return { success: true };
       }
@@ -280,7 +333,7 @@ export async function updateLeaveStatus(requestId: string, status: "APPROVED" | 
       }
 
       let overflowLwp = 0;
-      let newManagerNote = txRequest.managerNote || "";
+      let newManagerNote = note || "";
 
       if (balanceField) {
         const available = Number(balance[balanceField]);

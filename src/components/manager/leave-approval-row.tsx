@@ -19,13 +19,17 @@ type PendingRequest = {
 
 export function LeaveApprovalRow({ request }: { request: PendingRequest }) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
+  const [rejectionNote, setRejectionNote] = useState("");
 
   const handleAction = async (action: "APPROVED" | "REJECTED") => {
     setIsProcessing(true);
     try {
-      const result = await updateLeaveStatus(request.id, action);
+      const result = await updateLeaveStatus(request.id, action, rejectionNote);
       if (result.error) {
         alert(result.error);
+      } else {
+        setIsRejecting(false);
       }
     } catch (err) {
       alert("An unexpected error occurred.");
@@ -51,27 +55,60 @@ export function LeaveApprovalRow({ request }: { request: PendingRequest }) {
         {request.reason}
       </td>
       <td className="p-4 align-middle text-right">
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-destructive hover:bg-destructive border-destructive/20 hover:!text-white"
-            onClick={() => handleAction("REJECTED")}
-            disabled={isProcessing}
-          >
-            <X className="w-4 h-4 mr-1" />
-            Reject
-          </Button>
-          <Button
-            size="sm"
-            className="bg-emerald-600 hover:bg-emerald-700 text-white"
-            onClick={() => handleAction("APPROVED")}
-            disabled={isProcessing}
-          >
-            <Check className="w-4 h-4 mr-1" />
-            Approve
-          </Button>
-        </div>
+        {isRejecting ? (
+          <div className="flex flex-col gap-2">
+            <input
+              type="text"
+              placeholder="Reason for rejection..."
+              className="text-xs p-2 border border-border rounded-md bg-muted/20 focus:outline-none focus:ring-1 focus:ring-destructive/50"
+              value={rejectionNote}
+              onChange={(e) => setRejectionNote(e.target.value)}
+              autoFocus
+            />
+            <div className="flex items-center justify-end gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-[10px]"
+                onClick={() => setIsRejecting(false)}
+                disabled={isProcessing}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                className="h-7 text-[10px] font-bold uppercase tracking-tight"
+                onClick={() => handleAction("REJECTED")}
+                disabled={isProcessing}
+              >
+                Confirm Reject
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:bg-destructive border-destructive/20 hover:!text-white"
+              onClick={() => setIsRejecting(true)}
+              disabled={isProcessing}
+            >
+              <X className="w-4 h-4 mr-1" />
+              Reject
+            </Button>
+            <Button
+              size="sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={() => handleAction("APPROVED")}
+              disabled={isProcessing}
+            >
+              <Check className="w-4 h-4 mr-1" />
+              Approve
+            </Button>
+          </div>
+        )}
       </td>
     </tr>
   );

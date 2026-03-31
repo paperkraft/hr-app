@@ -92,6 +92,7 @@ async function getEmployeeData() {
         status: req.status,
         duration: req.duration,
         category: req.category === "MONTHLY_POLICY_1" ? "Policy 1" : req.category === "UNPAID" ? "Unpaid" : "Policy 2",
+        managerNote: req.managerNote,
       };
     }),
     userName: session.user.name ?? "Employee"

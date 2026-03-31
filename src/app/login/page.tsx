@@ -1,7 +1,16 @@
 import { Activity, ShieldCheck, Users } from "lucide-react";
 import { LoginForm } from "@/components/features/auth/login-form";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await getServerSession(authOptions);
+
+  if (session) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row bg-background">
 

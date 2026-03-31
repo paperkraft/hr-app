@@ -7,6 +7,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { ExportLedgerButton } from "@/components/accountant/export-ledger-button";
 import { MasterReportTable } from "@/components/accountant/master-report-table";
+import { MonthYearPicker } from "@/components/accountant/month-year-picker";
 
 export const dynamic = 'force-dynamic';
 
@@ -16,15 +17,15 @@ function getDaysDifference(start: Date, end: Date) {
   return Math.floor((endUtc - startUtc) / (1000 * 60 * 60 * 24)) + 1;
 }
 
-async function getPayrollReportData() {
+async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== "ACCOUNTANT") {
     redirect("/dashboard/employee");
   }
 
   const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1; // 1-12
+  const currentYear = reqYear || now.getFullYear();
+  const currentMonth = reqMonth || now.getMonth() + 1; // 1-12
 
   // Calculate boundaries for the current month
   const startOfMonth = new Date(currentYear, currentMonth - 1, 1, 0, 0, 0, 0);
@@ -119,13 +120,23 @@ async function getPayrollReportData() {
       totalLates: totalLatesSystemWide,
       totalEncashments: totalEncashments,
       totalLwp: totalLwpSystemWide,
-      currentMonthName: now.toLocaleString('default', { month: 'long' })
+      currentMonthName: new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' }),
+      currentYear,
+      currentMonth
     }
   };
 }
 
-export default async function AccountantDashboard() {
-  const { reportData, stats } = await getPayrollReportData();
+export default async function AccountantDashboard({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ m?: string; y?: string }> 
+}) {
+  const params = await searchParams;
+  const m = params.m ? parseInt(params.m) : undefined;
+  const y = params.y ? parseInt(params.y) : undefined;
+
+  const { reportData, stats } = await getPayrollReportData(m, y);
 
   return (
     <div className="flex flex-col gap-8 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
@@ -136,9 +147,13 @@ export default async function AccountantDashboard() {
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
             Payroll & Processing
           </h1>
-          <p className="text-muted-foreground mt-1 text-sm md:text-base">
-            Comprehensive attendance and leave report for {stats.currentMonthName} {new Date().getFullYear()}.
-          </p>
+          <div className="flex flex-col md:flex-row md:items-center gap-3 mt-1">
+            <p className="text-muted-foreground text-sm md:text-base">
+              Comprehensive attendance and leave report for {stats.currentMonthName} {stats.currentYear}.
+            </p>
+            <div className="hidden md:block h-4 w-px bg-border/60 mx-1" />
+            <MonthYearPicker currentMonth={stats.currentMonth} currentYear={stats.currentYear} />
+          </div>
         </div>
         <ExportLedgerButton data={reportData} month={stats.currentMonthName} />
       </div>
@@ -200,12 +215,12 @@ export default async function AccountantDashboard() {
       </div>
 
       {/* The Master Data Table */}
-      <Card className="shadow-sm border-border/40">
-        <CardHeader className="border-b border-border/40 bg-muted/10 pb-4">
+      <Card className="shadow-sm border-border/40 p-0">
+        <CardHeader className="border-b border-border/40 bg-muted/10 p-4">
           <CardTitle className="text-lg">Master Attendance & Leave Report</CardTitle>
           <CardDescription>Consolidated data required for end-of-month salary calculations.</CardDescription>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="p-4 pt-0">
           <MasterReportTable data={reportData} />
         </CardContent>
       </Card>

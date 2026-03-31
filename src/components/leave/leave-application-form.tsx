@@ -48,11 +48,6 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="flex items-center gap-2 pb-4 border-b border-border/50">
-        <CalendarRange className="w-5 h-5 text-primary" />
-        <h2 className="text-xl font-semibold">Apply for Leave</h2>
-      </div>
-
       {/* Date Range Selection */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -74,7 +69,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
           <label className={`relative flex cursor-pointer rounded-lg border bg-background p-4 shadow-sm focus:outline-none ${selectedCategory === "MONTHLY_POLICY_1" ? "border-primary ring-1 ring-primary" : "border-border"}`}>
             <input type="radio" value="MONTHLY_POLICY_1" className="sr-only" {...register("category")} />
             <div className="flex flex-col">
-              <span className="block text-sm font-medium">Monthly (Policy 1)</span>
+              <span className="block text-sm font-medium">Monthly</span>
               <span className="mt-1 flex items-center text-xs text-muted-foreground">Paid: 2 Full / 1 Short.</span>
             </div>
           </label>
@@ -82,7 +77,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
           <label className={`relative flex cursor-pointer rounded-lg border bg-background p-4 shadow-sm focus:outline-none ${selectedCategory === "SEMI_ANNUAL_POLICY_2" ? "border-primary ring-1 ring-primary" : "border-border"}`}>
             <input type="radio" value="SEMI_ANNUAL_POLICY_2" className="sr-only" {...register("category")} />
             <div className="flex flex-col">
-              <span className="block text-sm font-medium">Semi-Annual (Policy 2)</span>
+              <span className="block text-sm font-medium">Semi-Annual</span>
               <span className="mt-1 flex items-center text-xs text-muted-foreground">Paid: 6-month cycle.</span>
             </div>
           </label>
@@ -91,8 +86,8 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
           <label className={`relative flex cursor-pointer rounded-lg border bg-background p-4 shadow-sm focus:outline-none ${selectedCategory === "UNPAID" ? "border-destructive ring-1 ring-destructive" : "border-border"}`}>
             <input type="radio" value="UNPAID" className="sr-only" {...register("category")} />
             <div className="flex flex-col">
-              <span className="block text-sm font-medium text-destructive">Leave Without Pay</span>
-              <span className="mt-1 flex items-center text-xs text-muted-foreground">Unpaid emergency/medical.</span>
+              <span className="block text-sm font-medium text-destructive">Unpaid Leave</span>
+              <span className="mt-1 flex items-center text-xs text-muted-foreground">Emergency / Medical.</span>
             </div>
           </label>
         </div>
@@ -108,7 +103,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
             return (
               <label key={type} className={`relative flex justify-center cursor-pointer rounded-md border py-3 px-3 shadow-sm focus:outline-none 
                 ${selectedDuration === type ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border"}
-                ${isDisabled ? "opacity-50 cursor-not-allowed bg-secondary" : "hover:bg-secondary/50"}
+                ${isDisabled ? "opacity-50 cursor-not-allowed bg-secondary" : "hover:bg-secondary/50 hover:text-primary"}
               `}>
                 <input type="radio" value={type} disabled={isDisabled} className="sr-only" {...register("duration")} />
                 <span className="text-sm font-medium">{type === "SHORT" ? "Short (2hr)" : type.charAt(0) + type.slice(1).toLowerCase()}</span>
@@ -134,13 +129,13 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
       {/* Error State */}
       {serverError && (
         <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md flex items-center gap-2">
-          <AlertCircle className="w-4 h-4" />
+          <AlertCircle className="size-4 shrink-0" />
           {serverError}
         </div>
       )}
 
       {/* Submit */}
-      <div className="pt-2">
+      <div>
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? "Submitting Request..." : "Submit Leave Application"}
         </Button>

@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 async function getMyLeaves() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return [];
-  
+
   return prisma.leaveRequest.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: 'desc' }
@@ -24,11 +24,11 @@ export default async function EmployeeLeavesPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "APPROVED":
-        return <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 flex items-center gap-1"><CheckCircle2 className="w-3 h-3"/> Approved</Badge>;
+        return <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Approved</Badge>;
       case "REJECTED":
-        return <Badge variant="destructive" className="flex items-center gap-1"><XCircle className="w-3 h-3"/> Rejected</Badge>;
+        return <Badge variant="destructive" className="flex items-center gap-1"><XCircle className="w-3 h-3" /> Rejected</Badge>;
       default:
-        return <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50 flex items-center gap-1"><Clock4 className="w-3 h-3"/> Pending</Badge>;
+        return <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50 flex items-center gap-1"><Clock4 className="w-3 h-3" /> Pending</Badge>;
     }
   };
 
@@ -42,8 +42,8 @@ export default async function EmployeeLeavesPage() {
         <RequestLeaveButton />
       </div>
 
-      <Card className="shadow-sm border-border/50">
-        <CardHeader>
+      <Card className="shadow-sm border-border/50 p-0 gap-0">
+        <CardHeader className="p-4">
           <CardTitle>Leave History</CardTitle>
           <CardDescription>A complete log of your past and upcoming leave requests.</CardDescription>
         </CardHeader>
@@ -61,9 +61,9 @@ export default async function EmployeeLeavesPage() {
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
                 {leaves.length === 0 && (
-                   <tr>
-                     <td colSpan={5} className="py-6 text-center text-muted-foreground">No leave history found.</td>
-                   </tr>
+                  <tr>
+                    <td colSpan={5} className="py-6 text-center text-muted-foreground">No leave history found.</td>
+                  </tr>
                 )}
                 {leaves.map((leave) => (
                   <tr key={leave.id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">

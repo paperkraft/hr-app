@@ -10,7 +10,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
   const navItems = roleNavigation[userRole] || roleNavigation.EMPLOYEE;
 
   return (
-    <aside className="w-64 border-r border-border/40 bg-card flex-col hidden md:flex min-h-screen shadow-sm z-10">
+    <aside className="w-64 border-r border-border/40 bg-card flex-col hidden md:flex min-h-screen z-10">
       <div className="h-16 flex items-center px-6 border-b border-border/40">
         <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary/10 mr-3">
           <Activity className="w-5 h-5 text-primary" />

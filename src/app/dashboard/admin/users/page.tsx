@@ -46,7 +46,7 @@ export default async function AdminUsersPage() {
         <AddUserDialog managers={validManagers} />
       </div>
 
-      <Card className="shadow-sm border-border/50">
+      <Card className="shadow-sm border-border/50 p-0">
         <CardContent className="p-0">
           <div className="relative w-full overflow-auto">
             <table className="w-full caption-bottom text-sm">
@@ -65,7 +65,7 @@ export default async function AdminUsersPage() {
                     <td className="p-6 align-middle">
                       <div className="flex items-center gap-3">
                         <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center font-medium text-muted-foreground uppercase">
-                          {user.name ? user.name.slice(0,2) : user.email.slice(0,2)}
+                          {user.name ? user.name.slice(0, 2) : user.email.slice(0, 2)}
                         </div>
                         <div className="flex flex-col">
                           <span className="font-medium text-foreground">{user.name}</span>

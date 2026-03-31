@@ -99,7 +99,7 @@ export default async function EmployeeDashboard() {
 
   return (
     <div className="flex flex-col gap-8 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
             {greeting}, {data.userName.split(' ')[0]} 👋
@@ -121,8 +121,8 @@ export default async function EmployeeDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="shadow-sm border-border/40 hover:shadow-md transition-shadow duration-200">
-          <CardHeader className="pb-3 border-b border-border/40 bg-muted/10">
+        <Card className="shadow-sm border-border/40 hover:shadow-md transition-shadow duration-20 p-0">
+          <CardHeader className="pb-3 border-b border-border/40 bg-muted/10 p-4">
             <div className="flex items-center gap-2">
               <ClockIcon className="w-5 h-5 text-primary" />
               <CardTitle className="text-lg font-semibold">Recent Attendance</CardTitle>

@@ -2,12 +2,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Users, Inbox, Check, Clock } from "lucide-react";
 import { LeaveApprovalRow } from "@/components/manager/leave-approval-row";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Table, 
-  TableHeader, 
-  TableBody, 
-  TableHead, 
-  TableRow, 
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
   TableCell
 } from "@/components/ui/table";
 
@@ -60,7 +60,7 @@ async function getTeamData() {
     const log = todayLogs.find(l => l.userId === member.id);
     let status = "PENDING";
     let inTime = null;
-    
+
     if (log) {
       if (log.punchOut) status = "PUNCHED_OUT";
       else {
@@ -68,7 +68,7 @@ async function getTeamData() {
         inTime = log.punchIn.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
       }
     }
-    
+
     return { id: member.id, name: member.name || member.email, status, inTime };
   });
 
@@ -132,14 +132,14 @@ export default async function ManagerDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           {/* Pending Leave Requests Table */}
-          <Card className="shadow-sm border-border/40 h-full">
-            <CardHeader className="border-b border-border/40 bg-muted/10 pb-4">
+          <Card className="shadow-sm border-border/40 h-full p-0 gap-0">
+            <CardHeader className="border-b border-border/40 bg-muted/10 p-4">
               <CardTitle className="text-lg">Leave Approvals</CardTitle>
               <CardDescription>Review and manage leave applications from your team.</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               {pendingRequests.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
                   <Check className="w-12 h-12 mb-4 text-emerald-500/50" />
                   <p className="text-sm font-medium text-foreground">You're all caught up!</p>
                   <p className="text-xs">No pending leave requests to review.</p>
@@ -147,7 +147,7 @@ export default async function ManagerDashboard() {
               ) : (
                 <Table>
                   <TableHeader className="bg-muted/50">
-                    <TableRow>
+                    <TableRow className="[&>th]:px-4">
                       <TableHead>Employee</TableHead>
                       <TableHead>Dates & Policy</TableHead>
                       <TableHead>Reason</TableHead>
@@ -167,23 +167,23 @@ export default async function ManagerDashboard() {
 
         <div className="lg:col-span-1">
           {/* Team Today's Status Widget */}
-          <Card className="shadow-sm border-border/40">
-            <CardHeader className="border-b border-border/40 bg-muted/10 pb-4">
+          <Card className="shadow-sm border-border/40 p-0 gap-0">
+            <CardHeader className="border-b border-border/40 bg-muted/10 p-4">
               <CardTitle className="text-lg">Today's Team Status</CardTitle>
               <CardDescription>Live attendance overview.</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-border/40">
                 {teamStatus.length === 0 ? (
-                   <p className="p-6 text-center text-sm text-muted-foreground">No team members assigned.</p>
+                  <p className="p-6 text-center text-sm text-muted-foreground">No team members assigned.</p>
                 ) : (
                   teamStatus.map((member) => (
                     <div key={member.id} className="flex items-center justify-between p-4 hover:bg-muted/10 transition-colors">
                       <div className="flex items-center gap-3">
-                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                           {member.name.substring(0,2).toUpperCase()}
-                         </div>
-                         <span className="font-medium text-sm">{member.name}</span>
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                          {member.name.substring(0, 2).toUpperCase()}
+                        </div>
+                        <span className="font-medium text-sm">{member.name}</span>
                       </div>
                       <div>
                         {member.status === "PUNCHED_IN" && (

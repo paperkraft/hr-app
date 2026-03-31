@@ -48,18 +48,18 @@ export function LeaveApprovalRow({ request }: { request: PendingRequest }) {
       </td>
       <td className="p-4 align-middle text-right">
         <div className="flex items-center justify-end gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="text-destructive hover:bg-destructive hover:text-destructive-foreground border-destructive/20"
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-destructive hover:bg-destructive border-destructive/20 hover:!text-white"
             onClick={() => handleAction("REJECTED")}
             disabled={isProcessing}
           >
             <X className="w-4 h-4 mr-1" />
             Reject
           </Button>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             className="bg-emerald-600 hover:bg-emerald-700 text-white"
             onClick={() => handleAction("APPROVED")}
             disabled={isProcessing}

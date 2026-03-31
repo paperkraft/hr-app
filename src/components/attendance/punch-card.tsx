@@ -38,15 +38,16 @@ export function PunchCard({ initialStatus }: { initialStatus: "PENDING" | "PUNCH
   };
 
   return (
-    <Card className="h-full shadow-sm border-border/40 flex flex-col">
-      <CardHeader className="pb-2 border-b border-border/40 bg-muted/10">
+    <Card className="h-full shadow-sm border-border/40 flex flex-col p-0">
+      <CardHeader className="pb-2 border-b border-border/40 bg-muted/10 p-4">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
           <Clock className="w-5 h-5 text-primary" />
           Today's Attendance
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col items-center justify-center py-8 gap-5">
-        <div className="text-5xl font-bold tabular-nums tracking-tighter text-foreground">
+
+      <CardContent className="flex-1 flex flex-col items-center justify-center gap-5 p-4">
+        <div className="text-4xl font-bold tabular-nums tracking-tighter text-foreground">
           {currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--"}
         </div>
 
@@ -61,7 +62,7 @@ export function PunchCard({ initialStatus }: { initialStatus: "PENDING" | "PUNCH
         ) : (
           <Button
             size="lg"
-            className={`w-full max-w-55 h-14 text-lg rounded-full font-semibold transition-all duration-300 shadow-md ${status === "PUNCHED_IN"
+            className={`w-full max-w-55 h-12 text-lg rounded-full font-semibold transition-all duration-300 shadow-md ${status === "PUNCHED_IN"
               ? "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
               : "bg-primary hover:bg-primary/90 shadow-primary/20"
               }`}

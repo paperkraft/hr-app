@@ -20,7 +20,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
+
   const [formData, setFormData] = useState(initialData)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,54 +28,47 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
     setLoading(true)
     setError(null)
     setSuccess(false)
-    
+
     const result = await updateSystemConfig(formData)
-    
+
     if (result?.error) {
       setError(result.error)
     } else {
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
     }
-    
+
     setLoading(false)
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
+
         {/* Timing Configuration Card */}
-        <Card className="shadow-sm border-border/40">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Clock className="w-5 h-5 text-primary" />
-              Office Timing
-            </CardTitle>
-            <CardDescription className="text-sm">Global check-in and check-out schedule.</CardDescription>
+        <Card className="shadow-sm border-border/40 p-0">
+          <CardHeader className="p-4">
+            <CardTitle>Office Timing</CardTitle>
+            <CardDescription>Global check-in and check-out schedule.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 pb-4">
             <div className="space-y-2">
-              <Label htmlFor="officeStartTime" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
-                Shift Start Time
-              </Label>
-              <Input 
+              <Label htmlFor="officeStartTime">Shift Start Time</Label>
+              <Input
                 id="officeStartTime"
-                type="time" 
+                type="time"
                 value={formData.officeStartTime}
                 onChange={(e) => setFormData(prev => ({ ...prev, officeStartTime: e.target.value }))}
                 className="h-11 bg-muted/20 border-border focus:ring-primary/20"
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="officeEndTime" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
-                Shift End Time
-              </Label>
-              <Input 
+              <Label htmlFor="officeEndTime">Shift End Time</Label>
+              <Input
                 id="officeEndTime"
-                type="time" 
+                type="time"
                 value={formData.officeEndTime}
                 onChange={(e) => setFormData(prev => ({ ...prev, officeEndTime: e.target.value }))}
                 className="h-11 bg-muted/20 border-border focus:ring-primary/20"
@@ -86,23 +79,18 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
         </Card>
 
         {/* Grace Period Card */}
-        <Card className="shadow-sm border-border/40">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Timer className="w-5 h-5 text-amber-500" />
-              Grace Period
-            </CardTitle>
-            <CardDescription className="text-sm">Tolerance limit for monthly late marks.</CardDescription>
+        <Card className="shadow-sm border-border/40 p-0">
+          <CardHeader className="p-4">
+            <CardTitle>Grace Period</CardTitle>
+            <CardDescription>Tolerance limit for monthly late marks.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 pb-4">
             <div className="space-y-2">
-              <Label htmlFor="graceTime" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
-                Allowed Minutes (After Start)
-              </Label>
+              <Label htmlFor="graceTime">Allowed Minutes (After Start)</Label>
               <div className="flex items-center gap-3">
-                <Input 
+                <Input
                   id="graceTime"
-                  type="number" 
+                  type="number"
                   min="0"
                   max="120"
                   value={formData.graceTimeMinutes}
@@ -136,11 +124,11 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
             </div>
           )}
         </div>
-        
-        <Button 
-          type="submit" 
+
+        <Button
+          type="submit"
           disabled={loading}
-          className="h-12 px-10 gap-2 font-bold shadow-sm"
+          className="h-10"
         >
           {loading ? (
             <Loader2 className="w-5 h-5 animate-spin" />

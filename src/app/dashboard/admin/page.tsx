@@ -53,7 +53,7 @@ export default async function AdminOverviewPage() {
         <Card className="shadow-sm border-border/40">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
+              <Users className="size-4 text-primary" />
               Total Employees
             </CardTitle>
           </CardHeader>
@@ -66,7 +66,7 @@ export default async function AdminOverviewPage() {
         <Card className="shadow-sm border-border/40">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <FileText className="w-4 h-4 text-amber-500" />
+              <FileText className="size-4 text-amber-500" />
               Pending Leaves
             </CardTitle>
           </CardHeader>
@@ -92,8 +92,8 @@ export default async function AdminOverviewPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* All Leave Requests (Spans 2 columns on extra large screens) */}
-        <Card className="shadow-sm border-border/40 xl:col-span-2">
-          <CardHeader>
+        <Card className="shadow-sm border-border/40 xl:col-span-2 p-0">
+          <CardHeader className="p-4">
             <CardTitle>All Pending Leave Requests</CardTitle>
             <CardDescription>Leaves requiring approval across the entire organization.</CardDescription>
           </CardHeader>

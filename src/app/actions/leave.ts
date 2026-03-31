@@ -159,6 +159,24 @@ export async function submitLeaveRequest(formData: unknown) {
     // but the UI will show a warning due to the balance display logic.
     await ensureBalance(userId, month, year);
 
+    // Overlap Check: Prevent multiple active leaves for the same date range
+    const existingOverlap = await prisma.leaveRequest.findFirst({
+      where: {
+        userId,
+        status: { in: ["PENDING", "APPROVED"] },
+        AND: [
+          { startDate: { lte: endDate } },
+          { endDate: { gte: startDate } },
+        ],
+      },
+    });
+
+    if (existingOverlap) {
+      return { 
+        error: "You already have a leave request (Pending or Approved) for the selected dates. Please check your existing leaves." 
+      };
+    }
+
     await prisma.leaveRequest.create({
       data: {
         userId,

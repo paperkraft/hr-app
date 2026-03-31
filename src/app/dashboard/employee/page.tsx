@@ -82,12 +82,18 @@ async function getEmployeeData() {
       semiAnnual: balances?.semiAnnualRemaining ?? 0,
     },
     recentLogs: formattedLogs,
-    recentRequests: recentRequests.map((req: any) => ({
-      id: req.id,
-      dates: `${new Date(req.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(req.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-      status: req.status,
-      category: req.category === "MONTHLY_POLICY_1" ? "Policy 1" : "Policy 2",
-    })),
+    recentRequests: recentRequests.map((req: any) => {
+      const dateStr = new Date(req.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const timeStr = req.duration === "SHORT" && req.startTime ? ` (${req.startTime} - ${req.endTime})` : "";
+      
+      return {
+        id: req.id,
+        dates: req.duration === "SHORT" ? `${dateStr}${timeStr}` : `${dateStr} - ${new Date(req.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+        status: req.status,
+        duration: req.duration,
+        category: req.category === "MONTHLY_POLICY_1" ? "Policy 1" : req.category === "UNPAID" ? "Unpaid" : "Policy 2",
+      };
+    }),
     userName: session.user.name ?? "Employee"
   };
 }

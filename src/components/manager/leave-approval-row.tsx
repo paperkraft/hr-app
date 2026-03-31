@@ -13,6 +13,8 @@ type PendingRequest = {
   duration: string;
   category: string;
   reason: string;
+  startTime?: string | null;
+  endTime?: string | null;
 };
 
 export function LeaveApprovalRow({ request }: { request: PendingRequest }) {
@@ -38,8 +40,10 @@ export function LeaveApprovalRow({ request }: { request: PendingRequest }) {
       <td className="p-4 align-middle">
         <div className="flex flex-col">
           <span className="text-sm">{request.startDate} to {request.endDate}</span>
-          <span className="text-xs text-muted-foreground">
-            {request.duration} • {request.category === "MONTHLY_POLICY_1" ? "Policy 1" : "Policy 2"}
+          <span className="text-xs text-muted-foreground italic font-medium">
+            {request.duration} 
+            {request.duration === "SHORT" && request.startTime && ` (${request.startTime} - ${request.endTime})`} 
+            • {request.category === "MONTHLY_POLICY_1" ? "Policy 1" : request.category === "UNPAID" ? "Unpaid" : "Policy 2"}
           </span>
         </div>
       </td>

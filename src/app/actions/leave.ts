@@ -155,8 +155,15 @@ export async function submitLeaveRequest(formData: unknown) {
   const year = startDate.getFullYear();
 
   try {
-    // We allow submission even if balance is exceeded, 
-    // but the UI will show a warning due to the balance display logic.
+    const diffDays = getDaysDifference(startDate, endDate);
+    
+    // Policy 2 Enforcement: Minimum 3 continuous leaves
+    if (data.category === "SEMI_ANNUAL_POLICY_2" && diffDays < 3) {
+      return { 
+        error: "Policy 2 (Semi-Annual) requires a minimum of 3 consecutive leave days. Single or 2-day requests are not allowed for this category." 
+      };
+    }
+
     await ensureBalance(userId, month, year);
 
     // Overlap Check: Prevent multiple active leaves for the same date range
@@ -185,6 +192,8 @@ export async function submitLeaveRequest(formData: unknown) {
         duration: data.duration,
         category: data.category,
         reason: data.reason,
+        startTime: data.startTime,
+        endTime: data.endTime,
       }
     });
 

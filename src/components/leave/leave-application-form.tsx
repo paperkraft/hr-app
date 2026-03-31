@@ -114,6 +114,22 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
         {errors.duration && <p className="text-sm text-destructive">{errors.duration.message}</p>}
       </div>
 
+      {/* Short Leave Time Windows (Conditional) */}
+      {selectedDuration === "SHORT" && (
+        <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="space-y-2">
+            <Label htmlFor="startTime">From Time</Label>
+            <Input id="startTime" type="time" {...register("startTime")} />
+            {errors.startTime && <p className="text-sm text-destructive">{errors.startTime.message}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="endTime">To Time</Label>
+            <Input id="endTime" type="time" {...register("endTime")} />
+            {errors.endTime && <p className="text-sm text-destructive">{errors.endTime.message}</p>}
+          </div>
+        </div>
+      )}
+
       {/* Reason Textarea */}
       <div className="space-y-2">
         <Label htmlFor="reason">Reason for Leave</Label>

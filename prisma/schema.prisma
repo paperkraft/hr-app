@@ -62,17 +62,17 @@ model Attendance {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  date     DateTime  @db.Date
-  punchIn  DateTime
-  punchOut DateTime?
-  isLate           Boolean   @default(false)
+  date              DateTime  @db.Date
+  punchIn           DateTime
+  punchOut          DateTime?
+  isLate            Boolean   @default(false)
   isLateSpecialCase Boolean   @default(false)
 
   // Geofencing & Location Tracking
-  lat               Float?
-  lng               Float?
-  ipAddress         String?
-  isOutsideOffice   Boolean   @default(false)
+  lat             Float?
+  lng             Float?
+  ipAddress       String?
+  isOutsideOffice Boolean @default(false)
 
   @@unique([userId, date]) // Strict constraint: One attendance record per user per day
 }
@@ -89,6 +89,10 @@ model LeaveRequest {
   status      LeaveStatus   @default(PENDING)
   reason      String?       @db.Text
   managerNote String?       @db.Text
+
+  // Short Leave Time Window (Max 2 hours)
+  startTime String? // Format: HH:mm
+  endTime   String? // Format: HH:mm
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -120,17 +124,17 @@ model LeaveBalance {
 model SystemConfig {
   id String @id @default("GLOBAL_CONFIG") // Only one record ever
 
-  officeStartTime String @default("09:00") // 24h format HH:mm
-  officeEndTime   String @default("18:00") // 24h format HH:mm
+  officeStartTime  String @default("09:00") // 24h format HH:mm
+  officeEndTime    String @default("18:00") // 24h format HH:mm
   graceTimeMinutes Int    @default(15)
 
   // Geofencing Config
-  officeLat       Float?
-  officeLng       Float?
-  allowedRadiusMeters Int @default(500)
+  officeLat           Float?
+  officeLng           Float?
+  allowedRadiusMeters Int    @default(500)
 
   // Future expansion:
   // weekendDays Int[] @default([6, 0]) // 0=Sunday, 6=Saturday
-  
+
   updatedAt DateTime @updatedAt
 }

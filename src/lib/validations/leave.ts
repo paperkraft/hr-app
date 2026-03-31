@@ -10,6 +10,8 @@ export const leaveApplicationSchema = z.object({
     required_error: "Please select which policy to deduct this leave from.",
   }),
   reason: z.string().min(10, "Please provide a reason (minimum 10 characters).").max(500),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
 }).refine((data) => {
   const start = new Date(data.startDate);
   const end = new Date(data.endDate);
@@ -26,6 +28,27 @@ export const leaveApplicationSchema = z.object({
 }, {
   message: "Semi-Annual leaves (Policy 2) can only be taken as Full days.",
   path: ["duration"],
+}).refine((data) => {
+  // SHORT Leave Enforcement: Time range required and max 2 hours
+  if (data.duration === "SHORT") {
+    if (!data.startTime || !data.endTime) return false;
+    
+    // Ensure same day
+    if (data.startDate !== data.endDate) return false;
+
+    const [startH, startM] = data.startTime.split(':').map(Number);
+    const [endH, endM] = data.endTime.split(':').map(Number);
+    const totalStartM = startH * 60 + startM;
+    const totalEndM = endH * 60 + endM;
+    
+    const diff = totalEndM - totalStartM;
+    // Must be positive and <= 120 minutes (2 hours)
+    return diff > 0 && diff <= 120;
+  }
+  return true;
+}, {
+  message: "Short leave requires a start/end time on the same day, not exceeding 2 hours.",
+  path: ["startTime"],
 });
 
 export type LeaveApplicationValues = z.infer<typeof leaveApplicationSchema>;

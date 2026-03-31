@@ -66,18 +66,45 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
     const attendances = user.attendances;
     const balance = user.leaveBalances[0];
 
-    // Count both standard and special case late marks
+    // Calculate counts
     const totalLate = attendances.filter(a => a.isLate).length;
     const specialCaseLate = attendances.filter(a => a.isLate && a.isLateSpecialCase).length;
-    const punishableLate = totalLate - specialCaseLate;
 
-    totalLatesSystemWide += totalLate;
+    // Calculate Policy 1 usage and Auto-LWP
+    let policy1FullUsed = 0;
+    let policy1ShortUsed = 0;
+    let totalLeavesTakenInMonth = 0;
+
+    user.leaveRequests.forEach(req => {
+      const diffDays = getDaysDifference(req.startDate, req.endDate);
+      const actualDays = req.duration === "HALF" ? 0.5 * diffDays : diffDays;
+      
+      totalLeavesTakenInMonth += actualDays;
+
+      if (req.category === "MONTHLY_POLICY_1") {
+        if (req.duration === "SHORT") {
+          policy1ShortUsed += 1;
+        } else {
+          policy1FullUsed += actualDays;
+        }
+      }
+    });
+
+    // Policy 1 Initial Balances (2.0 baseline + any carried forward)
+    const initialFull = 2.0 + (balance?.carriedForward ?? 0);
+    const initialShort = 1;
+
+    // Automatic LWP if usage exceeds balance
+    const autoLwpFull = Math.max(0, policy1FullUsed - initialFull);
+    // Every additional short leave after the first one is 0.5 LWP
+    const autoLwpShort = Math.max(0, policy1ShortUsed - initialShort) * 0.5;
 
     // RULE: If user has late mark, first three counts are exempted, later three are considered as half-day.
-    // Every 3 punishable late marks (after the first 3) result in 0.5 LWP.
+    const punishableLate = totalLate - specialCaseLate;
     const lateDeduction = punishableLate > 3 ? Math.ceil((punishableLate - 3) / 3) * 0.5 : 0;
+    totalLatesSystemWide += totalLate;
 
-    // Calculate Explicit LWP (Unpaid Leaves)
+    // Calculate Explicit LWP (requests specifically marked as UNPAID)
     let explicitLwp = 0;
     user.leaveRequests.forEach(req => {
       if (req.category === "UNPAID") {
@@ -87,8 +114,8 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
       }
     });
 
-    // Total LWP = Explicit LWP + Late Mark Penalties
-    const lwpDays = explicitLwp + lateDeduction;
+    // Total LWP = Excess Leaves (Auto) + Manual Unpaid + Late Mark Penalties
+    const lwpDays = autoLwpFull + autoLwpShort + explicitLwp + lateDeduction;
     totalLwpSystemWide += lwpDays;
 
     const remainingFull = balance?.remainingFull ?? 0;
@@ -100,6 +127,7 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
       name: user.name || user.email,
       role: user.role,
       totalPresent: attendances.length,
+      leavesTaken: totalLeavesTakenInMonth,
       totalLate: totalLate,
       specialCaseLate,
       punishableLate,

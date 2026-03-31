@@ -40,6 +40,8 @@ async function getTeamData() {
     duration: req.duration,
     category: req.category,
     reason: req.reason || "No reason provided",
+    startTime: req.startTime,
+    endTime: req.endTime,
   }));
 
   // 2. Build Team Live Attendance Status

@@ -62,7 +62,7 @@ export default async function AdminUsersPage() {
               <tbody className="[&_tr:last-child]:border-0">
                 {users.map((user) => (
                   <tr key={user.id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                    <td className="p-6 align-middle">
+                    <td className="p-2 px-4 align-middle">
                       <div className="flex items-center gap-3">
                         <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center font-medium text-muted-foreground uppercase">
                           {user.name ? user.name.slice(0, 2) : user.email.slice(0, 2)}
@@ -73,10 +73,10 @@ export default async function AdminUsersPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="p-6 align-middle">
+                    <td className="p-2 px-4 align-middle">
                       {getRoleBadge(user.role)}
                     </td>
-                    <td className="p-6 align-middle">
+                    <td className="p-2 px-4 align-middle">
                       {user.manager ? (
                         <div className="flex items-center gap-2">
                           <Users className="w-3 h-3 text-muted-foreground" />
@@ -86,10 +86,10 @@ export default async function AdminUsersPage() {
                         <span className="text-xs text-muted-foreground italic">None (Top Level)</span>
                       )}
                     </td>
-                    <td className="p-6 align-middle text-muted-foreground">
+                    <td className="p-2 px-4 align-middle text-muted-foreground">
                       {user.createdAt.toLocaleDateString()}
                     </td>
-                    <td className="p-6 align-middle text-right">
+                    <td className="p-2 px-4 align-middle text-right">
                       <DeleteUserButton id={user.id} />
                     </td>
                   </tr>

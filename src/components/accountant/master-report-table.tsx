@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Table, 
-  TableHeader, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableRow 
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ type ReportData = {
   name: string;
   role: string;
   totalPresent: number;
+  leavesTaken: number;
   totalLate: number;
   specialCaseLate: number;
   punishableLate: number;
@@ -41,8 +42,9 @@ export function MasterReportTable({ data }: { data: ReportData[] }) {
         <TableHeader className="bg-muted/5">
           <TableRow className="border-border/40 hover:bg-transparent">
             <TableHead className="h-12 font-semibold text-foreground">Employee Name</TableHead>
-            <TableHead className="h-12 font-semibold text-foreground text-center">Role</TableHead>
+            {/* <TableHead className="h-12 font-semibold text-foreground text-center">Role</TableHead> */}
             <TableHead className="h-12 font-semibold text-foreground text-center">Days Present</TableHead>
+            <TableHead className="h-12 font-semibold text-foreground text-center">Leaves Taken</TableHead>
             <TableHead className="h-12 font-semibold text-foreground text-center">Late Marks</TableHead>
             <TableHead className="h-12 font-semibold text-destructive bg-destructive/5 text-center">LWP (Unpaid)</TableHead>
             <TableHead className="h-12 font-semibold text-foreground text-center border-l border-border/50">Remaining Full (Pol 1)</TableHead>
@@ -68,13 +70,12 @@ export function MasterReportTable({ data }: { data: ReportData[] }) {
                       {row.name}
                       {row.offSiteCount > 0 && (
                         <Badge variant="outline" className="text-rose-600 border-rose-200 bg-rose-50 text-[9px] h-4 flex items-center gap-0.5 px-1 font-bold">
-                          <MapPinOff className="size-2.5" />
-                          {row.offSiteCount} Off-site
+                          {row.offSiteCount} Outside
                         </Badge>
                       )}
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={() => setActiveSplitId(activeSplitId === row.id ? null : row.id)}
                       >
@@ -82,13 +83,16 @@ export function MasterReportTable({ data }: { data: ReportData[] }) {
                       </Button>
                     </div>
                   </TableCell>
-                  <TableCell className="text-center">
+                  {/* <TableCell className="text-center">
                     <Badge variant="secondary" className="text-[10px] uppercase tracking-wider bg-secondary/50">
                       {row.role}
                     </Badge>
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell className="text-center font-semibold text-foreground">
                     {row.totalPresent}
+                  </TableCell>
+                  <TableCell className="text-center font-semibold text-foreground">
+                    {row.leavesTaken}
                   </TableCell>
                   <TableCell className="text-center">
                     <div className="flex flex-col items-center gap-1">
@@ -99,7 +103,7 @@ export function MasterReportTable({ data }: { data: ReportData[] }) {
                       ) : row.totalLate === 0 ? (
                         <span className="text-muted-foreground text-xs">-</span>
                       ) : null}
-                      
+
                       {row.specialCaseLate > 0 && (
                         <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50 text-[9px] h-4">
                           {row.specialCaseLate} Covered
@@ -125,7 +129,7 @@ export function MasterReportTable({ data }: { data: ReportData[] }) {
                     {row.balances.semiAnnual}
                   </TableCell>
                   <TableCell className="text-right pr-6">
-                    <Button 
+                    <Button
                       variant={activeSplitId === row.id ? "default" : "outline"}
                       size="sm"
                       className="h-8 text-[10px] font-bold uppercase tracking-tight"
@@ -135,9 +139,9 @@ export function MasterReportTable({ data }: { data: ReportData[] }) {
                     </Button>
                   </TableCell>
                 </TableRow>
-                
+
                 {activeSplitId === row.id && (
-                  <SplitActionRow 
+                  <SplitActionRow
                     employee={{
                       userId: row.id,
                       name: row.name,

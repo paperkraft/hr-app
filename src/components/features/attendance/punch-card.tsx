@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
-import { punchInOutAction } from "@/app/actions/attendance";
+import { punchInOutAction } from "@/actions/attendance";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, CheckCircle2, Loader2 } from "lucide-react";

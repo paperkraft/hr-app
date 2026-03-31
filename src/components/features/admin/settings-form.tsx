@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Clock, Timer, CheckCircle, AlertCircle, Save, Loader2 } from "lucide-react"
-import { updateSystemConfig } from "@/app/actions/settings"
+import { updateSystemConfig } from "@/actions/settings"
 
 interface SettingsFormProps {
   initialData: {

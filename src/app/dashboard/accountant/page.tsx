@@ -5,9 +5,9 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { ExportLedgerButton } from "@/components/accountant/export-ledger-button";
-import { MasterReportTable } from "@/components/accountant/master-report-table";
-import { MonthYearPicker } from "@/components/accountant/month-year-picker";
+import { ExportLedgerButton } from "@/components/features/accountant/export-ledger-button";
+import { MasterReportTable } from "@/components/features/accountant/master-report-table";
+import { MonthYearPicker } from "@/components/features/accountant/month-year-picker";
 
 export const dynamic = 'force-dynamic';
 

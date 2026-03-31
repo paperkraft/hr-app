@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, Clock4 } from "lucide-react";
-import { RequestLeaveButton } from "@/components/leave/request-leave-button";
+import { RequestLeaveButton } from "@/components/features/leave/request-leave-button";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";

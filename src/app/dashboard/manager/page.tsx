@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Users, Inbox, Check, Clock, MapPinOff } from "lucide-react";
-import { LeaveApprovalRow } from "@/components/manager/leave-approval-row";
+import { LeaveApprovalRow } from "@/components/features/manager/leave-approval-row";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,

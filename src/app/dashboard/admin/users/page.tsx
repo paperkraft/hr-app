@@ -2,8 +2,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users } from "lucide-react";
 import prisma from "@/lib/prisma";
-import { AddUserDialog } from "@/components/admin/add-user-dialog";
-import { DeleteUserButton } from "@/components/admin/delete-user-button";
+import { AddUserDialog } from "@/components/features/admin/add-user-dialog";
+import { DeleteUserButton } from "@/components/features/admin/delete-user-button";
 
 export const dynamic = 'force-dynamic';
 

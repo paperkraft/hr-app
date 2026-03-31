@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { LeaveApplicationForm } from "@/components/leave/leave-application-form";
+import { LeaveApplicationForm } from "@/components/features/leave/leave-application-form";
 import { CalendarRange } from "lucide-react";
 
 export function RequestLeaveButton() {

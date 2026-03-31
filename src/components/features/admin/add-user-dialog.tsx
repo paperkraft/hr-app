@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { UserPlus, Loader2 } from "lucide-react"
-import { createUser } from "@/app/actions/user"
+import { createUser } from "@/actions/user"
 import {
   Select,
   SelectContent,

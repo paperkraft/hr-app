@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, X, Clock } from "lucide-react";
-import { updateLeaveStatus } from "@/app/actions/leave";
+import { updateLeaveStatus } from "@/actions/leave";
 
 type PendingRequest = {
   id: string;

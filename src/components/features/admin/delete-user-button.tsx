@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Trash2, Loader2, MoreHorizontal } from "lucide-react"
-import { deleteUser } from "@/app/actions/user"
+import { deleteUser } from "@/actions/user"
 import {
   DropdownMenu,
   DropdownMenuContent,

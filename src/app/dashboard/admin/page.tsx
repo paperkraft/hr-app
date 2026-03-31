@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Users, FileText, Activity, ShieldAlert, CheckCircle2, Check } from "lucide-react";
 import prisma from "@/lib/prisma";
-import { LeaveApprovalRow } from "@/components/manager/leave-approval-row";
+import { LeaveApprovalRow } from "@/components/features/manager/leave-approval-row";
 import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 

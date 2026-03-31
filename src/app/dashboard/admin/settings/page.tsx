@@ -1,5 +1,5 @@
-import { getSystemConfig } from "@/app/actions/settings"
-import { SettingsForm } from "@/components/admin/settings-form"
+import { getSystemConfig } from "@/actions/settings"
+import { SettingsForm } from "@/components/features/admin/settings-form"
 
 export const dynamic = 'force-dynamic'
 

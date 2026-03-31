@@ -1,10 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PunchCard } from "@/components/attendance/punch-card";
+import { PunchCard } from "@/components/features/attendance/punch-card";
 import { CalendarDays, AlertCircle, Clock as ClockIcon, CheckCircle2 } from "lucide-react";
-import { RequestLeaveButton } from "@/components/leave/request-leave-button";
-import { LeaveBalanceCard } from "@/components/leave/leave-balance-card";
-import { RecentRequestsCard } from "@/components/leave/recent-requests-card";
+import { RequestLeaveButton } from "@/components/features/leave/request-leave-button";
+import { LeaveBalanceCard } from "@/components/features/leave/leave-balance-card";
+import { RecentRequestsCard } from "@/components/features/leave/recent-requests-card";
 
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";

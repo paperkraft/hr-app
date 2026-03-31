@@ -1,4 +1,4 @@
-import { Home, Users, Calculator, FileText, Settings, ShieldCheck, LayoutDashboard } from "lucide-react";
+import { Home, Users, Calculator, FileText, Settings, ShieldCheck, LayoutDashboard, Building2 } from "lucide-react";
 
 export type NavItem = {
   title: string;
@@ -24,5 +24,12 @@ export const roleNavigation: Record<string, NavItem[]> = {
     { title: "System Overview", href: "/dashboard/admin", icon: LayoutDashboard },
     { title: "Configuration", href: "/dashboard/admin/settings", icon: Settings }, // Added configuration page
     { title: "Directory", href: "/dashboard/admin/users", icon: Users },
+    { title: "Departments", href: "/dashboard/admin/departments", icon: Building2 },
+  ],
+  SYSTEM_ADMIN: [
+    { title: "System Overview", href: "/dashboard/admin", icon: LayoutDashboard },
+    { title: "Configuration", href: "/dashboard/admin/settings", icon: Settings },
+    { title: "Directory", href: "/dashboard/admin/users", icon: Users },
+    { title: "Departments", href: "/dashboard/admin/departments", icon: Building2 },
   ],
 };

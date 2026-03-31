@@ -41,17 +41,16 @@ export function MasterReportTable({ data }: { data: ReportData[] }) {
       <Table>
         <TableHeader className="bg-muted/5">
           <TableRow className="border-border/40 hover:bg-transparent">
-            <TableHead className="h-12 font-semibold text-foreground">Employee Name</TableHead>
-            {/* <TableHead className="h-12 font-semibold text-foreground text-center">Role</TableHead> */}
-            <TableHead className="h-12 font-semibold text-foreground text-center">Days Present</TableHead>
-            <TableHead className="h-12 font-semibold text-foreground text-center">Leaves Taken</TableHead>
-            <TableHead className="h-12 font-semibold text-foreground text-center">Late Marks</TableHead>
-            <TableHead className="h-12 font-semibold text-destructive bg-destructive/5 text-center">LWP (Unpaid)</TableHead>
-            <TableHead className="h-12 font-semibold text-foreground text-center border-l border-border/50">Remaining Full (Pol 1)</TableHead>
-            <TableHead className="h-12 font-semibold text-emerald-600 bg-emerald-500/5 text-center">Encashable (Pol 1)</TableHead>
-            <TableHead className="h-12 font-semibold text-foreground text-center border-l border-border/50">Rem Short</TableHead>
-            <TableHead className="h-12 font-semibold text-foreground text-center">Semi-Annual</TableHead>
-            <TableHead className="h-12 font-semibold text-foreground text-right pr-6">Action</TableHead>
+            <TableHead className="h-10 font-semibold text-foreground">Employees</TableHead>
+            <TableHead className="h-10 font-semibold text-foreground text-center">Present</TableHead>
+            <TableHead className="h-10 font-semibold text-foreground text-center">Leaves Taken</TableHead>
+            <TableHead className="h-10 font-semibold text-foreground text-center">Late Marks</TableHead>
+            <TableHead className="h-10 font-semibold text-destructive bg-destructive/5 text-center">LWP (Unpaid)</TableHead>
+            <TableHead className="h-10 font-semibold text-foreground text-center border-l border-border/50">Earned Leaves</TableHead>
+            <TableHead className="h-10 font-semibold text-emerald-600 bg-emerald-500/5 text-center">Encashable</TableHead>
+            <TableHead className="h-10 font-semibold text-foreground text-center border-l border-border/50">Short Leaves</TableHead>
+            <TableHead className="h-10 font-semibold text-foreground text-center">Semi-Annual</TableHead>
+            <TableHead className="h-10 font-semibold text-foreground text-center">Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody className="divide-y divide-border/40">
@@ -70,7 +69,7 @@ export function MasterReportTable({ data }: { data: ReportData[] }) {
                       {row.name}
                       {row.offSiteCount > 0 && (
                         <Badge variant="outline" className="text-rose-600 border-rose-200 bg-rose-50 text-[9px] h-4 flex items-center gap-0.5 px-1 font-bold">
-                          {row.offSiteCount} Outside
+                          {row.offSiteCount} &nbsp;Outside
                         </Badge>
                       )}
                       <Button
@@ -83,11 +82,6 @@ export function MasterReportTable({ data }: { data: ReportData[] }) {
                       </Button>
                     </div>
                   </TableCell>
-                  {/* <TableCell className="text-center">
-                    <Badge variant="secondary" className="text-[10px] uppercase tracking-wider bg-secondary/50">
-                      {row.role}
-                    </Badge>
-                  </TableCell> */}
                   <TableCell className="text-center font-semibold text-foreground">
                     {row.totalPresent}
                   </TableCell>
@@ -111,11 +105,9 @@ export function MasterReportTable({ data }: { data: ReportData[] }) {
                       )}
                     </div>
                   </TableCell>
-
                   <TableCell className="text-center font-bold text-destructive bg-destructive/5">
                     {row.lwpDays > 0 ? row.lwpDays : "0"}
                   </TableCell>
-
                   <TableCell className="text-center font-mono border-l border-border/50">
                     {row.balances.full}
                   </TableCell>
@@ -135,7 +127,7 @@ export function MasterReportTable({ data }: { data: ReportData[] }) {
                       className="h-8 text-[10px] font-bold uppercase tracking-tight"
                       onClick={() => setActiveSplitId(activeSplitId === row.id ? null : row.id)}
                     >
-                      {activeSplitId === row.id ? "Close" : "Adjust Split"}
+                      {activeSplitId === row.id ? "Close" : "Adjust"}
                     </Button>
                   </TableCell>
                 </TableRow>

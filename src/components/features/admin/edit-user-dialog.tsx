@@ -5,8 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { UserPlus, Loader2 } from "lucide-react"
-import { createUser } from "@/actions/user"
+import { Edit2, Loader2 } from "lucide-react"
+import { updateUser } from "@/actions/user"
 import {
   Select,
   SelectContent,
@@ -15,11 +15,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-export function AddUserDialog({ 
+export function EditUserDialog({ 
+  user,
   managers, 
   departments,
   shifts
 }: { 
+  user: any,
   managers: { id: string, name: string | null, email: string }[],
   departments: { id: string, name: string }[],
   shifts: { id: string, name: string }[]
@@ -37,54 +39,53 @@ export function AddUserDialog({
     const data = {
       name: formData.get("name"),
       email: formData.get("email"),
-      password: formData.get("password"),
+      password: formData.get("password") || undefined, // Only update if provided
       role: formData.get("role"),
       managerId: formData.get("managerId") === "none" ? null : formData.get("managerId"),
       departmentId: formData.get("departmentId") === "none" ? null : formData.get("departmentId"),
       shiftId: formData.get("shiftId") === "none" ? null : formData.get("shiftId"),
     }
 
-    const res = await createUser(data)
+    const res = await updateUser(user.id, data)
     setLoading(false)
 
     if (res.success) {
       setOpen(false)
     } else {
-      setError(res.error || "Failed to create user")
+      setError(res.error || "Failed to update user")
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="flex items-center gap-2">
-          <UserPlus className="w-4 h-4" />
-          Add Employee
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+          <Edit2 className="w-4 h-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add New Employee</DialogTitle>
+          <DialogTitle>Edit Employee: {user.name}</DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4 mt-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Name</Label>
-              <Input name="name" required />
+              <Input name="name" defaultValue={user.name || ""} required />
             </div>
             <div className="space-y-2">
               <Label>Email</Label>
-              <Input type="email" name="email" required />
+              <Input type="email" name="email" defaultValue={user.email} required />
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Password</Label>
-            <Input type="password" name="password" required />
+            <Label>New Password (Optional)</Label>
+            <Input type="password" name="password" placeholder="Leave blank to keep current" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Role</Label>
-              <Select name="role" defaultValue="EMPLOYEE" required>
+              <Select name="role" defaultValue={user.role} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
@@ -98,7 +99,7 @@ export function AddUserDialog({
             </div>
             <div className="space-y-2">
               <Label>Department</Label>
-              <Select name="departmentId" defaultValue="none">
+              <Select name="departmentId" defaultValue={user.departmentId || "none"}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a department" />
                 </SelectTrigger>
@@ -114,7 +115,7 @@ export function AddUserDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Shift</Label>
-              <Select name="shiftId" defaultValue="none">
+              <Select name="shiftId" defaultValue={user.shiftId || "none"}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a shift" />
                 </SelectTrigger>
@@ -128,13 +129,13 @@ export function AddUserDialog({
             </div>
             <div className="space-y-2">
               <Label>Assign Manager</Label>
-              <Select name="managerId" defaultValue="none">
+              <Select name="managerId" defaultValue={user.managerId || "none"}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a manager" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">None (Top Level)</SelectItem>
-                  {managers.map(m => (
+                  {managers.filter(m => m.id !== user.id).map(m => (
                     <SelectItem key={m.id} value={m.id}>{m.name || m.email}</SelectItem>
                   ))}
                 </SelectContent>
@@ -144,7 +145,7 @@ export function AddUserDialog({
           {error && <p className="text-sm text-destructive font-medium">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-            Create Account
+            Update Account
           </Button>
         </form>
       </DialogContent>

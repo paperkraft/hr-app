@@ -68,6 +68,12 @@ model Attendance {
   isLate           Boolean   @default(false)
   isLateSpecialCase Boolean   @default(false)
 
+  // Geofencing & Location Tracking
+  lat               Float?
+  lng               Float?
+  ipAddress         String?
+  isOutsideOffice   Boolean   @default(false)
+
   @@unique([userId, date]) // Strict constraint: One attendance record per user per day
 }
 
@@ -117,6 +123,11 @@ model SystemConfig {
   officeStartTime String @default("09:00") // 24h format HH:mm
   officeEndTime   String @default("18:00") // 24h format HH:mm
   graceTimeMinutes Int    @default(15)
+
+  // Geofencing Config
+  officeLat       Float?
+  officeLng       Float?
+  allowedRadiusMeters Int @default(500)
 
   // Future expansion:
   // weekendDays Int[] @default([6, 0]) // 0=Sunday, 6=Saturday

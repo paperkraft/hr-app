@@ -34,7 +34,7 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
   // Fetch all employees/managers along with their Attendance, Balances, and Approved Leaves
   const users = await prisma.user.findMany({
     where: {
-      role: { in: ["EMPLOYEE", "MANAGER"] }
+      role: { in: ["EMPLOYEE", "MANAGER", "ACCOUNTANT"] }
     },
     include: {
       attendances: {
@@ -109,7 +109,8 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
         full: remainingFull,
         short: balance?.remainingShort ?? 0,
         semiAnnual: balance?.semiAnnualRemaining ?? 0,
-      }
+      },
+      offSiteCount: attendances.filter(a => a.isOutsideOffice).length
     };
   });
 

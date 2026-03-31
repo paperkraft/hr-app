@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Settings2 } from "lucide-react";
+import { Settings2, MapPinOff } from "lucide-react";
 import { SplitActionRow } from "./split-action-row";
 
 type ReportData = {
@@ -29,6 +29,7 @@ type ReportData = {
     short: number;
     semiAnnual: number;
   };
+  offSiteCount: number;
 };
 
 export function MasterReportTable({ data }: { data: ReportData[] }) {
@@ -65,6 +66,12 @@ export function MasterReportTable({ data }: { data: ReportData[] }) {
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       {row.name}
+                      {row.offSiteCount > 0 && (
+                        <Badge variant="outline" className="text-rose-600 border-rose-200 bg-rose-50 text-[9px] h-4 flex items-center gap-0.5 px-1 font-bold">
+                          <MapPinOff className="size-2.5" />
+                          {row.offSiteCount} Off-site
+                        </Badge>
+                      )}
                       <Button 
                         variant="ghost" 
                         size="icon" 

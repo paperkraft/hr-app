@@ -13,6 +13,9 @@ interface SettingsFormProps {
     officeStartTime: string;
     officeEndTime: string;
     graceTimeMinutes: number;
+    officeLat?: number;
+    officeLng?: number;
+    allowedRadiusMeters?: number;
   }
 }
 
@@ -75,18 +78,12 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                 required
               />
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Grace Period Card */}
-        <Card className="shadow-sm border-border/40 p-0">
-          <CardHeader className="p-4">
-            <CardTitle>Grace Period</CardTitle>
-            <CardDescription>Tolerance limit for monthly late marks.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6 pb-4">
-            <div className="space-y-2">
-              <Label htmlFor="graceTime">Allowed Minutes (After Start)</Label>
+            <div className="space-y-2 pt-3 border-t border-border/40">
+              <Label htmlFor="graceTime" className="text-sm font-semibold flex items-center gap-1">
+                <Timer className="size-4" />
+                Grace Period (Minutes)
+              </Label>
               <div className="flex items-center gap-3">
                 <Input
                   id="graceTime"
@@ -95,13 +92,79 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                   max="120"
                   value={formData.graceTimeMinutes}
                   onChange={(e) => setFormData(prev => ({ ...prev, graceTimeMinutes: parseInt(e.target.value) || 0 }))}
-                  className="h-11 bg-muted/20 border-border focus:ring-primary/20 text-center font-bold"
+                  className="h-10"
                   required
                 />
-                <span className="text-sm font-medium text-muted-foreground">minutes</span>
               </div>
-              <p className="text-[10px] text-muted-foreground/60 italic mt-2">
+              <p className="text-[10px] text-muted-foreground/60 italic mt-1">
                 Employees punching in after {formData.officeStartTime} + {formData.graceTimeMinutes}m will be marked as "Late".
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm border-border/40 p-0">
+          <CardHeader className="p-4">
+            <CardTitle>Geofencing (Location tracking)</CardTitle>
+            <CardDescription>Flag punches made outside the office radius.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 pb-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="officeLat">Office Latitude</Label>
+                <Input
+                  id="officeLat"
+                  type="number"
+                  step="any"
+                  placeholder="e.g. 23.0225"
+                  value={formData.officeLat ?? ""}
+                  onChange={(e) => setFormData(prev => ({ ...prev, officeLat: parseFloat(e.target.value) || undefined }))}
+                  className="h-10 bg-muted/20"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="officeLng">Office Longitude</Label>
+                <Input
+                  id="officeLng"
+                  type="number"
+                  step="any"
+                  placeholder="e.g. 72.5714"
+                  value={formData.officeLng ?? ""}
+                  onChange={(e) => setFormData(prev => ({ ...prev, officeLng: parseFloat(e.target.value) || undefined }))}
+                  className="h-10 bg-muted/20"
+                />
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full text-xs"
+              onClick={() => {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    officeLat: pos.coords.latitude,
+                    officeLng: pos.coords.longitude
+                  }))
+                })
+              }}
+            >
+              Set current location as Office
+            </Button>
+
+            <div className="space-y-2 pt-2">
+              <Label htmlFor="radius">Allowed Radius (Meters)</Label>
+              <Input
+                id="radius"
+                type="number"
+                value={formData.allowedRadiusMeters ?? 500}
+                onChange={(e) => setFormData(prev => ({ ...prev, allowedRadiusMeters: parseInt(e.target.value) || 0 }))}
+                className="h-10 bg-muted/20"
+              />
+              <p className="text-[10px] text-muted-foreground/60 italic">
+                Radius in meters. 500m is recommended for GPS drift.
               </p>
             </div>
           </CardContent>

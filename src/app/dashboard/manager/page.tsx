@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, Inbox, Check, Clock } from "lucide-react";
+import { Users, Inbox, Check, Clock, MapPinOff } from "lucide-react";
 import { LeaveApprovalRow } from "@/components/manager/leave-approval-row";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -69,7 +69,13 @@ async function getTeamData() {
       }
     }
 
-    return { id: member.id, name: member.name || member.email, status, inTime };
+    return { 
+      id: member.id, 
+      name: member.name || member.email, 
+      status, 
+      inTime, 
+      isOutsideOffice: log?.isOutsideOffice ?? false 
+    };
   });
 
   return { pendingRequests, teamStatus };
@@ -185,7 +191,7 @@ export default async function ManagerDashboard() {
                         </div>
                         <span className="font-medium text-sm">{member.name}</span>
                       </div>
-                      <div>
+                      <div className="flex flex-col items-end gap-1">
                         {member.status === "PUNCHED_IN" && (
                           <Badge variant="outline" className="text-emerald-600 bg-emerald-50 border-emerald-200">
                             Working
@@ -200,6 +206,12 @@ export default async function ManagerDashboard() {
                           <Badge variant="outline" className="text-amber-600 bg-amber-50 border-amber-200">
                             Not Clocked In
                           </Badge>
+                        )}
+                        {member.isOutsideOffice && (
+                          <div className="flex items-center gap-1 text-[10px] text-rose-500 font-bold bg-rose-50 px-1.5 py-0.5 rounded border border-rose-100 italic">
+                            <MapPinOff className="size-2.5" />
+                            Off-site
+                          </div>
                         )}
                       </div>
                     </div>

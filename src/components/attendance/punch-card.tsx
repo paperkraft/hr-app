@@ -25,12 +25,33 @@ export function PunchCard({ initialStatus }: { initialStatus: "PENDING" | "PUNCH
   const handlePunch = () => {
     // Determine target state
     const targetStatus = status === "PENDING" ? "PUNCHED_IN" : "PUNCHED_OUT";
-    setStatus(targetStatus); // Optimistic Update
-
+    
     startTransition(async () => {
-      const result = await punchInOutAction();
-      if (!result.success) {
-        setStatus(initialStatus); // Revert on failure
+      let coords = undefined;
+      
+      try {
+        // Request location
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+          });
+        });
+        
+        coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+      } catch (err) {
+        console.warn("Location access denied or unavailable:", err);
+        // We continue anyway as per "Flag only, don't block" policy
+      }
+
+      const result = await punchInOutAction(coords);
+      if (result.success) {
+        setStatus(targetStatus);
+      } else {
         console.error(result.error);
         alert("Failed to record punch: " + result.error);
       }

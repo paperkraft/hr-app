@@ -16,7 +16,10 @@ export default async function SettingsPage() {
       <SettingsForm initialData={{
         officeStartTime: config.officeStartTime,
         officeEndTime: config.officeEndTime,
-        graceTimeMinutes: config.graceTimeMinutes
+        graceTimeMinutes: config.graceTimeMinutes,
+        officeLat: config.officeLat ?? undefined,
+        officeLng: config.officeLng ?? undefined,
+        allowedRadiusMeters: config.allowedRadiusMeters
       }} />
     </div>
   )

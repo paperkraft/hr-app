@@ -28,6 +28,9 @@ export async function updateSystemConfig(data: {
   officeStartTime: string;
   officeEndTime: string;
   graceTimeMinutes: number;
+  officeLat?: number;
+  officeLng?: number;
+  allowedRadiusMeters?: number;
 }) {
   const session = await getServerSession(authOptions)
   
@@ -42,6 +45,9 @@ export async function updateSystemConfig(data: {
         officeStartTime: data.officeStartTime,
         officeEndTime: data.officeEndTime,
         graceTimeMinutes: data.graceTimeMinutes,
+        officeLat: data.officeLat,
+        officeLng: data.officeLng,
+        allowedRadiusMeters: data.allowedRadiusMeters,
       },
     })
     

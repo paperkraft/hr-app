@@ -2,6 +2,15 @@
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+
+async function authorizeAdmin() {
+  const session = await getServerSession(authOptions)
+  if (!session || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
+    throw new Error("Unauthorized. Admin access required.")
+  }
+}
 
 export async function getDepartments() {
   try {
@@ -28,6 +37,7 @@ export async function getDepartments() {
 
 export async function updateDepartmentLeader(departmentId: string, leaderId: string | null) {
   try {
+    await authorizeAdmin()
     await prisma.department.update({
       where: { id: departmentId },
       data: {
@@ -43,6 +53,7 @@ export async function updateDepartmentLeader(departmentId: string, leaderId: str
 
 export async function createDepartment(name: string) {
   try {
+    await authorizeAdmin()
     await prisma.department.create({
       data: { name }
     })
@@ -55,6 +66,7 @@ export async function createDepartment(name: string) {
 
 export async function deleteDepartment(id: string) {
   try {
+    await authorizeAdmin()
     await prisma.department.delete({
       where: { id }
     })

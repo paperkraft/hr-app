@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { ExportLedgerButton } from "@/components/features/accountant/export-ledger-button";
 import { MasterReportTable } from "@/components/features/accountant/master-report-table";
 import { MonthYearPicker } from "@/components/features/accountant/month-year-picker";
+import { ensureBalance } from "@/actions/leave";
 
 export const dynamic = 'force-dynamic';
 
@@ -31,7 +32,19 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
   const startOfMonth = new Date(currentYear, currentMonth - 1, 1, 0, 0, 0, 0);
   const endOfMonth = new Date(currentYear, currentMonth, 0, 23, 59, 59, 999);
 
-  // Fetch all employees/managers along with their Attendance, Balances, and Approved Leaves
+  // 1. Fetch all relevant users
+  const usersToProcess = await prisma.user.findMany({
+    where: {
+      role: { in: ["EMPLOYEE", "MANAGER", "ACCOUNTANT"] }
+    },
+    select: { id: true }
+  });
+
+  // 2. Ensure everyone has a balance for this specific month/year
+  // This handles the "initialization" for the new month for everyone at once.
+  await Promise.all(usersToProcess.map(u => ensureBalance(u.id, currentMonth, currentYear)));
+
+  // 3. Now fetch the full data including the newly ensured balances
   const users = await prisma.user.findMany({
     where: {
       role: { in: ["EMPLOYEE", "MANAGER", "ACCOUNTANT"] }

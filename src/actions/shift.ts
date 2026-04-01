@@ -2,6 +2,15 @@
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+
+async function authorizeAdmin() {
+  const session = await getServerSession(authOptions)
+  if (!session || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
+    throw new Error("Unauthorized. Admin access required.")
+  }
+}
 
 export async function getShifts() {
   try {
@@ -21,6 +30,7 @@ export async function getShifts() {
 
 export async function createShift(data: { name: string, startTime: string, endTime: string }) {
   try {
+    await authorizeAdmin()
     await prisma.shift.create({
       data
     })
@@ -33,6 +43,7 @@ export async function createShift(data: { name: string, startTime: string, endTi
 
 export async function updateShift(id: string, data: { name: string, startTime: string, endTime: string }) {
   try {
+    await authorizeAdmin()
     await prisma.shift.update({
       where: { id },
       data
@@ -46,6 +57,7 @@ export async function updateShift(id: string, data: { name: string, startTime: s
 
 export async function deleteShift(id: string) {
   try {
+    await authorizeAdmin()
     // Check if shift has users
     const shift = await prisma.shift.findUnique({
       where: { id },

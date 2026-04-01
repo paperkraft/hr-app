@@ -12,6 +12,7 @@ const proxy = withAuth(
       if (!token) return NextResponse.redirect(new URL("/login", req.url));
       
       switch (token.role) {
+        case "SYSTEM_ADMIN":
         case "ADMIN":
           return NextResponse.redirect(new URL("/dashboard/admin", req.url));
         case "MANAGER":
@@ -26,19 +27,20 @@ const proxy = withAuth(
 
     // 2. Role-Based Access Control (RBAC)
     // Securely prevent users from accessing routes they don't have permissions for
+    const isAdmin = token?.role === "ADMIN" || token?.role === "SYSTEM_ADMIN";
     
-    // Protect Manager Routes (Allow only Manager and Admin)
-    if (path.startsWith("/dashboard/manager") && token?.role !== "MANAGER" && token?.role !== "ADMIN") {
+    // Protect Manager Routes (Allow Manager, Admin, and System Admin)
+    if (path.startsWith("/dashboard/manager") && token?.role !== "MANAGER" && !isAdmin) {
       return NextResponse.redirect(new URL("/dashboard/employee", req.url));
     }
 
-    // Protect Accountant Routes (Allow only Accountant and Admin)
-    if (path.startsWith("/dashboard/accountant") && token?.role !== "ACCOUNTANT" && token?.role !== "ADMIN") {
+    // Protect Accountant Routes (Allow Accountant, Admin, and System Admin)
+    if (path.startsWith("/dashboard/accountant") && token?.role !== "ACCOUNTANT" && !isAdmin) {
       return NextResponse.redirect(new URL("/dashboard/employee", req.url));
     }
 
-    // Protect Admin Routes (Strict - Allow ONLY Admin)
-    if (path.startsWith("/dashboard/admin") && token?.role !== "ADMIN") {
+    // Protect Admin Routes (Strict - Allow Admin and System Admin)
+    if (path.startsWith("/dashboard/admin") && !isAdmin) {
       return NextResponse.redirect(new URL("/dashboard/employee", req.url));
     }
   },

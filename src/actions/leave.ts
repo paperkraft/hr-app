@@ -48,14 +48,14 @@ async function getCyclePendingDays(userId: string, cycleStart: Date, cycleEnd: D
   return pendingRequests.reduce((acc, req) => acc + getDaysDifference(req.startDate, req.endDate), 0);
 }
 
-export async function ensureBalance(userId: string, month: number, year: number) {
+export async function ensureBalance(userId: string, month: number, year: number): Promise<any> {
   const existing = await prisma.leaveBalance.findUnique({
     where: { userId_month_year: { userId, month, year } }
   });
 
   if (existing) return existing;
 
-  // 1. Find the most recent existing balance record before the target month/year
+  // 1. Find the MOST RECENT existing balance record
   const lastRecord = await prisma.leaveBalance.findFirst({
     where: {
       userId,
@@ -74,12 +74,12 @@ export async function ensureBalance(userId: string, month: number, year: number)
   let semiAnnualRemaining = 3;
 
   if (lastRecord) {
-    // Determine if the records are consecutive
-    const isConsecutive = (lastRecord.year === year && lastRecord.month === month - 1) ||
-                          (lastRecord.year === year - 1 && lastRecord.month === 12 && month === 1);
+    // Check if the last record is the IMMEDIATE previous month
+    const isPreviousMonth = (lastRecord.year === year && lastRecord.month === month - 1) ||
+                            (lastRecord.year === year - 1 && lastRecord.month === 12 && month === 1);
 
-    if (isConsecutive) {
-      // Rule: Max 1 day carry forward, if any balance (R > 0), up to 1.0.
+    if (isPreviousMonth) {
+      // Direct carry forward: min(remaining, 1.0)
       carryForward = Math.min(lastRecord.remainingFull, 1.0);
       
       // Update the previous month's record with its calculated CF and Encashment for descriptive accuracy
@@ -91,10 +91,22 @@ export async function ensureBalance(userId: string, month: number, year: number)
         }
       });
     } else {
-      // If there's a gap, the intermediate month started with 2.0+CF and ended with >= 2.0
-      // provided no leaves were taken (which is true if no record exists).
-      // So it carries exactly 1.0 forward.
-      carryForward = 1.0;
+      // There is a GAP. We must recursively ensure the PREVIOUS month exists first!
+      const prevMonth = month === 1 ? 12 : month - 1;
+      const prevYear = month === 1 ? year - 1 : year;
+      
+      // Creating the previous month's record will also handle the carry-forward logic for us!
+      const createdPrev = await ensureBalance(userId, prevMonth, prevYear);
+      carryForward = Math.min(createdPrev.remainingFull, 1.0);
+      
+      // Update the previous month's record
+      await prisma.leaveBalance.update({
+        where: { id: createdPrev.id },
+        data: {
+          carriedForward: carryForward,
+          encashed: Math.max(0, createdPrev.remainingFull - carryForward)
+        }
+      });
     }
 
     // Semi-annual cycle logic: Cycle 1 (Apr-Sep), Cycle 2 (Oct-Mar)
@@ -108,7 +120,12 @@ export async function ensureBalance(userId: string, month: number, year: number)
     const lastRecordCycle = getCycleKey(lastRecord.month, lastRecord.year);
 
     if (targetCycle === lastRecordCycle) {
-      semiAnnualRemaining = lastRecord.semiAnnualRemaining;
+      // Note: If we just created the prev month via ensureBalance, 
+      // the semiAnnualRemaining will be correct in that record.
+      const freshPrev = await prisma.leaveBalance.findFirst({
+        where: { userId, month: (month === 1 ? 12 : month - 1), year: (month === 1 ? year - 1 : year) }
+      });
+      semiAnnualRemaining = freshPrev?.semiAnnualRemaining ?? lastRecord.semiAnnualRemaining;
     }
   }
 
@@ -126,7 +143,7 @@ export async function ensureBalance(userId: string, month: number, year: number)
       }
     });
   } catch (e) {
-    // Handle race condition
+    // Handle race condition if two processes try to ensure balance at once
     return await prisma.leaveBalance.findUniqueOrThrow({
       where: { userId_month_year: { userId, month, year } }
     });
@@ -257,7 +274,7 @@ export async function submitLeaveRequest(formData: unknown) {
 
 export async function updateLeaveStatus(requestId: string, status: "APPROVED" | "REJECTED", note?: string) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || (session.user.role !== "MANAGER" && session.user.role !== "ADMIN")) {
+  if (!session?.user?.id || (session.user.role !== "MANAGER" && session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
     return { error: "Unauthorized. Managers or Admins only." };
   }
 

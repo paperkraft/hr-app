@@ -4,11 +4,22 @@ import prisma from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { revalidatePath } from "next/cache"
 import { Role } from "@prisma/client"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { ensureBalance } from "./leave"
+
+async function authorizeAdmin() {
+  const session = await getServerSession(authOptions)
+  if (!session || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
+    throw new Error("Unauthorized. Admin access required.")
+  }
+}
 
 export async function createUser(data: any) {
   try {
+    await authorizeAdmin()
     const hashedPassword = await bcrypt.hash(data.password, 10)
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         name: data.name,
         email: data.email,
@@ -17,14 +28,14 @@ export async function createUser(data: any) {
         managerId: data.managerId || null,
         departmentId: data.departmentId || null,
         shiftId: data.shiftId || null,
-        leaveBalances: {
-          create: {
-            month: new Date().getMonth() + 1,
-            year: new Date().getFullYear(),
-          }
-        }
       }
     })
+
+    // Initialize balance for current month
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    await ensureBalance(user.id, currentMonth, currentYear);
+
     revalidatePath("/dashboard/admin/users")
     return { success: true }
   } catch (error: any) {
@@ -34,6 +45,7 @@ export async function createUser(data: any) {
 
 export async function updateUser(id: string, data: any) {
   try {
+    await authorizeAdmin()
     const updateData: any = {
       name: data.name,
       email: data.email,
@@ -60,6 +72,13 @@ export async function updateUser(id: string, data: any) {
 
 export async function deleteUser(id: string) {
   try {
+    await authorizeAdmin()
+    // Prevent self-deletion
+    const session = await getServerSession(authOptions)
+    if (session?.user.id === id) {
+      return { success: false, error: "You cannot delete your own account." }
+    }
+
     await prisma.user.delete({
       where: { id }
     })

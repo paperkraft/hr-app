@@ -10,6 +10,7 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getTodayRange } from "@/lib/attendance-helper";
+import { ensureBalance } from "@/actions/leave";
 
 export const dynamic = 'force-dynamic';
 
@@ -28,15 +29,8 @@ async function getEmployeeData() {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
 
-  const balances = await prisma.leaveBalance.findUnique({
-    where: {
-      userId_month_year: {
-        userId: session.user.id,
-        month: currentMonth,
-        year: currentYear
-      }
-    }
-  });
+  // This will automatically create the record if it doesn't exist (e.g. start of new month)
+  const balances = await ensureBalance(session.user.id, currentMonth, currentYear);
 
   // 1. Fetch exactly today's log using strict boundaries to guarantee state accuracy
   const { start, end } = getTodayRange();

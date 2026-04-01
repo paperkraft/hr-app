@@ -34,7 +34,7 @@ export async function updateSystemConfig(data: {
 }) {
   const session = await getServerSession(authOptions)
   
-  if (!session || session.user.role !== "ADMIN") {
+  if (!session || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
     return { error: "Unauthorized access only for administrators." }
   }
 

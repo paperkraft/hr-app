@@ -22,11 +22,33 @@ async function getTeamData() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return { pendingRequests: [], teamStatus: [] };
 
-  // 1. Get Pending Team Leaves
+  // 1. Identify all supervised employees
+  // A manager supervises:
+  // - Direct reports (via managerId)
+  // - Department members (if they are the Team Leader)
+  
+  const managedDepts = await prisma.department.findMany({
+    where: { teamLeaderId: session.user.id },
+    select: { id: true }
+  });
+
+  const supervisedUsers = await prisma.user.findMany({
+    where: {
+      OR: [
+        { managerId: session.user.id },
+        { departmentId: { in: managedDepts.map(d => d.id) } }
+      ]
+    },
+    select: { id: true, name: true, email: true }
+  });
+
+  const supervisedUserIds = supervisedUsers.map(u => u.id);
+
+  // 2. Get Pending Leave Requests for these users
   const requests = await prisma.leaveRequest.findMany({
     where: {
       status: "PENDING",
-      user: { managerId: session.user.id }
+      userId: { in: supervisedUserIds }
     },
     include: { user: true },
     orderBy: { createdAt: 'asc' }
@@ -44,21 +66,16 @@ async function getTeamData() {
     endTime: req.endTime,
   }));
 
-  // 2. Build Team Live Attendance Status
-  const team = await prisma.user.findMany({
-    where: { managerId: session.user.id },
-    select: { id: true, name: true, email: true }
-  });
-
+  // 3. Build Team Live Attendance Status
   const { start, end } = getTodayRange();
   const todayLogs = await prisma.attendance.findMany({
     where: {
-      userId: { in: team.map(t => t.id) },
+      userId: { in: supervisedUserIds },
       date: { gte: start, lte: end }
     }
   });
 
-  const teamStatus = team.map(member => {
+  const teamStatus = supervisedUsers.map(member => {
     const log = todayLogs.find(l => l.userId === member.id);
     let status = "PENDING";
     let inTime = null;

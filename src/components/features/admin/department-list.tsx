@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 
+import { toast } from "sonner"
+
 export function DepartmentList({
   departments,
   users
@@ -29,7 +31,9 @@ export function DepartmentList({
     setLoading(null)
 
     if (!res.success) {
-      alert(res.error)
+      toast.error(res.error)
+    } else {
+      toast.success("Team leader updated successfully")
     }
   }
 
@@ -38,7 +42,9 @@ export function DepartmentList({
 
     const res = await deleteDepartment(id)
     if (!res.success) {
-      alert(res.error)
+      toast.error(res.error)
+    } else {
+      toast.success("Department deleted")
     }
   }
 

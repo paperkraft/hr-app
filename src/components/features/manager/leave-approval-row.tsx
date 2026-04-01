@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, X, Clock } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { updateLeaveStatus } from "@/actions/leave";
+import { toast } from "sonner";
 
 type PendingRequest = {
   id: string;
@@ -27,12 +28,13 @@ export function LeaveApprovalRow({ request }: { request: PendingRequest }) {
     try {
       const result = await updateLeaveStatus(request.id, action, rejectionNote);
       if (result.error) {
-        alert(result.error);
+        toast.error(result.error);
       } else {
+        toast.success(`Request ${action.toLowerCase()} successfully`);
         setIsRejecting(false);
       }
     } catch (err) {
-      alert("An unexpected error occurred.");
+      toast.error("An unexpected error occurred.");
     } finally {
       setIsProcessing(false);
     }

@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
 
-// Inter is highly legible and perfect for professional dashboards
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
   display: "swap",
 });
 
-// JetBrains Mono gives a clean, modern look for any tabular data or code
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
@@ -29,12 +28,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      // Added light tracking (letter-spacing) adjustment for a cleaner look
       className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased tracking-tight`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground selection:bg-primary/20 selection:text-primary">
         {children}
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

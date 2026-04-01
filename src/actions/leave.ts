@@ -274,17 +274,40 @@ export async function submitLeaveRequest(formData: unknown) {
 
 export async function updateLeaveStatus(requestId: string, status: "APPROVED" | "REJECTED", note?: string) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || (session.user.role !== "MANAGER" && session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
-    return { error: "Unauthorized. Managers or Admins only." };
-  }
+  if (!session?.user?.id) return { error: "Login required." };
+
+  const { id: currentUserId, role, isTeamLeader } = session.user as any;
+  const isAdmin = role === "ADMIN" || role === "SYSTEM_ADMIN";
 
   try {
     const requestMeta = await prisma.leaveRequest.findUnique({ 
-      where: { id: requestId } 
+      where: { id: requestId },
+      include: { user: { select: { id: true, managerId: true, departmentId: true } } }
     });
 
     if (!requestMeta) return { error: "Request not found." };
     if (requestMeta.status !== "PENDING") return { success: true };
+
+    // Authorization logic
+    const isDirectManager = requestMeta.user.managerId === currentUserId;
+    let isDeptLeader = false;
+
+    if (isTeamLeader && requestMeta.user.departmentId) {
+      const dept = await prisma.department.findUnique({
+        where: { id: requestMeta.user.departmentId },
+        select: { teamLeaderId: true }
+      });
+      isDeptLeader = dept?.teamLeaderId === currentUserId;
+    }
+
+    if (!isAdmin && role !== "MANAGER" && !isDeptLeader) {
+      return { error: "Unauthorized. Managers or Team Leaders only." };
+    }
+
+    // Additional check for Managers/Leaders: ensure they supervise this specific user
+    if (!isAdmin && !isDirectManager && !isDeptLeader) {
+       return { error: "Unauthorized. You do not supervise this employee's leave requests." };
+    }
 
     const month = requestMeta.startDate.getMonth() + 1;
     const year = requestMeta.startDate.getFullYear();

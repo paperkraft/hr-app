@@ -5,6 +5,7 @@ import { punchInOutAction } from "@/actions/attendance";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, CheckCircle2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export function PunchCard({ initialStatus }: { initialStatus: "PENDING" | "PUNCHED_IN" | "PUNCHED_OUT" }) {
   const [status, setStatus] = useState(initialStatus);
@@ -51,9 +52,10 @@ export function PunchCard({ initialStatus }: { initialStatus: "PENDING" | "PUNCH
       const result = await punchInOutAction(coords);
       if (result.success) {
         setStatus(targetStatus);
+        toast.success(`Punched ${targetStatus === "PUNCHED_IN" ? "in" : "out"} successfully`);
       } else {
         console.error(result.error);
-        alert("Failed to record punch: " + result.error);
+        toast.error("Failed to record punch: " + result.error);
       }
     });
   };

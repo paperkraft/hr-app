@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Clock, Plus, Trash2, Edit2, Loader2, Save, X } from "lucide-react"
 import { createShift, updateShift, deleteShift } from "@/actions/shift"
+import { toast } from "sonner"
 
 export function ShiftManagement({ initialShifts }: { initialShifts: any[] }) {
   const [shifts, setShifts] = useState(initialShifts)
@@ -21,12 +22,13 @@ export function ShiftManagement({ initialShifts }: { initialShifts: any[] }) {
     setLoading("new")
     const res = await createShift(formData)
     if (res.success) {
+      toast.success("Shift created successfully")
       setIsAdding(false)
       setFormData({ name: "", startTime: "09:00", endTime: "18:00" })
       // Page will revalidate, but we can also update local state if needed
       window.location.reload() 
     } else {
-      alert(res.error)
+      toast.error(res.error)
     }
     setLoading(null)
   }
@@ -35,10 +37,11 @@ export function ShiftManagement({ initialShifts }: { initialShifts: any[] }) {
     setLoading(id)
     const res = await updateShift(id, formData)
     if (res.success) {
+      toast.success("Shift updated successfully")
       setEditingId(null)
       window.location.reload()
     } else {
-      alert(res.error)
+      toast.error(res.error)
     }
     setLoading(null)
   }
@@ -48,8 +51,9 @@ export function ShiftManagement({ initialShifts }: { initialShifts: any[] }) {
     setLoading(id)
     const res = await deleteShift(id)
     if (!res.success) {
-      alert(res.error)
+      toast.error(res.error)
     } else {
+      toast.success("Shift deleted successfully")
       window.location.reload()
     }
     setLoading(null)

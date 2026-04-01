@@ -28,26 +28,31 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
   const currentYear = reqYear || now.getFullYear();
   const currentMonth = reqMonth || now.getMonth() + 1; // 1-12
 
-  // Calculate boundaries for the current month
+  // Boundaries for current month
   const startOfMonth = new Date(currentYear, currentMonth - 1, 1, 0, 0, 0, 0);
   const endOfMonth = new Date(currentYear, currentMonth, 0, 23, 59, 59, 999);
 
-  // 1. Fetch all relevant users
+  // Boundaries for previous month (to get Carry Forward)
+  const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+  const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+
+  // 1. Fetch only users who existed on or before the end of this month
   const usersToProcess = await prisma.user.findMany({
     where: {
-      role: { in: ["EMPLOYEE", "MANAGER", "ACCOUNTANT"] }
+      role: { in: ["EMPLOYEE", "MANAGER", "ACCOUNTANT"] },
+      createdAt: { lte: endOfMonth }
     },
     select: { id: true }
   });
 
   // 2. Ensure everyone has a balance for this specific month/year
-  // This handles the "initialization" for the new month for everyone at once.
   await Promise.all(usersToProcess.map(u => ensureBalance(u.id, currentMonth, currentYear)));
 
-  // 3. Now fetch the full data including the newly ensured balances
+  // 3. Now fetch the full data for those users (and their prev month balance)
   const users = await prisma.user.findMany({
     where: {
-      role: { in: ["EMPLOYEE", "MANAGER", "ACCOUNTANT"] }
+      role: { in: ["EMPLOYEE", "MANAGER", "ACCOUNTANT"] },
+      createdAt: { lte: endOfMonth }
     },
     include: {
       attendances: {
@@ -57,8 +62,10 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
       },
       leaveBalances: {
         where: {
-          month: currentMonth,
-          year: currentYear
+          OR: [
+            { month: currentMonth, year: currentYear },
+            { month: prevMonth, year: prevYear }
+          ]
         }
       },
       leaveRequests: {
@@ -77,7 +84,8 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
 
   const reportData = users.map(user => {
     const attendances = user.attendances;
-    const balance = user.leaveBalances[0];
+    const currentBalance = user.leaveBalances.find(lb => lb.month === currentMonth && lb.year === currentYear);
+    const prevBalance = user.leaveBalances.find(lb => lb.month === prevMonth && lb.year === prevYear);
 
     // Calculate counts
     const totalLate = attendances.filter(a => a.isLate).length;
@@ -103,8 +111,8 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
       }
     });
 
-    // Policy 1 Initial Balances (2.0 baseline + any carried forward)
-    const initialFull = 2.0 + (balance?.carriedForward ?? 0);
+    // Policy 1 Initial Balances (2.0 baseline + any carried forward FROM PREVIOUS MONTH)
+    const initialFull = 2.0 + (prevBalance?.carriedForward ?? 0);
     const initialShort = 1;
 
     // Automatic LWP if usage exceeds balance
@@ -131,7 +139,7 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
     const lwpDays = autoLwpFull + autoLwpShort + explicitLwp + lateDeduction;
     totalLwpSystemWide += lwpDays;
 
-    const remainingFull = balance?.remainingFull ?? 0;
+    const remainingFull = currentBalance?.remainingFull ?? 0;
     const encashableDays = remainingFull > 1 ? (remainingFull - 1) : 0;
     totalEncashments += encashableDays;
 
@@ -148,8 +156,8 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
       encashableDays,
       balances: {
         full: remainingFull,
-        short: balance?.remainingShort ?? 0,
-        semiAnnual: balance?.semiAnnualRemaining ?? 0,
+        short: currentBalance?.remainingShort ?? 0,
+        semiAnnual: currentBalance?.semiAnnualRemaining ?? 0,
       },
       offSiteCount: attendances.filter(a => a.isOutsideOffice).length
     };

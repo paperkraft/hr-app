@@ -263,7 +263,11 @@ export default async function AccountantDashboard({
           <CardDescription>Consolidated data required for end-of-month salary calculations.</CardDescription>
         </CardHeader>
         <CardContent className="p-4 pt-0">
-          <MasterReportTable data={reportData} />
+          <MasterReportTable 
+            data={reportData} 
+            month={stats.currentMonth} 
+            year={stats.currentYear} 
+          />
         </CardContent>
       </Card>
 

@@ -11,32 +11,56 @@ export async function processLeaveSplit(formData: unknown) {
     return { error: parsed.error.errors[0].message };
   }
 
-  const { userId, carriedForward, encashed } = parsed.data;
-  const currentMonth = new Date().getMonth() + 1;
-  const currentYear = new Date().getFullYear();
+  const { userId, month, year, carriedForward, encashed } = parsed.data;
 
   try {
-    // Wrap in a transaction to ensure data integrity
-    await prisma.$transaction(async (tx) => {
-      // 1. Fetch the previous month's balance to mark it as processed (optional, based on your exact schema)
-      // 2. Update the CURRENT month's newly generated balance with the finalized split
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Fetch and update the TARGET month's record (e.g., April)
+      const currentRecord = await tx.leaveBalance.findUnique({
+        where: { userId_month_year: { userId, month, year } }
+      });
+
+      if (!currentRecord) throw new Error("Current month balance record not found.");
+
       await tx.leaveBalance.update({
-        where: {
-          userId_month_year: { userId, month: currentMonth, year: currentYear }
-        },
+        where: { id: currentRecord.id },
         data: {
           carriedForward: carriedForward,
           encashed: encashed,
-          // Reset the remaining full to the standard 2.0 + whatever was carried forward
-          remainingFull: 2.0 + carriedForward, 
         }
       });
+
+      // 2. Identify the SUBSEQUENT month (e.g., May)
+      const nextMonth = month === 12 ? 1 : month + 1;
+      const nextYear = month === 12 ? year + 1 : year;
+
+      const nextRecord = await tx.leaveBalance.findUnique({
+        where: { userId_month_year: { userId, month: nextMonth, year: nextYear } }
+      });
+
+      if (nextRecord) {
+        const oldCF = nextRecord.carriedForward;
+        const diff = carriedForward - oldCF;
+
+        if (diff !== 0) {
+          await tx.leaveBalance.update({
+            where: { id: nextRecord.id },
+            data: {
+              carriedForward: carriedForward,
+              remainingFull: { increment: diff }
+            }
+          });
+        }
+      }
+
+      return { success: true };
     });
 
     revalidatePath("/dashboard/accountant");
-    return { success: true };
-  } catch (error) {
+    revalidatePath("/dashboard/employee");
+    return result;
+  } catch (error: any) {
     console.error("Split processing error:", error);
-    return { error: "Failed to process the leave balance split." };
+    return { error: "Failed to process the leave balance split: " + error.message };
   }
 }

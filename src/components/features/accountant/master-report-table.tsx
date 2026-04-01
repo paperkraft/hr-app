@@ -33,7 +33,15 @@ type ReportData = {
   offSiteCount: number;
 };
 
-export function MasterReportTable({ data }: { data: ReportData[] }) {
+export function MasterReportTable({
+  data,
+  month,
+  year
+}: {
+  data: ReportData[];
+  month: number;
+  year: number;
+}) {
   const [activeSplitId, setActiveSplitId] = useState<string | null>(null);
 
   return (
@@ -46,7 +54,7 @@ export function MasterReportTable({ data }: { data: ReportData[] }) {
             <TableHead className="h-10 font-semibold text-foreground text-center">Leaves Taken</TableHead>
             <TableHead className="h-10 font-semibold text-foreground text-center">Late Marks</TableHead>
             <TableHead className="h-10 font-semibold text-destructive bg-destructive/5 text-center">LWP (Unpaid)</TableHead>
-            <TableHead className="h-10 font-semibold text-foreground text-center border-l border-border/50">Earned Leaves</TableHead>
+            <TableHead className="h-10 font-semibold text-foreground text-center border-l border-border/50">Monthly Leaves</TableHead>
             <TableHead className="h-10 font-semibold text-emerald-600 bg-emerald-500/5 text-center">Encashable</TableHead>
             <TableHead className="h-10 font-semibold text-foreground text-center border-l border-border/50">Short Leaves</TableHead>
             <TableHead className="h-10 font-semibold text-foreground text-center">Semi-Annual</TableHead>
@@ -139,6 +147,8 @@ export function MasterReportTable({ data }: { data: ReportData[] }) {
                       name: row.name,
                       remainingBalance: row.balances.full
                     }}
+                    month={month}
+                    year={year}
                     onSuccess={() => {
                       setTimeout(() => setActiveSplitId(null), 2000);
                     }}

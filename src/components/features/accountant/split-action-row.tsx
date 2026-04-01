@@ -16,9 +16,13 @@ type EmployeePendingSplit = {
 
 export function SplitActionRow({ 
   employee, 
+  month,
+  year,
   onSuccess 
 }: { 
   employee: { userId: string; name: string; remainingBalance: number };
+  month: number;
+  year: number;
   onSuccess?: () => void;
 }) {
   // Policy Change: Carry forward is strictly capped at 1.0 day max.
@@ -64,6 +68,8 @@ export function SplitActionRow({
     
     const payload = {
       userId: employee.userId,
+      month,
+      year,
       remainingBalance: employee.remainingBalance,
       carriedForward: carryForward,
       encashed: encashment,
@@ -71,11 +77,12 @@ export function SplitActionRow({
 
     const result = await processLeaveSplit(payload);
     
-    if (result.success) {
+    if ('success' in result && result.success) {
       setIsSuccess(true);
       if (onSuccess) onSuccess();
     } else {
-      setError(result.error || "Failed to process the leave balance split.");
+      const errorMsg = 'error' in result ? result.error : "Failed to process the leave balance split.";
+      setError(errorMsg);
     }
     setIsProcessing(false);
   };

@@ -11,6 +11,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getTodayRange } from "@/lib/attendance-helper";
 import { ensureBalance } from "@/actions/leave";
+import { processAutoPunchOuts } from "@/lib/auto-punch-out";
 
 export const dynamic = 'force-dynamic';
 
@@ -22,9 +23,19 @@ async function getEmployeeData() {
       balances: { monthlyFull: 0, monthlyShort: 0, semiAnnual: 0 },
       recentLogs: [],
       recentRequests: [],
-      userName: "Employee"
+      userName: "Employee",
+      autoPunchOutCount: 0
     };
   }
+
+  // 1. Process any forgotten punch-outs from previous days
+  await processAutoPunchOuts(session.user.id);
+
+  // 2. Fetch User to get autoPunchOutCount
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { name: true, autoPunchOutCount: true }
+  });
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
@@ -57,9 +68,10 @@ async function getEmployeeData() {
   const formattedLogs = recentLogs.map((log: any) => ({
     date: new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     in: log.punchIn ? new Date(log.punchIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : "N/A",
-    out: log.punchOut ? new Date(log.punchOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : "---",
+    out: log.isAutoPunchOut ? "AUTO" : (log.punchOut ? new Date(log.punchOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : "---"),
     late: log.isLate,
-    lateSpecialCase: log.isLateSpecialCase
+    lateSpecialCase: log.isLateSpecialCase,
+    isAutoPunchOut: log.isAutoPunchOut
   }));
 
   const recentRequests = await prisma.leaveRequest.findMany({
@@ -89,7 +101,8 @@ async function getEmployeeData() {
         managerNote: req.managerNote,
       };
     }),
-    userName: session.user.name ?? "Employee"
+    userName: user?.name ?? session.user.name ?? "Employee",
+    autoPunchOutCount: user?.autoPunchOutCount ?? 0
   };
 }
 
@@ -114,7 +127,10 @@ export default async function EmployeeDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
-          <PunchCard initialStatus={data.attendanceStatus} />
+          <PunchCard 
+            initialStatus={data.attendanceStatus} 
+            autoPunchOutCount={data.autoPunchOutCount}
+          />
         </div>
         <div className="lg:col-span-2">
           <LeaveBalanceCard balances={data.balances} />
@@ -148,7 +164,11 @@ export default async function EmployeeDashboard() {
                         <span>{log.out}</span>
                       </div>
                     </div>
-                    {log.lateSpecialCase ? (
+                    {log.isAutoPunchOut ? (
+                      <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50">
+                        <AlertCircle className="w-3 h-3 mr-1" /> Forgotten
+                      </Badge>
+                    ) : log.lateSpecialCase ? (
                       <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50">
                         <ClockIcon className="w-3 h-3 mr-1" /> Covered
                       </Badge>

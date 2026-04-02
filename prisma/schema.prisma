@@ -61,6 +61,8 @@ model User {
   shiftId String?
   shift   Shift? @relation(fields: [shiftId], references: [id])
 
+  autoPunchOutCount Int @default(0)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -95,8 +97,9 @@ model Attendance {
   date              DateTime  @db.Date
   punchIn           DateTime
   punchOut          DateTime?
-  isLate            Boolean   @default(false)
+  isLate              Boolean   @default(false)
   isLateSpecialCase Boolean   @default(false)
+  isAutoPunchOut    Boolean   @default(false)
 
   // Geofencing & Location Tracking
   lat             Float?

@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { LeaveApprovalRow } from "@/components/features/manager/leave-approval-row";
 import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { getTodayRange } from "@/lib/attendance-helper";
 
 export const dynamic = 'force-dynamic';
 
@@ -29,10 +30,7 @@ async function getAdminStats() {
   const startOfMonth = new Date(currentYear, currentMonth - 1, 1);
   const endOfMonth = new Date(currentYear, currentMonth, 0, 23, 59, 59);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const { start: today, end: tomorrow } = getTodayRange();
 
   // Fetch all staff with their leaves for the month
   const staff = await prisma.user.findMany({
@@ -47,10 +45,10 @@ async function getAdminStats() {
     }
   });
 
-  // Fetch today's attendance
+  // Fetch today's attendance using standardized range
   const todayAttendance = await prisma.attendance.findMany({
     where: {
-      date: { gte: today, lt: tomorrow }
+      date: { gte: today, lte: tomorrow }
     }
   });
 

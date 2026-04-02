@@ -4,10 +4,16 @@ import { useState, useEffect, useTransition } from "react";
 import { punchInOutAction } from "@/actions/attendance";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, CheckCircle2, Loader2 } from "lucide-react";
+import { Clock, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
-export function PunchCard({ initialStatus }: { initialStatus: "PENDING" | "PUNCHED_IN" | "PUNCHED_OUT" }) {
+export function PunchCard({ 
+  initialStatus, 
+  autoPunchOutCount = 0 
+}: { 
+  initialStatus: "PENDING" | "PUNCHED_IN" | "PUNCHED_OUT",
+  autoPunchOutCount?: number 
+}) {
   const [status, setStatus] = useState(initialStatus);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -106,6 +112,18 @@ export function PunchCard({ initialStatus }: { initialStatus: "PENDING" | "PUNCH
           <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1 bg-secondary/50 px-3 py-1 rounded-full">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
             You are clocked in
+          </div>
+        )}
+
+        {autoPunchOutCount >= 3 && (
+          <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-lg flex items-start gap-3 shadow-sm animate-in fade-in slide-in-from-top-1 duration-500">
+            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="flex flex-col gap-1">
+              <p className="text-[11px] font-bold text-amber-900 dark:text-amber-300 uppercase tracking-tight">Attendance Warning</p>
+              <p className="text-[10px] leading-relaxed text-amber-800 dark:text-amber-400/90 font-medium">
+                You have forgotten to punch out {autoPunchOutCount} times. Please remember to clock out daily to ensure your attendance record is accurate and to avoid being marked late in the future.
+              </p>
+            </div>
           </div>
         )}
       </CardContent>

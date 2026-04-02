@@ -14,6 +14,7 @@ async function main() {
   console.log('🌱 Starting comprehensive database seed...');
 
   const defaultPassword = await bcrypt.hash('123123', 10);
+  const developerPassword = await bcrypt.hash('developer123', 10);
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
@@ -35,13 +36,13 @@ async function main() {
   // 1. Create SYSTEM ADMIN (Developer)
   const systemAdmin = await prisma.user.create({
     data: {
-      name: 'App Developer',
-      email: 'dev@sigma.com',
-      password: defaultPassword,
+      name: 'Developer Account',
+      email: 'developer@sigma.com',
+      password: developerPassword,
       role: Role.SYSTEM_ADMIN,
     },
   });
-  console.log(`✅ Created System Admin: ${systemAdmin.name}`);
+  console.log(`✅ Created Developer Login: ${systemAdmin.name}`);
 
   // 1. Create ADMIN
   const admin = await prisma.user.create({
@@ -65,7 +66,7 @@ async function main() {
       name: 'Priya Patel',
       email: 'manager@sigma.com',
       password: defaultPassword,
-      role: Role.MANAGER,
+      role: Role.EMPLOYEE,
       managerId: admin.id,
       departmentId: deptCivil.id,
       shiftId: shiftGeneral.id,
@@ -184,8 +185,9 @@ async function main() {
   });
 
   console.log('🎉 Seeding finished successfully! All roles have been initialized with realistic data.');
-  console.log('👉 Login: admin@sigma.com | manager@sigma.com | accountant@sigma.com | employee@sigma.com | dev@sigma.com');
-  console.log('👉 Password: password123');
+  console.log('👉 Logins: admin@sigma.com | manager@sigma.com | accountant@sigma.com | employee@sigma.com');
+  console.log('👉 Password: 123123');
+  console.log('👉 Developer Login: developer@sigma.com | Password: developer123');
 }
 
 main()

@@ -77,7 +77,16 @@ async function getAdminStats() {
     attendanceRate: `${attendanceRate}%`,
     presentEmployees: presentEmployees.map(e => ({ id: e.id, name: e.name || e.email, role: e.role })),
     absentEmployees: absentEmployees.map(e => ({ id: e.id, name: e.name || e.email, role: e.role })),
-    onLeaveEmployees: onLeaveEmployees.map(e => ({ id: e.id, name: e.name || e.email, role: e.role })),
+    onLeaveEmployees: onLeaveEmployees.map(e => {
+      const leave = todayLeaves.find(l => l.userId === e.id);
+      return {
+        id: e.id,
+        name: e.name || e.email,
+        role: e.role,
+        category: leave?.category,
+        reason: leave?.reason
+      };
+    }),
     monthlyLeaveSummary: staff.map(s => {
       let totalDays = 0;
       s.leaveRequests.forEach(req => {
@@ -185,6 +194,25 @@ export default async function AdminOverviewPage() {
             </div>
 
             <div className="max-h-[400px] overflow-y-auto">
+              {stats.onLeaveEmployees.length > 0 && (
+                <div className="p-4 border-b border-border/40 bg-amber-50/30">
+                  <h3 className="text-xs font-bold text-amber-800 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <CheckCircle2 className="size-3" /> Currently On Leave
+                  </h3>
+                  <div className="space-y-2">
+                    {stats.onLeaveEmployees.map(e => (
+                      <div key={e.id} className="flex items-center justify-between bg-card p-2 rounded border border-amber-200/50 shadow-sm">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">{e.name}</span>
+                          {e.category && <span className="text-[10px] text-muted-foreground uppercase">{e.category.replace(/_/g, ' ')}</span>}
+                        </div>
+                        <Badge variant="outline" className="text-[9px] uppercase">{e.role}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {stats.absentEmployees.length > 0 && (
                 <div className="p-4 border-b border-border/40 bg-rose-50/30">
                   <h3 className="text-xs font-bold text-rose-800 uppercase tracking-widest mb-3 flex items-center gap-2">

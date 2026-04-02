@@ -366,7 +366,7 @@ export function SettingsForm({ initialData, initialShifts }: SettingsFormProps) 
           </div>
         </TabsContent>
 
-        <TabsContent value="shifts" className="space-y-6 pt-2 animate-in fade-in slide-in-from-bottom-2 duration-400">
+        <TabsContent value="shifts" className="space-y-6 pt-2">
           <ShiftManagement initialShifts={initialShifts} />
         </TabsContent>
       </Tabs>

@@ -101,6 +101,9 @@ async function getTeamData() {
 }
 
 export default async function ManagerDashboard() {
+  const session = await getServerSession(authOptions);
+  const isAdmin = session?.user?.role === "ADMIN" || session?.user?.role === "SYSTEM_ADMIN";
+  
   const { pendingRequests, teamStatus } = await getTeamData();
   const activeNow = teamStatus.filter(t => t.status === "PUNCHED_IN").length;
 
@@ -154,8 +157,8 @@ export default async function ManagerDashboard() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
+      <div className={`grid grid-cols-1 ${isAdmin ? "lg:grid-cols-1" : "lg:grid-cols-3"} gap-8`}>
+        <div className={`${isAdmin ? "lg:col-span-1" : "lg:col-span-2"} space-y-6`}>
           {/* Pending Leave Requests Table */}
           <Card className="shadow-sm border-border/40 h-full p-0 gap-0">
             <CardHeader className="border-b border-border/40 bg-muted/10 p-4">
@@ -166,7 +169,7 @@ export default async function ManagerDashboard() {
               {pendingRequests.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
                   <Check className="w-12 h-12 mb-4 text-emerald-500/50" />
-                  <p className="text-sm font-medium text-foreground">You're all caught up!</p>
+                  <p className="text-sm font-medium text-foreground">You&apos;re all caught up!</p>
                   <p className="text-xs">No pending leave requests to review.</p>
                 </div>
               ) : (
@@ -190,57 +193,61 @@ export default async function ManagerDashboard() {
           </Card>
         </div>
 
-        <div className="lg:col-span-1">
-          {/* Team Today's Status Widget */}
-          <Card className="shadow-sm border-border/40 p-0 gap-0">
-            <CardHeader className="border-b border-border/40 bg-muted/10 p-4">
-              <CardTitle className="text-lg">Today's Team Status</CardTitle>
-              <CardDescription>Live attendance overview.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y divide-border/40">
-                {teamStatus.length === 0 ? (
-                  <p className="p-6 text-center text-sm text-muted-foreground">No team members assigned.</p>
-                ) : (
-                  teamStatus.map((member) => (
-                    <div key={member.id} className="flex items-center justify-between p-4 hover:bg-muted/10 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                          {member.name.substring(0, 2).toUpperCase()}
-                        </div>
-                        <span className="font-medium text-sm">{member.name}</span>
-                      </div>
-                      <div className="flex flex-col items-end gap-1">
-                        {member.status === "PUNCHED_IN" && (
-                          <Badge variant="outline" className="text-emerald-600 bg-emerald-50 border-emerald-200">
-                            Working
-                          </Badge>
-                        )}
-                        {member.status === "PUNCHED_OUT" && (
-                          <Badge variant="outline" className="text-muted-foreground bg-muted/50">
-                            Shift Ended
-                          </Badge>
-                        )}
-                        {member.status === "PENDING" && (
-                          <Badge variant="outline" className="text-amber-600 bg-amber-50 border-amber-200">
-                            Not Clocked In
-                          </Badge>
-                        )}
-                        {member.isOutsideOffice && (
-                          <div className="flex items-center gap-1 text-[10px] text-rose-500 font-bold bg-rose-50 px-1.5 py-0.5 rounded border border-rose-100 italic">
-                            <MapPinOff className="size-2.5" />
-                            Off-site
+        {!isAdmin && (
+          <div className="lg:col-span-1">
+            {/* Team Today's Status Widget */}
+            <Card className="shadow-sm border-border/40 p-0 gap-0">
+              <CardHeader className="border-b border-border/40 bg-muted/10 p-4">
+                <CardTitle className="text-lg">Today&apos;s Team Status</CardTitle>
+                <CardDescription>Live attendance overview.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y divide-border/40">
+                  {teamStatus.length === 0 ? (
+                    <p className="p-6 text-center text-sm text-muted-foreground">No team members assigned.</p>
+                  ) : (
+                    teamStatus.map((member) => (
+                      <div key={member.id} className="flex items-center justify-between p-4 hover:bg-muted/10 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                            {member.name.substring(0, 2).toUpperCase()}
                           </div>
-                        )}
+                          <span className="font-medium text-sm">
+                            {member.id === session?.user?.id ? `${member.name} (You)` : member.name}
+                          </span>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          {member.status === "PUNCHED_IN" && (
+                            <Badge variant="outline" className="text-emerald-600 bg-emerald-50 border-emerald-200">
+                              Working
+                            </Badge>
+                          )}
+                          {member.status === "PUNCHED_OUT" && (
+                            <Badge variant="outline" className="text-muted-foreground bg-muted/50">
+                              Shift Ended
+                            </Badge>
+                          )}
+                          {member.status === "PENDING" && (
+                            <Badge variant="outline" className="text-amber-600 bg-amber-50 border-amber-200">
+                              Not Clocked In
+                            </Badge>
+                          )}
+                          {member.isOutsideOffice && (
+                            <div className="flex items-center gap-1 text-[10px] text-rose-500 font-bold bg-rose-50 px-1.5 py-0.5 rounded border border-rose-100 italic">
+                              <MapPinOff className="size-2.5" />
+                              Off-site
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+}

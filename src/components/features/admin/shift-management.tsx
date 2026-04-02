@@ -66,12 +66,8 @@ export function ShiftManagement({ initialShifts }: { initialShifts: any[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Shift Management</h2>
-          <p className="text-muted-foreground">Define and manage employee working hours.</p>
-        </div>
-        <Button onClick={() => setIsAdding(true)} disabled={isAdding} className="flex items-center gap-2">
+      <div className="flex justify-end">
+        <Button onClick={() => setIsAdding(true)} disabled={isAdding} className="flex items-center gap-2 h-9 rounded-full">
           <Plus className="w-4 h-4" />
           Add Shift
         </Button>

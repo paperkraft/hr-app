@@ -87,20 +87,15 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
     const currentBalance = user.leaveBalances.find(lb => lb.month === currentMonth && lb.year === currentYear);
     const prevBalance = user.leaveBalances.find(lb => lb.month === prevMonth && lb.year === prevYear);
 
-    // Calculate counts
-    const totalLate = attendances.filter(a => a.isLate).length;
-    const specialCaseLate = attendances.filter(a => a.isLate && a.isLateSpecialCase).length;
-
-    // Calculate Policy 1 usage and Auto-LWP
+    // Calculate usage strictly within this month's boundaries
     let policy1FullUsed = 0;
     let policy1ShortUsed = 0;
+    let policy2Used = 0;
+    let explicitLwp = 0;
     let totalLeavesTakenInMonth = 0;
 
-    const startOfMonth = new Date(currentYear, currentMonth - 1, 1);
-    const endOfMonth = new Date(currentYear, currentMonth, 0, 23, 59, 59);
-
     user.leaveRequests.forEach(req => {
-      // 1. Calculate Intersection with month
+      // Intersection logic
       const intersectStart = req.startDate < startOfMonth ? startOfMonth : req.startDate;
       const intersectEnd = req.endDate > endOfMonth ? endOfMonth : req.endDate;
 
@@ -118,45 +113,41 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
         } else {
           policy1FullUsed += actualDays;
         }
+      } else if (req.category === "SEMI_ANNUAL_POLICY_2") {
+        policy2Used += actualDays;
+      } else if (req.category === "UNPAID") {
+        explicitLwp += actualDays;
       }
     });
 
-    // Policy 1 Initial Balances (2.0 baseline + any carried forward FROM PREVIOUS MONTH)
-    const initialFull = 2.0 + (prevBalance?.carriedForward ?? 0);
-    const initialShort = 1;
+    // Baseline from DB record state
+    // Opening = Remaining in DB + Usage already deducted in DB
+    // However, to show a consistent "Policy 1" report:
+    const openingFull = 2.0 + (prevBalance?.carriedForward ?? 0);
+    const openingShort = 1;
 
-    // Available balance is Initial - USED (including pending)
-    // This is what the user expects to see as "deducted"
-    const remainingFull = Math.max(0, initialFull - policy1FullUsed);
-    const remainingShort = Math.max(0, initialShort - policy1ShortUsed);
+    // TRUST THE DATABASE for currently remaining values
+    const remainingFull = currentBalance?.remainingFull ?? 0;
+    const remainingShort = currentBalance?.remainingShort ?? 0;
+    const semiAnnualRemaining = currentBalance?.semiAnnualRemaining ?? 0;
 
-    // Automatic LWP if usage exceeds balance
-    const autoLwpFull = Math.max(0, policy1FullUsed - initialFull);
-    const autoLwpShort = Math.max(0, policy1ShortUsed - initialShort) * 0.5;
+    // Calculate Auto-LWP: if usage exceeds opening
+    const autoLwpFull = Math.max(0, policy1FullUsed - openingFull);
+    const autoLwpShort = Math.max(0, policy1ShortUsed - openingShort) * 0.5;
 
-    // RULE: If user has late mark, first three counts are exempted, later three are considered as half-day.
+    // Late Mark Penalties
+    const totalLate = attendances.filter(a => a.isLate).length;
+    const specialCaseLate = attendances.filter(a => a.isLate && a.isLateSpecialCase).length;
     const punishableLate = totalLate - specialCaseLate;
     const lateDeduction = punishableLate > 3 ? Math.ceil((punishableLate - 3) / 3) * 0.5 : 0;
+    
     totalLatesSystemWide += totalLate;
-
-    // Calculate Explicit LWP (requests specifically marked as UNPAID)
-    let explicitLwp = 0;
-    user.leaveRequests.forEach(req => {
-      if (req.category === "UNPAID") {
-        const start = req.startDate < startOfMonth ? startOfMonth : req.startDate;
-        const end = req.endDate > endOfMonth ? endOfMonth : req.endDate;
-        if (start <= end) {
-          const diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-          const actual = req.duration === "HALF" ? 0.5 * diff : diff;
-          explicitLwp += actual;
-        }
-      }
-    });
 
     // Total LWP = Excess Leaves (Auto) + Manual Unpaid + Late Mark Penalties
     const lwpDays = autoLwpFull + autoLwpShort + explicitLwp + lateDeduction;
     totalLwpSystemWide += lwpDays;
 
+    // Current month's potential encashment (anything above 1 day)
     const encashableDays = remainingFull > 1 ? (remainingFull - 1) : 0;
     totalEncashments += encashableDays;
 
@@ -174,7 +165,7 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
       balances: {
         full: remainingFull,
         short: remainingShort,
-        semiAnnual: currentBalance?.semiAnnualRemaining ?? 0,
+        semiAnnual: semiAnnualRemaining,
       },
       offSiteCount: attendances.filter(a => a.isOutsideOffice).length
     };

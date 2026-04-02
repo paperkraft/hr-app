@@ -428,44 +428,58 @@ export async function updateLeaveStatus(requestId: string, status: "APPROVED" | 
       let y = firstMonth.year;
 
       while (true) {
-        const current = await tx.leaveBalance.findUnique({
-          where: { userId_month_year: { userId: txRequest.userId, month: m, year: y } }
+        const current = await tx.leaveBalance.findFirst({
+          where: { userId: txRequest.userId, month: m, year: y }
         });
         if (!current) break;
 
         const nextM = m === 12 ? 1 : m + 1;
         const nextY = m === 12 ? y + 1 : y;
 
-        const next = await tx.leaveBalance.findUnique({
-          where: { userId_month_year: { userId: txRequest.userId, month: nextM, year: nextY } }
+        const next = await tx.leaveBalance.findFirst({
+          where: { userId: txRequest.userId, month: nextM, year: nextY }
         });
         if (!next) break;
 
-        // Carry-Forward & Encashed logic
-        const updatedCF = Math.min(Number(current.remainingFull), 1.0);
-        const cfDiff = updatedCF - Number(next.carriedForward);
-        const newEncashed = Math.max(0, Number(current.remainingFull) - updatedCF);
+        // Correct Calculation: 
+        // 1. Current month's balance determines what is carried forward into Next.
+        const newCFFromCurrent = Math.min(Number(current.remainingFull), 1.0);
+        const oldCFInNext = Number(next.carriedForward);
+        const cfDiff = newCFFromCurrent - oldCFInNext;
+        const currentEncashed = Math.max(0, Number(current.remainingFull) - newCFFromCurrent);
+
+        // 2. Update stats for Current month (what it passes forward)
+        await tx.leaveBalance.update({
+          where: { id: current.id },
+          data: {
+            carriedForward: newCFFromCurrent,
+            encashed: currentEncashed
+          }
+        });
+
+        // 3. Update balance for Next month based on the change in its starting carry-forward
+        if (cfDiff !== 0) {
+          await tx.leaveBalance.update({
+            where: { id: next.id },
+            data: {
+              remainingFull: { increment: cfDiff }
+            }
+          });
+        }
 
         // Semi-Annual Cascade (if same cycle)
         const getCK = (month: number, year: number, sM: number) => {
           const rel = (month - sM + 12) % 12;
           const isH1 = rel < 6;
-          return `${year}-${isH1 ? "H1" : "H2"}`; // Simple cycle check
+          return `${year}-${isH1 ? "H1" : "H2"}`;
         };
 
-        const cycleUpdate = getCK(m, y, startMonthConfig) === getCK(nextM, nextY, startMonthConfig)
-          ? { semiAnnualRemaining: current.semiAnnualRemaining }
-          : {};
-
-        await tx.leaveBalance.update({
-          where: { id: next.id },
-          data: {
-            carriedForward: updatedCF,
-            remainingFull: { increment: cfDiff },
-            encashed: newEncashed,
-            ...cycleUpdate
-          }
-        });
+        if (getCK(m, y, startMonthConfig) === getCK(nextM, nextY, startMonthConfig)) {
+          await tx.leaveBalance.update({
+            where: { id: next.id },
+            data: { semiAnnualRemaining: current.semiAnnualRemaining }
+          });
+        }
 
         m = nextM;
         y = nextY;

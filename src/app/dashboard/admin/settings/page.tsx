@@ -17,18 +17,28 @@ export default async function SettingsPage() {
           <p className="text-muted-foreground mt-1">Institutional control panel for sigma framework.</p>
         </div>
 
-        <SettingsForm initialData={{
-          officeStartTime: config.officeStartTime,
-          officeEndTime: config.officeEndTime,
-          graceTimeMinutes: config.graceTimeMinutes,
-          officeLat: config.officeLat ?? undefined,
-          officeLng: config.officeLng ?? undefined,
-          allowedRadiusMeters: config.allowedRadiusMeters
-        }} />
-      </div>
-
-      <div className="pt-8 border-t border-border/50">
-        <ShiftManagement initialShifts={shifts} />
+        <SettingsForm 
+          initialData={{
+            officeStartTime: config.officeStartTime,
+            officeEndTime: config.officeEndTime,
+            graceTimeMinutes: config.graceTimeMinutes,
+            officeLat: config.officeLat ?? undefined,
+            officeLng: config.officeLng ?? undefined,
+            allowedRadiusMeters: config.allowedRadiusMeters,
+            lateMarkEnabled: config.lateMarkEnabled ?? true,
+            lateMarkAllowedCount: config.lateMarkAllowedCount ?? 3,
+            specialCaseEnabled: config.specialCaseEnabled ?? true,
+            specialCaseExtraMinutes: config.specialCaseExtraMinutes ?? 0,
+            autoPunchOutEnabled: config.autoPunchOutEnabled ?? true,
+            autoPunchOutDelayHours: config.autoPunchOutDelayHours ?? 2,
+            autoPunchOutWarningThreshold: config.autoPunchOutWarningThreshold ?? 3,
+            semiAnnualPolicyEnabled: config.semiAnnualPolicyEnabled ?? true,
+            semiAnnualCycleStartMonth: config.semiAnnualCycleStartMonth ?? 4,
+            firstHalfEndTime: config.firstHalfEndTime ?? "13:30",
+            secondHalfStartTime: config.secondHalfStartTime ?? "13:30",
+          }} 
+          initialShifts={shifts}
+        />
       </div>
     </div>
   )

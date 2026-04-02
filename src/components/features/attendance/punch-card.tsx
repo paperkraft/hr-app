@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Clock, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
-export function PunchCard({ 
-  initialStatus, 
-  autoPunchOutCount = 0 
-}: { 
-  initialStatus: "PENDING" | "PUNCHED_IN" | "PUNCHED_OUT",
-  autoPunchOutCount?: number 
-}) {
+interface PunchCardProps {
+  initialStatus: "PENDING" | "PUNCHED_IN" | "PUNCHED_OUT";
+  autoPunchOutCount?: number;
+  warningThreshold?: number;
+}
+
+export function PunchCard({ initialStatus, autoPunchOutCount = 0, warningThreshold = 3 }: PunchCardProps) {
   const [status, setStatus] = useState(initialStatus);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -115,13 +115,16 @@ export function PunchCard({
           </div>
         )}
 
-        {autoPunchOutCount >= 3 && (
-          <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-lg flex items-start gap-3 shadow-sm animate-in fade-in slide-in-from-top-1 duration-500">
-            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-            <div className="flex flex-col gap-1">
-              <p className="text-[11px] font-bold text-amber-900 dark:text-amber-300 uppercase tracking-tight">Attendance Warning</p>
-              <p className="text-[10px] leading-relaxed text-amber-800 dark:text-amber-400/90 font-medium">
-                You have forgotten to punch out {autoPunchOutCount} times. Please remember to clock out daily to ensure your attendance record is accurate and to avoid being marked late in the future.
+        {/* Auto Punch-Out Warning */}
+        {autoPunchOutCount >= warningThreshold && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-amber-800">Attendance Policy Warning</p>
+              <p className="text-[10px] text-amber-700 leading-relaxed">
+                You have <span className="font-bold underline">{autoPunchOutCount}</span> forgotten punch-outs. 
+                Failing to punch out after {warningThreshold} warnings may result in a <span className="font-bold text-rose-600 uppercase">Late Mark</span> penalty. 
+                Please remember to clock out daily.
               </p>
             </div>
           </div>

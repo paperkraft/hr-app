@@ -11,7 +11,6 @@ datasource db {
 
 enum Role {
   EMPLOYEE
-  MANAGER
   ACCOUNTANT
   ADMIN
   SYSTEM_ADMIN
@@ -127,6 +126,9 @@ model LeaveRequest {
   startTime String? // Format: HH:mm
   endTime   String? // Format: HH:mm
 
+  // Half-Day Selection
+  halfDayType String? // "FIRST_HALF" or "SECOND_HALF"
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -160,6 +162,27 @@ model SystemConfig {
   officeStartTime  String @default("09:00") // 24h format HH:mm
   officeEndTime    String @default("18:00") // 24h format HH:mm
   graceTimeMinutes Int    @default(15)
+
+  // Late Mark Policy
+  lateMarkEnabled      Boolean @default(true)
+  lateMarkAllowedCount Int     @default(3)
+
+  // Special Case Handling (Extra work hours "waive" late mark)
+  specialCaseEnabled      Boolean @default(true)
+  specialCaseExtraMinutes Int     @default(0)
+
+  // Automation Settings
+  autoPunchOutEnabled         Boolean @default(true)
+  autoPunchOutDelayHours      Int     @default(2)
+  autoPunchOutWarningThreshold Int     @default(3)
+
+  // Leave Cycle Configuration
+  semiAnnualPolicyEnabled   Boolean @default(true)
+  semiAnnualCycleStartMonth Int     @default(4) // 1=Jan, 4=Apr, etc.
+
+  // Half-Day Configuration
+  firstHalfEndTime    String @default("13:30")
+  secondHalfStartTime String @default("13:30")
 
   // Geofencing Config
   officeLat           Float?

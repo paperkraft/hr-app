@@ -23,7 +23,7 @@ export default async function AdminUsersPage() {
 
   const validManagers = await prisma.user.findMany({
     where: {
-      role: { in: ['MANAGER', 'ADMIN'] }
+      role: { in: ['ADMIN', 'EMPLOYEE', 'ACCOUNTANT'] }
     },
     select: { id: true, name: true, email: true },
     orderBy: { name: 'asc' }
@@ -43,8 +43,6 @@ export default async function AdminUsersPage() {
     switch (role) {
       case "ADMIN":
         return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100 border-none uppercase text-[10px]">ADMIN</Badge>;
-      case "MANAGER":
-        return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-none uppercase text-[10px]">MANAGER</Badge>;
       case "ACCOUNTANT":
         return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none uppercase text-[10px]">ACCOUNTANT</Badge>;
       default:

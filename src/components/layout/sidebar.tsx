@@ -3,11 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { roleNavigation } from "@/config/navigation";
-import { Activity } from "lucide-react";
+import { Activity, ShieldCheck } from "lucide-react";
 
-export function Sidebar({ userRole }: { userRole: string }) {
+export function Sidebar({ userRole, isTeamLeader }: { userRole: string; isTeamLeader?: boolean }) {
   const pathname = usePathname();
-  const navItems = roleNavigation[userRole] || roleNavigation.EMPLOYEE;
+  
+  const baseNav = roleNavigation[userRole] || roleNavigation.EMPLOYEE;
+  const navItems = [...baseNav];
+
+  // Append Team Management for Team Leaders
+  if (isTeamLeader && !navItems.some(item => item.href === "/dashboard/manager")) {
+    navItems.push({ title: "Team Management", href: "/dashboard/manager", icon: ShieldCheck });
+  }
 
   return (
     <aside className="w-64 border-r border-border/40 bg-card flex-col hidden md:flex h-screen sticky top-0 z-10">

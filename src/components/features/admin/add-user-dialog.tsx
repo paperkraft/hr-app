@@ -90,7 +90,6 @@ export function AddUserDialog({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="EMPLOYEE">Employee</SelectItem>
-                  <SelectItem value="MANAGER">Manager</SelectItem>
                   <SelectItem value="ACCOUNTANT">Accountant</SelectItem>
                   <SelectItem value="ADMIN">Admin</SelectItem>
                 </SelectContent>

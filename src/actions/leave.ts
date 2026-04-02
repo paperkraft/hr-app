@@ -12,26 +12,28 @@ function getDaysDifference(start: Date, end: Date) {
   return Math.floor((endUtc - startUtc) / (1000 * 60 * 60 * 24)) + 1;
 }
 
-function getCycleRange(month: number, year: number) {
-  // H1: Apr (4) to Sep (9)
-  // H2: Oct (10) to Mar (next year 3)
-  if (month >= 4 && month <= 9) {
-    return {
-      start: new Date(year, 3, 1), // April 1st
-      end: new Date(year, 8, 30, 23, 59, 59) // Sep 30th
-    };
-  } else if (month >= 10) {
-    return {
-      start: new Date(year, 9, 1), // Oct 1st
-      end: new Date(year + 1, 2, 31, 23, 59, 59) // Mar 31st
-    };
-  } else {
-    // Jan-Mar belongs to previous year's Oct cycle
-    return {
-      start: new Date(year - 1, 9, 1), // Oct 1st Prev Year
-      end: new Date(year, 2, 31, 23, 59, 59) // Mar 31st
-    };
-  }
+function getCycleRange(month: number, year: number, startMonth: number = 4) {
+  // relativeMonth: 0 means startMonth, 11 means startMonth-1
+  const relativeMonth = (month - startMonth + 12) % 12;
+  const isH1 = relativeMonth < 6;
+  
+  const cycleStartMonth = isH1 ? startMonth : ((startMonth + 6) % 12 || 12);
+  const cycleEndMonth = isH1 ? ((startMonth + 5) % 12 || 12) : ((startMonth + 11) % 12 || 12);
+  
+  // If the current month belongs to a cycle that started last year (e.g. Jan in an Oct-Mar cycle)
+  const cycleStartedLastYear = month < cycleStartMonth && cycleEndMonth >= month;
+  const cycleSpansToNextYear = cycleEndMonth < cycleStartMonth;
+
+  let startYear = year;
+  if (cycleStartedLastYear) startYear = year - 1;
+
+  let endYear = startYear;
+  if (cycleSpansToNextYear) endYear = startYear + 1;
+
+  return {
+    start: new Date(startYear, cycleStartMonth - 1, 1),
+    end: new Date(endYear, cycleEndMonth, 0, 23, 59, 59)
+  };
 }
 
 async function getCyclePendingDays(userId: string, cycleStart: Date, cycleEnd: Date) {
@@ -48,12 +50,19 @@ async function getCyclePendingDays(userId: string, cycleStart: Date, cycleEnd: D
   return pendingRequests.reduce((acc, req) => acc + getDaysDifference(req.startDate, req.endDate), 0);
 }
 
-export async function ensureBalance(userId: string, month: number, year: number): Promise<any> {
+export async function ensureBalance(userId: string, month: number, year: number, configStartMonth?: number): Promise<any> {
   const existing = await prisma.leaveBalance.findUnique({
     where: { userId_month_year: { userId, month, year } }
   });
 
   if (existing) return existing;
+
+  // Fetch config if not provided (for recursion root)
+  let startMonth = configStartMonth;
+  if (startMonth === undefined) {
+    const config = await prisma.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
+    startMonth = config?.semiAnnualCycleStartMonth ?? 4;
+  }
 
   // 1. Find the MOST RECENT existing balance record
   const lastRecord = await prisma.leaveBalance.findFirst({
@@ -74,15 +83,11 @@ export async function ensureBalance(userId: string, month: number, year: number)
   let semiAnnualRemaining = 3;
 
   if (lastRecord) {
-    // Check if the last record is the IMMEDIATE previous month
     const isPreviousMonth = (lastRecord.year === year && lastRecord.month === month - 1) ||
                             (lastRecord.year === year - 1 && lastRecord.month === 12 && month === 1);
 
     if (isPreviousMonth) {
-      // Direct carry forward: min(remaining, 1.0)
       carryForward = Math.min(lastRecord.remainingFull, 1.0);
-      
-      // Update the previous month's record with its calculated CF and Encashment for descriptive accuracy
       await prisma.leaveBalance.update({
         where: { id: lastRecord.id },
         data: {
@@ -91,15 +96,12 @@ export async function ensureBalance(userId: string, month: number, year: number)
         }
       });
     } else {
-      // There is a GAP. We must recursively ensure the PREVIOUS month exists first!
       const prevMonth = month === 1 ? 12 : month - 1;
       const prevYear = month === 1 ? year - 1 : year;
       
-      // Creating the previous month's record will also handle the carry-forward logic for us!
-      const createdPrev = await ensureBalance(userId, prevMonth, prevYear);
+      const createdPrev = await ensureBalance(userId, prevMonth, prevYear, startMonth);
       carryForward = Math.min(createdPrev.remainingFull, 1.0);
       
-      // Update the previous month's record
       await prisma.leaveBalance.update({
         where: { id: createdPrev.id },
         data: {
@@ -109,19 +111,21 @@ export async function ensureBalance(userId: string, month: number, year: number)
       });
     }
 
-    // Semi-annual cycle logic: Cycle 1 (Apr-Sep), Cycle 2 (Oct-Mar)
-    const getCycleKey = (m: number, y: number) => {
-      if (m >= 4 && m <= 9) return `${y}-H1`; // Apr-Sep
-      if (m >= 10) return `${y}-H2`;           // Oct-Dec
-      return `${y - 1}-H2`;                    // Jan-Mar belongs to previous year's Oct cycle
+    // Dynamic Semi-annual cycle logic
+    const getCycleKey = (m: number, y: number, sM: number) => {
+      const rel = (m - sM + 12) % 12;
+      const isH1 = rel < 6;
+      const cycleStartMonth = isH1 ? sM : ((sM + 6) % 12 || 12);
+      const cycleStartedLastYear = m < cycleStartMonth && ((sM + 5) % 12 || 12) >= m;
+      
+      const yearPrefix = cycleStartedLastYear ? y - 1 : y;
+      return `${yearPrefix}-${isH1 ? "H1" : "H2"}`;
     };
 
-    const targetCycle = getCycleKey(month, year);
-    const lastRecordCycle = getCycleKey(lastRecord.month, lastRecord.year);
+    const targetCycle = getCycleKey(month, year, startMonth ?? 4);
+    const lastRecordCycle = getCycleKey(lastRecord.month, lastRecord.year, startMonth ?? 4);
 
     if (targetCycle === lastRecordCycle) {
-      // Note: If we just created the prev month via ensureBalance, 
-      // the semiAnnualRemaining will be correct in that record.
       const freshPrev = await prisma.leaveBalance.findFirst({
         where: { userId, month: (month === 1 ? 12 : month - 1), year: (month === 1 ? year - 1 : year) }
       });
@@ -135,19 +139,43 @@ export async function ensureBalance(userId: string, month: number, year: number)
         userId,
         month,
         year,
-        remainingFull: 2.0 + carryForward, // Base allocation 2 + Carry Forward
-        remainingShort: 1, // Monthly 1 short leave
+        remainingFull: 2.0 + carryForward,
+        remainingShort: 1,
         semiAnnualRemaining,
-        carriedForward: 0.0, // This month's CF will be set when the NEXT month is created
+        carriedForward: 0.0,
         encashed: 0.0,
       }
     });
   } catch (e) {
-    // Handle race condition if two processes try to ensure balance at once
     return await prisma.leaveBalance.findUniqueOrThrow({
       where: { userId_month_year: { userId, month, year } }
     });
   }
+}
+
+function splitLeaveIntoMonths(start: Date, end: Date) {
+  const parts: { month: number; year: number; days: number }[] = [];
+  let current = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const final = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+  while (current <= final) {
+    const m = current.getMonth();
+    const y = current.getFullYear();
+    const monthStart = new Date(y, m, 1);
+    const nextMonthStart = new Date(y, m + 1, 1);
+    
+    const partStart = current > monthStart ? current : monthStart;
+    const partEnd = final < nextMonthStart ? final : new Date(y, m + 1, 0);
+
+    parts.push({
+      month: m + 1,
+      year: y,
+      days: getDaysDifference(partStart, partEnd),
+    });
+
+    current = nextMonthStart;
+  }
+  return parts;
 }
 
 /**
@@ -155,14 +183,16 @@ export async function ensureBalance(userId: string, month: number, year: number)
  * for a given user, month, and year.
  */
 async function getPendingCost(userId: string, month: number, year: number) {
+  const startOfMonth = new Date(year, month - 1, 1);
+  const endOfMonth = new Date(year, month, 0, 23, 59, 59);
+
   const pendingRequests = await prisma.leaveRequest.findMany({
     where: {
       userId,
       status: "PENDING",
-      startDate: {
-        gte: new Date(year, month - 1, 1),
-        lt: new Date(month === 12 ? year + 1 : year, month === 12 ? 0 : month, 1),
-      },
+      OR: [
+        { startDate: { lte: endOfMonth }, endDate: { gte: startOfMonth } }
+      ]
     },
   });
 
@@ -171,17 +201,21 @@ async function getPendingCost(userId: string, month: number, year: number) {
   let pendingSemiAnnual = 0;
 
   for (const req of pendingRequests) {
-    const diffDays = getDaysDifference(req.startDate, req.endDate);
+    const monthParts = splitLeaveIntoMonths(req.startDate, req.endDate);
+    const part = monthParts.find(p => p.month === month && p.year === year);
+    if (!part) continue;
+
     if (req.category === "MONTHLY_POLICY_1") {
       if (req.duration === "FULL") {
-        pendingFull += diffDays;
+        pendingFull += part.days;
       } else if (req.duration === "HALF") {
-        pendingFull += 0.5 * diffDays;
+        pendingFull += 0.5 * part.days;
       } else if (req.duration === "SHORT") {
+        // Short leaves are typically 1 day only, but handle consistently
         pendingShort += 1;
       }
     } else if (req.category === "SEMI_ANNUAL_POLICY_2") {
-      pendingSemiAnnual += diffDays;
+      pendingSemiAnnual += part.days;
     }
   }
 
@@ -198,7 +232,7 @@ export async function submitLeaveRequest(formData: unknown) {
   const parsed = leaveApplicationSchema.safeParse(formData);
   
   if (!parsed.success) {
-    return { error: "Invalid form data. Please check your inputs." };
+    return { error: "Invalid form data: " + parsed.error.message };
   }
 
   const data = parsed.data;
@@ -208,32 +242,36 @@ export async function submitLeaveRequest(formData: unknown) {
   const year = startDate.getFullYear();
 
   try {
-    const diffDays = getDaysDifference(startDate, endDate);
+    const config = await prisma.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
     
-    const balance = await ensureBalance(userId, month, year);
+    // Policy Toggle: Semi-Annual
+    if (data.category === "SEMI_ANNUAL_POLICY_2" && !config?.semiAnnualPolicyEnabled) {
+      return { error: "Semi-annual leave policy is currently disabled by administrator." };
+    }
+
+    const diffDays = getDaysDifference(startDate, endDate);
+    const balance = await ensureBalance(userId, month, year, config?.semiAnnualCycleStartMonth);
 
     // Policy 2 Enforcement
     if (data.category === "SEMI_ANNUAL_POLICY_2") {
-      // 1. Minimum 3 continuous leaves
       if (diffDays < 3) {
         return { 
-          error: "Policy 2 (Semi-Annual) requires a minimum of 3 consecutive leave days. Single or 2-day requests are not allowed for this category." 
+          error: "Policy 2 (Semi-Annual) requires a minimum of 3 consecutive leave days." 
         };
       }
 
-      // 2. Quota Enforcement
-      const cycle = getCycleRange(month, year);
+      const cycle = getCycleRange(month, year, config?.semiAnnualCycleStartMonth);
       const pendingDays = await getCyclePendingDays(userId, cycle.start, cycle.end);
       const available = balance.semiAnnualRemaining - pendingDays;
 
       if (diffDays > available) {
         return { 
-          error: `Policy 2 quota exceeded. Available semi-annual balance: ${balance.semiAnnualRemaining} days. Already pending in this cycle: ${pendingDays} days. Remaining quota: ${available} days. You are trying to apply for ${diffDays} days.` 
+          error: `Policy 2 quota exceeded. Remaining quota: ${available} days. You are trying to apply for ${diffDays} days.` 
         };
       }
     }
 
-    // Overlap Check: Prevent multiple active leaves for the same date range
+    // Overlap Check
     const existingOverlap = await prisma.leaveRequest.findFirst({
       where: {
         userId,
@@ -246,9 +284,7 @@ export async function submitLeaveRequest(formData: unknown) {
     });
 
     if (existingOverlap) {
-      return { 
-        error: "You already have a leave request (Pending or Approved) for the selected dates. Please check your existing leaves." 
-      };
+      return { error: "You already have a leave request for the selected dates." };
     }
 
     await prisma.leaveRequest.create({
@@ -261,14 +297,16 @@ export async function submitLeaveRequest(formData: unknown) {
         reason: data.reason,
         startTime: data.startTime,
         endTime: data.endTime,
+        halfDayType: data.halfDayType, // New field
       }
     });
 
     revalidatePath("/dashboard/employee");
+    revalidatePath("/dashboard/employee/leaves");
     return { success: true };
   } catch (error) {
     console.error("Leave submission error:", error);
-    return { error: "An unexpected error occurred while submitting your request." };
+    return { error: "An unexpected error occurred." };
   }
 }
 
@@ -300,8 +338,8 @@ export async function updateLeaveStatus(requestId: string, status: "APPROVED" | 
       isDeptLeader = dept?.teamLeaderId === currentUserId;
     }
 
-    if (!isAdmin && role !== "MANAGER" && !isDeptLeader) {
-      return { error: "Unauthorized. Managers or Team Leaders only." };
+    if (!isAdmin && !isDeptLeader && !isDirectManager) {
+      return { error: "Unauthorized. Team Leaders or Direct Managers only." };
     }
 
     // Additional check for Managers/Leaders: ensure they supervise this specific user
@@ -309,152 +347,135 @@ export async function updateLeaveStatus(requestId: string, status: "APPROVED" | 
        return { error: "Unauthorized. You do not supervise this employee's leave requests." };
     }
 
-    const month = requestMeta.startDate.getMonth() + 1;
-    const year = requestMeta.startDate.getFullYear();
-
-    // Ensure balance record exists before starting transaction
-    await ensureBalance(requestMeta.userId, month, year);
+    // Ensure balance record exists for all months covered by the leave
+    const leaveMonths = splitLeaveIntoMonths(requestMeta.startDate, requestMeta.endDate);
+    for (const m of leaveMonths) {
+      await ensureBalance(requestMeta.userId, m.month, m.year);
+    }
 
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Re-fetch request metadata inside transaction
       const txRequest = await tx.leaveRequest.findUnique({ 
         where: { id: requestId } 
       });
 
-      if (!txRequest || txRequest.status !== "PENDING") {
-        return { success: true }; // Already processed by someone else
-      }
+      if (!txRequest || txRequest.status !== "PENDING") return { success: true };
 
       if (status === "REJECTED") {
         await tx.leaveRequest.update({ 
           where: { id: requestId }, 
-          data: { 
-            status: "REJECTED",
-            managerNote: note || null
-          } 
+          data: { status: "REJECTED", managerNote: note || null } 
         });
         return { success: true };
       }
 
-      // 2. Fetch current balance
-      const month = txRequest.startDate.getMonth() + 1;
-      const year = txRequest.startDate.getFullYear();
+      let totalOverflowLwp = 0;
+      const monthParts = splitLeaveIntoMonths(txRequest.startDate, txRequest.endDate);
       
-      // Ensure balance record exists (tx aware)
-      const balance = await tx.leaveBalance.findUnique({
-        where: { userId_month_year: { userId: txRequest.userId, month, year } }
-      });
+      for (const part of monthParts) {
+        const balance = await tx.leaveBalance.findUnique({
+          where: { userId_month_year: { userId: txRequest.userId, month: part.month, year: part.year } }
+        });
+        if (!balance) throw new Error(`BALANCE_NOT_FOUND_FOR_${part.month}_${part.year}`);
 
-      // If no balance record exists, we probably need to create it, 
-      // but ensureBalance is non-transactional currently. 
-      // For safety, assume it exists or fail this tx as it's a rare edge case.
-      if (!balance) throw new Error("BALANCE_NOT_FOUND");
+        let requestedNeeded = 0;
+        let balanceField: "remainingFull" | "remainingShort" | "semiAnnualRemaining" | null = null;
 
-      const diffDays = getDaysDifference(txRequest.startDate, txRequest.endDate);
-      let deductAmount = 0;
-      let balanceField: "remainingFull" | "remainingShort" | "semiAnnualRemaining" | null = null;
-      let requestedNeeded = 0;
-
-      // 3. Calculate deduction and LWP overflow
-      if (txRequest.category === "MONTHLY_POLICY_1") {
-        if (txRequest.duration === "FULL") {
-          requestedNeeded = diffDays;
-          balanceField = "remainingFull";
-        } else if (txRequest.duration === "HALF") {
-          requestedNeeded = 0.5 * diffDays;
-          balanceField = "remainingFull";
-        } else if (txRequest.duration === "SHORT") {
-          requestedNeeded = 1;
-          balanceField = "remainingShort";
+        if (txRequest.category === "MONTHLY_POLICY_1") {
+          if (txRequest.duration === "FULL") {
+            requestedNeeded = part.days;
+            balanceField = "remainingFull";
+          } else if (txRequest.duration === "HALF") {
+            requestedNeeded = 0.5 * part.days;
+            balanceField = "remainingFull";
+          } else if (txRequest.duration === "SHORT") {
+            requestedNeeded = 1;
+            balanceField = "remainingShort";
+          }
+        } else if (txRequest.category === "SEMI_ANNUAL_POLICY_2") {
+          requestedNeeded = part.days;
+          balanceField = "semiAnnualRemaining";
         }
-      } else if (txRequest.category === "SEMI_ANNUAL_POLICY_2") {
-        requestedNeeded = diffDays;
-        balanceField = "semiAnnualRemaining";
+
+        if (balanceField) {
+          const available = Number(balance[balanceField]);
+          const deductAmount = Math.min(available, requestedNeeded);
+          totalOverflowLwp += (requestedNeeded - deductAmount);
+
+          await tx.leaveBalance.update({
+            where: { id: balance.id },
+            data: { [balanceField]: { decrement: deductAmount } }
+          });
+        }
       }
 
-      let overflowLwp = 0;
       let newManagerNote = note || "";
+      if (totalOverflowLwp > 0) {
+        const sep = newManagerNote ? " | " : "";
+        newManagerNote += `${sep}[Auto-LWP: ${totalOverflowLwp}]`;
+      }
 
-      if (balanceField) {
-        const available = Number(balance[balanceField]);
-        deductAmount = Math.min(available, requestedNeeded);
-        overflowLwp = requestedNeeded - deductAmount;
+      await tx.leaveRequest.update({
+        where: { id: requestId },
+        data: { status: "APPROVED", managerNote: newManagerNote || null }
+      });
 
-        // Perform the deduction
+      // Cascade updates for all subsequent months
+      const config = await tx.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
+      const startMonthConfig = (config as any)?.semiAnnualCycleStartMonth ?? 4;
+      
+      const firstMonth = monthParts[0];
+      let m = firstMonth.month;
+      let y = firstMonth.year;
+
+      while (true) {
+        const current = await tx.leaveBalance.findUnique({
+          where: { userId_month_year: { userId: txRequest.userId, month: m, year: y } }
+        });
+        if (!current) break;
+
+        const nextM = m === 12 ? 1 : m + 1;
+        const nextY = m === 12 ? y + 1 : y;
+
+        const next = await tx.leaveBalance.findUnique({
+          where: { userId_month_year: { userId: txRequest.userId, month: nextM, year: nextY } }
+        });
+        if (!next) break;
+
+        // Carry-Forward & Encashed logic
+        const updatedCF = Math.min(Number(current.remainingFull), 1.0);
+        const cfDiff = updatedCF - Number(next.carriedForward);
+        const newEncashed = Math.max(0, Number(current.remainingFull) - updatedCF);
+
+        // Semi-Annual Cascade (if same cycle)
+        const getCK = (month: number, year: number, sM: number) => {
+          const rel = (month - sM + 12) % 12;
+          const isH1 = rel < 6;
+          return `${year}-${isH1 ? "H1" : "H2"}`; // Simple cycle check
+        };
+
+        const cycleUpdate = getCK(m, y, startMonthConfig) === getCK(nextM, nextY, startMonthConfig)
+          ? { semiAnnualRemaining: current.semiAnnualRemaining }
+          : {};
+
         await tx.leaveBalance.update({
-          where: { id: balance.id },
+          where: { id: next.id },
           data: {
-            [balanceField]: { decrement: deductAmount }
+            carriedForward: updatedCF,
+            remainingFull: { increment: cfDiff },
+            encashed: newEncashed,
+            ...cycleUpdate
           }
         });
 
-        // Add LWP tag to manager notes if any
-        if (overflowLwp > 0) {
-          const sep = newManagerNote ? " | " : "";
-          newManagerNote += `${sep}[Auto-LWP: ${overflowLwp}]`;
-        }
-      }
-
-      // 4. Update the request status
-      await tx.leaveRequest.update({
-        where: { id: requestId },
-        data: { 
-          status: "APPROVED",
-          managerNote: newManagerNote || null
-        }
-      });
-
-      // 5. Cascade Carry-Forward & Cycle logic
-      const nextMonth = month === 12 ? 1 : month + 1;
-      const nextYear = month === 12 ? year + 1 : year;
-
-      const nextBalance = await tx.leaveBalance.findUnique({
-        where: { userId_month_year: { userId: txRequest.userId, month: nextMonth, year: nextYear } }
-      });
-
-      if (nextBalance) {
-        if (balanceField === "remainingFull") {
-          // Carry-forward cascade (unchanged)
-          const currentRemaining = Number(balance["remainingFull"]) - deductAmount;
-          const updatedCF = Math.min(currentRemaining, 1.0);
-          const cfDiff = updatedCF - nextBalance.carriedForward;
-
-          if (cfDiff !== 0) {
-            await tx.leaveBalance.update({
-              where: { id: nextBalance.id },
-              data: {
-                carriedForward: updatedCF,
-                remainingFull: { increment: cfDiff },
-                encashed: Math.max(0, currentRemaining - updatedCF)
-              }
-            });
-          }
-        } else if (balanceField === "semiAnnualRemaining") {
-          // Semi-annual cascade: only if same cycle
-          const getCK = (m: number, y: number) => {
-            if (m >= 4 && m <= 9) return `${y}-H1`;
-            if (m >= 10) return `${y}-H2`;
-            return `${y - 1}-H2`;
-          };
-
-          if (getCK(month, year) === getCK(nextMonth, nextYear)) {
-            await tx.leaveBalance.update({
-              where: { id: nextBalance.id },
-              data: {
-                semiAnnualRemaining: { decrement: deductAmount }
-              }
-            });
-          }
-        }
+        m = nextM;
+        y = nextY;
       }
 
       return { success: true };
     }, {
-      // Use Serializable or at least something strong for balance updates
       isolationLevel: "Serializable"
     });
 
-    // Refresh UIs
     revalidatePath("/dashboard", "layout");
     revalidatePath("/dashboard/employee");
     revalidatePath("/dashboard/manager");
@@ -463,9 +484,9 @@ export async function updateLeaveStatus(requestId: string, status: "APPROVED" | 
 
   } catch (error: any) {
     console.error("Status update error:", error);
-    if (error.message === "BALANCE_NOT_FOUND") {
-      return { error: "Leave balance record not found for this month. Please ask admin to check policy initialization." };
+    if (error.message.startsWith("BALANCE_NOT_FOUND")) {
+      return { error: "One or more leave balance records not found. Please contact admin." };
     }
-    return { error: "Failed to update request status. This might be a temporary conflict, please try again." };
+    return { error: "Failed to update request status. " + error.message };
   }
 }

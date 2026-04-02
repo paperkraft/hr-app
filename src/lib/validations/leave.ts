@@ -12,6 +12,14 @@ export const leaveApplicationSchema = z.object({
   reason: z.string().min(10, "Please provide a reason (minimum 10 characters).").max(500),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
+  halfDayType: z.enum(["FIRST_HALF", "SECOND_HALF"]).optional(),
+}).refine((data) => {
+  // HALF Leave Enforcement: Requires First/Second selection
+  if (data.duration === "HALF" && !data.halfDayType) return false;
+  return true;
+}, {
+  message: "Please select which half of the day you are taking leave for.",
+  path: ["halfDayType"],
 }).refine((data) => {
   const start = new Date(data.startDate);
   const end = new Date(data.endDate);

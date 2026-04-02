@@ -47,12 +47,14 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
 
     if (!existingLog) {
       const punchInTime = new Date()
-      // Determine if late based on config (THESE VALUES ARE NOW DYNAMIC FROM CONFIG)
-      const lateThreshold = new Date(start)
       const [hours, minutes] = startTime.split(":").map(Number)
+      
+      const lateThreshold = new Date(start)
       lateThreshold.setHours(hours, minutes + graceMinutes, 0, 0)
       
-      const isLate = punchInTime > lateThreshold;
+      // Dynamic Late Mark Policy
+      const lateMarkEnabled = config?.lateMarkEnabled ?? true;
+      const isLate = lateMarkEnabled ? (punchInTime > lateThreshold) : false;
 
       await prisma.attendance.create({
         data: {
@@ -69,9 +71,12 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
     } else if (!existingLog.punchOut) {
       const punchOutTime = new Date();
       
-      // LOGIC: If user was late, check if they covered their shift duration
+      // Dynamic Special Case Logic (Extra work hours "waive" late mark)
       let isSpecialCase = false;
-      if (existingLog.isLate) {
+      const specialCaseEnabled = config?.specialCaseEnabled ?? true;
+      const extraMinutes = config?.specialCaseExtraMinutes ?? 0;
+
+      if (specialCaseEnabled && existingLog.isLate) {
         const endTime = config?.officeEndTime || "18:00";
         
         // Calculate standard duration in minutes
@@ -82,7 +87,8 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
         // Calculate actual duration in minutes
         const actualMinutes = Math.floor((punchOutTime.getTime() - existingLog.punchIn.getTime()) / (1000 * 60));
         
-        if (actualMinutes >= standardMinutes) {
+        // Check threshold: standard context + optional extra minutes required by policy
+        if (actualMinutes >= (standardMinutes + extraMinutes)) {
           isSpecialCase = true;
         }
       }
@@ -92,11 +98,10 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
         data: {
           punchOut: punchOutTime,
           isLateSpecialCase: isSpecialCase,
-          // Update location on punch-out too if available
           lat: coords?.lat ?? existingLog.lat,
           lng: coords?.lng ?? existingLog.lng,
           ipAddress: ipAddress ?? existingLog.ipAddress,
-          isOutsideOffice: isOutsideOffice || existingLog.isOutsideOffice // Flag if either was outside
+          isOutsideOffice: isOutsideOffice || existingLog.isOutsideOffice 
         }
       })
     }

@@ -34,7 +34,7 @@ async function getAdminStats() {
 
   // Fetch all staff with their leaves for the month
   const staff = await prisma.user.findMany({
-    where: { role: { in: ["EMPLOYEE", "MANAGER", "ACCOUNTANT"] } },
+    where: { role: { in: ["EMPLOYEE", "ACCOUNTANT"] } },
     include: {
       leaveRequests: {
         where: {

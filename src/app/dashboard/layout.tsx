@@ -13,13 +13,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex min-h-screen bg-[#fcfcfc] dark:bg-background text-foreground selection:bg-primary/20">
-      <Sidebar userRole={session.user.role} />
+      <Sidebar 
+        userRole={session.user.role} 
+        isTeamLeader={session.user.isTeamLeader ?? false} 
+      />
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Passed userRole for Mobile Navigation Sheet */}
         <Header
           userName={session.user.name || session.user.email || "User"}
           userRole={session.user.role}
+          isTeamLeader={session.user.isTeamLeader ?? false}
         />
 
         <main className="flex-1">

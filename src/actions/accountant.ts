@@ -39,7 +39,7 @@ export async function processLeaveSplit(formData: unknown) {
       });
 
       if (nextRecord) {
-        const oldCF = nextRecord.carriedForward;
+        const oldCF = currentRecord.carriedForward;
         const diff = carriedForward - oldCF;
 
         if (diff !== 0) {

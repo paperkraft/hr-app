@@ -39,7 +39,7 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
   // 1. Fetch only users who existed on or before the end of this month
   const usersToProcess = await prisma.user.findMany({
     where: {
-      role: { in: ["EMPLOYEE", "MANAGER", "ACCOUNTANT"] },
+      role: { in: ["EMPLOYEE", "ACCOUNTANT"] },
       createdAt: { lte: endOfMonth }
     },
     select: { id: true }
@@ -51,7 +51,7 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
   // 3. Now fetch the full data for those users (and their prev month balance)
   const users = await prisma.user.findMany({
     where: {
-      role: { in: ["EMPLOYEE", "MANAGER", "ACCOUNTANT"] },
+      role: { in: ["EMPLOYEE", "ACCOUNTANT"] },
       createdAt: { lte: endOfMonth }
     },
     include: {
@@ -96,8 +96,18 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
     let policy1ShortUsed = 0;
     let totalLeavesTakenInMonth = 0;
 
+    const startOfMonth = new Date(currentYear, currentMonth - 1, 1);
+    const endOfMonth = new Date(currentYear, currentMonth, 0, 23, 59, 59);
+
     user.leaveRequests.forEach(req => {
-      const diffDays = getDaysDifference(req.startDate, req.endDate);
+      // 1. Calculate Intersection with month
+      const intersectStart = req.startDate < startOfMonth ? startOfMonth : req.startDate;
+      const intersectEnd = req.endDate > endOfMonth ? endOfMonth : req.endDate;
+
+      if (intersectStart > intersectEnd) return; // No overlap
+
+      const diffMs = intersectEnd.getTime() - intersectStart.getTime();
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24)) + 1;
       const actualDays = req.duration === "HALF" ? 0.5 * diffDays : diffDays;
       
       totalLeavesTakenInMonth += actualDays;
@@ -115,9 +125,13 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
     const initialFull = 2.0 + (prevBalance?.carriedForward ?? 0);
     const initialShort = 1;
 
+    // Available balance is Initial - USED (including pending)
+    // This is what the user expects to see as "deducted"
+    const remainingFull = Math.max(0, initialFull - policy1FullUsed);
+    const remainingShort = Math.max(0, initialShort - policy1ShortUsed);
+
     // Automatic LWP if usage exceeds balance
     const autoLwpFull = Math.max(0, policy1FullUsed - initialFull);
-    // Every additional short leave after the first one is 0.5 LWP
     const autoLwpShort = Math.max(0, policy1ShortUsed - initialShort) * 0.5;
 
     // RULE: If user has late mark, first three counts are exempted, later three are considered as half-day.
@@ -129,9 +143,13 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
     let explicitLwp = 0;
     user.leaveRequests.forEach(req => {
       if (req.category === "UNPAID") {
-        const diffDays = getDaysDifference(req.startDate, req.endDate);
-        const actualDays = req.duration === "HALF" ? 0.5 * diffDays : diffDays;
-        explicitLwp += actualDays;
+        const start = req.startDate < startOfMonth ? startOfMonth : req.startDate;
+        const end = req.endDate > endOfMonth ? endOfMonth : req.endDate;
+        if (start <= end) {
+          const diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+          const actual = req.duration === "HALF" ? 0.5 * diff : diff;
+          explicitLwp += actual;
+        }
       }
     });
 
@@ -139,7 +157,6 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
     const lwpDays = autoLwpFull + autoLwpShort + explicitLwp + lateDeduction;
     totalLwpSystemWide += lwpDays;
 
-    const remainingFull = currentBalance?.remainingFull ?? 0;
     const encashableDays = remainingFull > 1 ? (remainingFull - 1) : 0;
     totalEncashments += encashableDays;
 
@@ -156,7 +173,7 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
       encashableDays,
       balances: {
         full: remainingFull,
-        short: currentBalance?.remainingShort ?? 0,
+        short: remainingShort,
         semiAnnual: currentBalance?.semiAnnualRemaining ?? 0,
       },
       offSiteCount: attendances.filter(a => a.isOutsideOffice).length
@@ -219,7 +236,7 @@ export default async function AccountantDashboard({
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{stats.totalStaff}</div>
-            <p className="text-xs text-muted-foreground mt-1">Employees & Managers</p>
+            <p className="text-xs text-muted-foreground mt-1">Full team headcount</p>
           </CardContent>
         </Card>
 

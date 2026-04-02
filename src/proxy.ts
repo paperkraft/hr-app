@@ -15,8 +15,6 @@ const proxy = withAuth(
         case "SYSTEM_ADMIN":
         case "ADMIN":
           return NextResponse.redirect(new URL("/dashboard/admin", req.url));
-        case "MANAGER":
-          return NextResponse.redirect(new URL("/dashboard/manager", req.url));
         case "ACCOUNTANT":
           return NextResponse.redirect(new URL("/dashboard/accountant", req.url));
         case "EMPLOYEE":
@@ -28,7 +26,7 @@ const proxy = withAuth(
     // 2. Role-Based Access Control (RBAC)
     // Securely prevent users from accessing routes they don't have permissions for
     const isAdmin = token?.role === "ADMIN" || token?.role === "SYSTEM_ADMIN";
-    const isManager = token?.role === "MANAGER" || token?.isTeamLeader === true;
+    const isManager = token?.isTeamLeader === true;
     
     // Protect Manager Routes (Allow Manager, Admin, System Admin, and Team Leader)
     if (path.startsWith("/dashboard/manager") && !isManager && !isAdmin) {

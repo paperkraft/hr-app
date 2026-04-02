@@ -80,6 +80,8 @@ async function getEmployeeData() {
     take: 5
   });
 
+  const config = await prisma.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
+
   return {
     attendanceStatus,
     balances: {
@@ -91,10 +93,11 @@ async function getEmployeeData() {
     recentRequests: recentRequests.map((req: any) => {
       const dateStr = new Date(req.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       const timeStr = req.duration === "SHORT" && req.startTime ? ` (${req.startTime} - ${req.endTime})` : "";
+      const halfStr = req.duration === "HALF" && req.halfDayType ? ` (${req.halfDayType === 'FIRST_HALF' ? '1st Half' : '2nd Half'})` : "";
       
       return {
         id: req.id,
-        dates: req.duration === "SHORT" ? `${dateStr}${timeStr}` : `${dateStr} - ${new Date(req.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+        dates: req.duration === "SHORT" ? `${dateStr}${timeStr}` : (req.duration === "HALF" ? `${dateStr}${halfStr}` : `${dateStr} - ${new Date(req.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`),
         status: req.status,
         duration: req.duration,
         category: req.category === "MONTHLY_POLICY_1" ? "Policy 1" : req.category === "UNPAID" ? "Unpaid" : "Policy 2",
@@ -102,7 +105,8 @@ async function getEmployeeData() {
       };
     }),
     userName: user?.name ?? session.user.name ?? "Employee",
-    autoPunchOutCount: user?.autoPunchOutCount ?? 0
+    autoPunchOutCount: (user as any)?.autoPunchOutCount ?? 0,
+    autoPunchOutThreshold: (config as any)?.autoPunchOutWarningThreshold ?? 3
   };
 }
 
@@ -130,6 +134,7 @@ export default async function EmployeeDashboard() {
           <PunchCard 
             initialStatus={data.attendanceStatus} 
             autoPunchOutCount={data.autoPunchOutCount}
+            warningThreshold={data.autoPunchOutThreshold}
           />
         </div>
         <div className="lg:col-span-2">

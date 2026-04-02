@@ -11,11 +11,6 @@ export const roleNavigation: Record<string, NavItem[]> = {
     { title: "My Space", href: "/dashboard/employee", icon: Home },
     { title: "My Leaves", href: "/dashboard/employee/leaves", icon: FileText },
   ],
-  MANAGER: [
-    { title: "My Space", href: "/dashboard/employee", icon: Home },
-    { title: "My Leaves", href: "/dashboard/employee/leaves", icon: FileText },
-    { title: "Team Management", href: "/dashboard/manager", icon: ShieldCheck }, // Clearly separated
-  ],
   ACCOUNTANT: [
     { title: "My Space", href: "/dashboard/employee", icon: Home },
     { title: "Payroll & Processing", href: "/dashboard/accountant", icon: Calculator },

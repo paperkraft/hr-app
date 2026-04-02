@@ -6,10 +6,6 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
 export async function getSystemConfig() {
-  console.log("PRISMA MODELS AVAILABLE:", Object.keys(prisma))
-  // Ensure only authorized users (e.g., ADMIN) can access this if needed, 
-  // but usually settings are checked by system components too.
-  
   const config = await prisma.systemConfig.upsert({
     where: { id: "GLOBAL_CONFIG" },
     update: {},
@@ -18,6 +14,17 @@ export async function getSystemConfig() {
       officeStartTime: "09:00",
       officeEndTime: "18:00",
       graceTimeMinutes: 15,
+      lateMarkEnabled: true,
+      lateMarkAllowedCount: 3,
+      specialCaseEnabled: true,
+      specialCaseExtraMinutes: 0,
+      autoPunchOutEnabled: true,
+      autoPunchOutDelayHours: 2,
+      autoPunchOutWarningThreshold: 3,
+      semiAnnualPolicyEnabled: true,
+      semiAnnualCycleStartMonth: 4,
+      firstHalfEndTime: "13:30",
+      secondHalfStartTime: "13:30",
     },
   })
   
@@ -28,6 +35,17 @@ export async function updateSystemConfig(data: {
   officeStartTime: string;
   officeEndTime: string;
   graceTimeMinutes: number;
+  lateMarkEnabled: boolean;
+  lateMarkAllowedCount: number;
+  specialCaseEnabled: boolean;
+  specialCaseExtraMinutes: number;
+  autoPunchOutEnabled: boolean;
+  autoPunchOutDelayHours: number;
+  autoPunchOutWarningThreshold: number;
+  semiAnnualPolicyEnabled: boolean;
+  semiAnnualCycleStartMonth: number;
+  firstHalfEndTime: string;
+  secondHalfStartTime: string;
   officeLat?: number;
   officeLng?: number;
   allowedRadiusMeters?: number;
@@ -45,6 +63,17 @@ export async function updateSystemConfig(data: {
         officeStartTime: data.officeStartTime,
         officeEndTime: data.officeEndTime,
         graceTimeMinutes: data.graceTimeMinutes,
+        lateMarkEnabled: data.lateMarkEnabled,
+        lateMarkAllowedCount: data.lateMarkAllowedCount,
+        specialCaseEnabled: data.specialCaseEnabled,
+        specialCaseExtraMinutes: data.specialCaseExtraMinutes,
+        autoPunchOutEnabled: data.autoPunchOutEnabled,
+        autoPunchOutDelayHours: data.autoPunchOutDelayHours,
+        autoPunchOutWarningThreshold: data.autoPunchOutWarningThreshold,
+        semiAnnualPolicyEnabled: data.semiAnnualPolicyEnabled,
+        semiAnnualCycleStartMonth: data.semiAnnualCycleStartMonth,
+        firstHalfEndTime: data.firstHalfEndTime,
+        secondHalfStartTime: data.secondHalfStartTime,
         officeLat: data.officeLat,
         officeLng: data.officeLng,
         allowedRadiusMeters: data.allowedRadiusMeters,

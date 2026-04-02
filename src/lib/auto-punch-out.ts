@@ -27,7 +27,12 @@ export async function processAutoPunchOuts(userId: string) {
   if (missingPunchOuts.length === 0) return;
 
   const config = await prisma.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
+  
+  // Policy Toggle: Auto Punch-Out
+  if (config && !config.autoPunchOutEnabled) return;
+
   const globalEndTime = config?.officeEndTime || "18:00";
+  const delayHours = config?.autoPunchOutDelayHours ?? 2;
 
   let totalProcessed = 0;
 
@@ -35,12 +40,8 @@ export async function processAutoPunchOuts(userId: string) {
     const shiftEndTime = record.user.shift?.endTime || globalEndTime;
     const [hours, minutes] = shiftEndTime.split(":").map(Number);
 
-    // Auto punch-out is 2 hours after shift ends
-    // record.date is 00:00:00 UTC of that local day.
-    // In local time, new Date(record.date) is 05:30:00 (for IST).
-    // Setting hours to (endTime + 2) will correctly set the local time.
     const autoPunchOutTime = new Date(record.date);
-    autoPunchOutTime.setHours(hours + 2, minutes, 0, 0);
+    autoPunchOutTime.setHours(hours + delayHours, minutes, 0, 0);
 
     // Update the attendance record
     await prisma.attendance.update({

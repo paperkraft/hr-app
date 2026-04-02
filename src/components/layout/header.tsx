@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Bell, Activity } from "lucide-react";
+import { Menu, Bell, Activity, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/layout/user-nav";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -8,9 +8,16 @@ import { roleNavigation } from "@/config/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export function Header({ userName, userRole }: { userName: string; userRole: string }) {
+export function Header({ userName, userRole, isTeamLeader }: { userName: string; userRole: string; isTeamLeader?: boolean }) {
   const pathname = usePathname();
-  const navItems = roleNavigation[userRole] || roleNavigation.EMPLOYEE;
+  
+  const baseNav = roleNavigation[userRole] || roleNavigation.EMPLOYEE;
+  const navItems = [...baseNav];
+
+  // Append Team Management for Team Leaders
+  if (isTeamLeader && !navItems.some(item => item.href === "/dashboard/manager")) {
+    navItems.push({ title: "Team Management", href: "/dashboard/manager", icon: ShieldCheck });
+  }
 
   return (
     <header className="h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4 md:px-8 sticky top-0 z-50 transition-all">

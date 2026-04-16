@@ -7,7 +7,7 @@ import { Activity, ShieldCheck } from "lucide-react";
 
 export function Sidebar({ userRole, isTeamLeader }: { userRole: string; isTeamLeader?: boolean }) {
   const pathname = usePathname();
-  
+
   const baseNav = roleNavigation[userRole] || roleNavigation.EMPLOYEE;
   const navItems = [...baseNav];
 
@@ -32,13 +32,12 @@ export function Sidebar({ userRole, isTeamLeader }: { userRole: string; isTeamLe
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 group ${isActive
-                ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+              className={`flex items-center gap-3 px-4 py-3 rounded-none border-l-4 transition-all ${isActive
+                ? "bg-primary/5 border-primary text-primary font-semibold"
+                : "border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                 }`}
             >
-              <item.icon className={`w-4 h-4 transition-colors ${isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
-                }`} />
+              <item.icon className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
               {item.title}
             </Link>
           );

@@ -87,55 +87,16 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
     const currentBalance = user.leaveBalances.find(lb => lb.month === currentMonth && lb.year === currentYear);
     const prevBalance = user.leaveBalances.find(lb => lb.month === prevMonth && lb.year === prevYear);
 
-    // Calculate usage strictly within this month's boundaries
-    let policy1FullUsed = 0;
-    let policy1ShortUsed = 0;
-    let policy2Used = 0;
-    let explicitLwp = 0;
-    let totalLeavesTakenInMonth = 0;
+    // USE DATABASE COUNTERS as source of truth
+    const policy1FullUsed = currentBalance?.fullTaken ?? 0;
+    const policy1ShortUsed = currentBalance?.shortTaken ?? 0;
+    const policy2Used = currentBalance?.semiAnnualTaken ?? 0;
+    const unpaidTaken = currentBalance?.unpaidTaken ?? 0;
+    
+    // Total Leaves Taken for month-level summary (including short leaves)
+    const totalLeavesTakenInMonth = policy1FullUsed + policy1ShortUsed + policy2Used + unpaidTaken;
 
-    user.leaveRequests.forEach(req => {
-      // Intersection logic
-      const intersectStart = req.startDate < startOfMonth ? startOfMonth : req.startDate;
-      const intersectEnd = req.endDate > endOfMonth ? endOfMonth : req.endDate;
-
-      if (intersectStart > intersectEnd) return; // No overlap
-
-      const diffMs = intersectEnd.getTime() - intersectStart.getTime();
-      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24)) + 1;
-      const actualDays = req.duration === "HALF" ? 0.5 * diffDays : diffDays;
-      
-      totalLeavesTakenInMonth += actualDays;
-
-      if (req.category === "MONTHLY_POLICY_1") {
-        if (req.duration === "SHORT") {
-          policy1ShortUsed += 1;
-        } else {
-          policy1FullUsed += actualDays;
-        }
-      } else if (req.category === "SEMI_ANNUAL_POLICY_2") {
-        policy2Used += actualDays;
-      } else if (req.category === "UNPAID") {
-        explicitLwp += actualDays;
-      }
-    });
-
-    // Baseline from DB record state
-    // Opening = Remaining in DB + Usage already deducted in DB
-    // However, to show a consistent "Policy 1" report:
-    const openingFull = 2.0 + (prevBalance?.carriedForward ?? 0);
-    const openingShort = 1;
-
-    // TRUST THE DATABASE for currently remaining values
-    const remainingFull = currentBalance?.remainingFull ?? 0;
-    const remainingShort = currentBalance?.remainingShort ?? 0;
-    const semiAnnualRemaining = currentBalance?.semiAnnualRemaining ?? 0;
-
-    // Calculate Auto-LWP: if usage exceeds opening
-    const autoLwpFull = Math.max(0, policy1FullUsed - openingFull);
-    const autoLwpShort = Math.max(0, policy1ShortUsed - openingShort) * 0.5;
-
-    // Late Mark Penalties
+    // Late Mark Penalties (still calculated from attendance)
     const totalLate = attendances.filter(a => a.isLate).length;
     const specialCaseLate = attendances.filter(a => a.isLate && a.isLateSpecialCase).length;
     const punishableLate = totalLate - specialCaseLate;
@@ -143,13 +104,11 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
     
     totalLatesSystemWide += totalLate;
 
-    // Total LWP = Excess Leaves (Auto) + Manual Unpaid + Late Mark Penalties
-    const lwpDays = autoLwpFull + autoLwpShort + explicitLwp + lateDeduction;
+    // Total LWP = Database Unpaid (manual + overflow) + Late Mark Penalties
+    const lwpDays = unpaidTaken + lateDeduction;
     totalLwpSystemWide += lwpDays;
 
-    // Current month's potential encashment (anything above 1 day)
-    const encashableDays = remainingFull > 1 ? (remainingFull - 1) : 0;
-    totalEncashments += encashableDays;
+    totalEncashments += (currentBalance?.encashed ?? 0);
 
     return {
       id: user.id,
@@ -161,11 +120,11 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
       specialCaseLate,
       punishableLate,
       lwpDays: lwpDays,
-      encashableDays,
+      encashableDays: currentBalance?.encashed ?? 0,
       balances: {
-        full: remainingFull,
-        short: remainingShort,
-        semiAnnual: semiAnnualRemaining,
+        full: currentBalance?.remainingFull ?? 0,
+        short: currentBalance?.remainingShort ?? 0,
+        semiAnnual: currentBalance?.semiAnnualRemaining ?? 0,
       },
       offSiteCount: attendances.filter(a => a.isOutsideOffice).length
     };

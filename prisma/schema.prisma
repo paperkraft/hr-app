@@ -150,6 +150,12 @@ model LeaveBalance {
   // Policy 2: The Semi-Annual Cycle
   semiAnnualRemaining Int @default(3)
 
+  // --- NEW: Monthly Usage Source of Truth ---
+  fullTaken       Float @default(0.0)
+  shortTaken      Int   @default(0)
+  semiAnnualTaken Float @default(0.0)
+  unpaidTaken     Float @default(0.0)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

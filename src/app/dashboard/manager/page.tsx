@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, Inbox, Check, Clock, MapPinOff } from "lucide-react";
+import { Users, Inbox, Check, Clock, MapPinOff, Calendar } from "lucide-react";
 import { LeaveApprovalRow } from "@/components/features/manager/leave-approval-row";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -68,6 +68,8 @@ async function getTeamData() {
 
   // 3. Build Team Live Attendance Status
   const { start, end } = getTodayRange();
+  
+  // Fetch today's attendance logs
   const todayLogs = await prisma.attendance.findMany({
     where: {
       userId: { in: supervisedUserIds },
@@ -75,8 +77,20 @@ async function getTeamData() {
     }
   });
 
+  // Fetch today's approved leaves
+  const todayLeaves = await prisma.leaveRequest.findMany({
+    where: {
+      userId: { in: supervisedUserIds },
+      status: "APPROVED",
+      startDate: { lte: end },
+      endDate: { gte: start }
+    }
+  });
+
   const teamStatus = supervisedUsers.map(member => {
     const log = todayLogs.find(l => l.userId === member.id);
+    const leave = todayLeaves.find(l => l.userId === member.id);
+    
     let status = "PENDING";
     let inTime = null;
 
@@ -86,6 +100,8 @@ async function getTeamData() {
         status = "PUNCHED_IN";
         inTime = log.punchIn.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
       }
+    } else if (leave) {
+      status = "ON_LEAVE";
     }
 
     return { 
@@ -230,6 +246,12 @@ export default async function ManagerDashboard() {
                           {member.status === "PENDING" && (
                             <Badge variant="outline" className="text-amber-600 bg-amber-50 border-amber-200">
                               Not Clocked In
+                            </Badge>
+                          )}
+                          {member.status === "ON_LEAVE" && (
+                            <Badge variant="outline" className="text-indigo-600 bg-indigo-50 border-indigo-200 flex items-center gap-1">
+                              <Calendar className="size-3" />
+                              On Leave
                             </Badge>
                           )}
                           {member.isOutsideOffice && (

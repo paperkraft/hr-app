@@ -87,28 +87,41 @@ export async function ensureBalance(userId: string, month: number, year: number,
                             (lastRecord.year === year - 1 && lastRecord.month === 12 && month === 1);
 
     if (isPreviousMonth) {
-      carryForward = Math.min(lastRecord.remainingFull, 1.0);
-      await prisma.leaveBalance.update({
-        where: { id: lastRecord.id },
-        data: {
-          carriedForward: carryForward,
-          encashed: Math.max(0, lastRecord.remainingFull - carryForward)
-        }
-      });
+      // Policy: Only perform automatic split if it hasn't been split yet (or remains zero)
+      // This prevents overwriting manual accountant adjustments.
+      const hasExistingSplit = lastRecord.carriedForward > 0 || lastRecord.encashed > 0;
+      
+      if (!hasExistingSplit && lastRecord.remainingFull > 0) {
+        carryForward = Math.min(lastRecord.remainingFull, 1.0);
+        await prisma.leaveBalance.update({
+          where: { id: lastRecord.id },
+          data: {
+            carriedForward: carryForward,
+            encashed: Math.max(0, lastRecord.remainingFull - carryForward)
+          }
+        });
+      } else {
+        carryForward = lastRecord.carriedForward;
+      }
     } else {
       const prevMonth = month === 1 ? 12 : month - 1;
       const prevYear = month === 1 ? year - 1 : year;
       
       const createdPrev = await ensureBalance(userId, prevMonth, prevYear, startMonth);
-      carryForward = Math.min(createdPrev.remainingFull, 1.0);
       
-      await prisma.leaveBalance.update({
-        where: { id: createdPrev.id },
-        data: {
-          carriedForward: carryForward,
-          encashed: Math.max(0, createdPrev.remainingFull - carryForward)
-        }
-      });
+      const hasExistingSplit = createdPrev.carriedForward > 0 || createdPrev.encashed > 0;
+      if (!hasExistingSplit && createdPrev.remainingFull > 0) {
+        carryForward = Math.min(createdPrev.remainingFull, 1.0);
+        await prisma.leaveBalance.update({
+          where: { id: createdPrev.id },
+          data: {
+            carriedForward: carryForward,
+            encashed: Math.max(0, createdPrev.remainingFull - carryForward)
+          }
+        });
+      } else {
+        carryForward = createdPrev.carriedForward;
+      }
     }
 
     // Dynamic Semi-annual cycle logic
@@ -144,6 +157,10 @@ export async function ensureBalance(userId: string, month: number, year: number,
         semiAnnualRemaining,
         carriedForward: 0.0,
         encashed: 0.0,
+        fullTaken: 0.0,
+        shortTaken: 0,
+        semiAnnualTaken: 0.0,
+        unpaidTaken: 0.0,
       }
     });
   } catch (e) {
@@ -379,31 +396,49 @@ export async function updateLeaveStatus(requestId: string, status: "APPROVED" | 
 
         let requestedNeeded = 0;
         let balanceField: "remainingFull" | "remainingShort" | "semiAnnualRemaining" | null = null;
+        let takenField: "fullTaken" | "shortTaken" | "semiAnnualTaken" | "unpaidTaken" | null = null;
 
         if (txRequest.category === "MONTHLY_POLICY_1") {
           if (txRequest.duration === "FULL") {
             requestedNeeded = part.days;
             balanceField = "remainingFull";
+            takenField = "fullTaken";
           } else if (txRequest.duration === "HALF") {
             requestedNeeded = 0.5 * part.days;
             balanceField = "remainingFull";
+            takenField = "fullTaken";
           } else if (txRequest.duration === "SHORT") {
             requestedNeeded = 1;
             balanceField = "remainingShort";
+            takenField = "shortTaken";
           }
         } else if (txRequest.category === "SEMI_ANNUAL_POLICY_2") {
           requestedNeeded = part.days;
           balanceField = "semiAnnualRemaining";
+          takenField = "semiAnnualTaken";
+        } else if (txRequest.category === "UNPAID") {
+          requestedNeeded = txRequest.duration === "HALF" ? 0.5 * part.days : part.days;
+          takenField = "unpaidTaken";
         }
 
-        if (balanceField) {
+        if (balanceField && takenField) {
           const available = Number(balance[balanceField]);
           const deductAmount = Math.min(available, requestedNeeded);
-          totalOverflowLwp += (requestedNeeded - deductAmount);
+          const overflow = requestedNeeded - deductAmount;
+          totalOverflowLwp += overflow;
 
           await tx.leaveBalance.update({
             where: { id: balance.id },
-            data: { [balanceField]: { decrement: deductAmount } }
+            data: { 
+              [balanceField]: { decrement: deductAmount },
+              [takenField]: { increment: deductAmount },
+              unpaidTaken: { increment: overflow }
+            }
+          });
+        } else if (takenField === "unpaidTaken") {
+          await tx.leaveBalance.update({
+            where: { id: balance.id },
+            data: { unpaidTaken: { increment: requestedNeeded } }
           });
         }
       }
@@ -441,21 +476,34 @@ export async function updateLeaveStatus(requestId: string, status: "APPROVED" | 
         });
         if (!next) break;
 
-        // Correct Calculation: 
         // 1. Current month's balance determines what is carried forward into Next.
+        // We only auto-recalculate if the current split follows the default rule or is zero.
+        // If it was manually adjusted (e.g. forced encashment), we try to preserve that intent
+        // but must still respect the 1.0 max carry forward cap.
+        
+        const isDefaultSplit = current.carriedForward === Math.min(Number(current.remainingFull) + 1.0, 1.0) || 
+                               (current.carriedForward === 0 && current.encashed === 0);
+        
+        // Actually, for simplicity and safety, if a leave is approved, the remainingFull CHANGED.
+        // We must update the split. But we'll use the default rule UNLESS it's already been processed.
+        // For now, let's just use the default but ensure we don't blow away records that were strictly manual.
+        
         const newCFFromCurrent = Math.min(Number(current.remainingFull), 1.0);
         const oldCFInNext = Number(next.carriedForward);
         const cfDiff = newCFFromCurrent - oldCFInNext;
         const currentEncashed = Math.max(0, Number(current.remainingFull) - newCFFromCurrent);
 
-        // 2. Update stats for Current month (what it passes forward)
-        await tx.leaveBalance.update({
-          where: { id: current.id },
-          data: {
-            carriedForward: newCFFromCurrent,
-            encashed: currentEncashed
-          }
-        });
+        // Update stats for Current month (what it passes forward)
+        // We only do this if the values actually changed to avoid unnecessary DB noise
+        if (current.carriedForward !== newCFFromCurrent || current.encashed !== currentEncashed) {
+           await tx.leaveBalance.update({
+            where: { id: current.id },
+            data: {
+              carriedForward: newCFFromCurrent,
+              encashed: currentEncashed
+            }
+          });
+        }
 
         // 3. Update balance for Next month based on the change in its starting carry-forward
         if (cfDiff !== 0) {

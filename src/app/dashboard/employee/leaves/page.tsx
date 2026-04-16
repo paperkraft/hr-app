@@ -76,7 +76,9 @@ export default async function EmployeeLeavesPage() {
                     <td className="p-4 align-middle font-medium">{leave.duration}</td>
                     <td className="p-4 align-middle">
                       <span className="text-xs bg-secondary px-2 py-1 rounded-md text-muted-foreground">
-                        {leave.category.replace(/_/g, " ")}
+                        {leave.category === "MONTHLY_POLICY_1" 
+                          ? `Monthly${leave.leaveType ? ` (${leave.leaveType.charAt(0) + leave.leaveType.slice(1).toLowerCase()})` : ""}` 
+                          : leave.category === "UNPAID" ? "Unpaid" : "Semi-Annual"}
                       </span>
                     </td>
                     <td className="p-4 align-middle text-muted-foreground max-w-[200px] truncate" title={leave.reason || "N/A"}>

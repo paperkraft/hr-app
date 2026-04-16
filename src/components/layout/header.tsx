@@ -14,11 +14,6 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
   const baseNav = roleNavigation[userRole] || roleNavigation.EMPLOYEE;
   const navItems = [...baseNav];
 
-  // Append Team Management for Team Leaders
-  if (isTeamLeader && !navItems.some(item => item.href === "/dashboard/manager")) {
-    navItems.push({ title: "Team Management", href: "/dashboard/manager", icon: ShieldCheck });
-  }
-
   return (
     <header className="h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4 md:px-8 sticky top-0 z-50 transition-all">
       <div className="flex items-center gap-4">

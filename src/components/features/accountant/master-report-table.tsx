@@ -25,6 +25,7 @@ type ReportData = {
   punishableLate: number;
   lwpDays: number;
   encashableDays: number;
+  allowanceDays: number;
   balances: {
     full: number;
     short: number;
@@ -51,7 +52,7 @@ export function MasterReportTable({
           {/* Tier 1: Spanning Group Headers */}
           <TableRow className="bg-muted/10 hover:bg-muted/10 border-b border-border/60">
             <TableHead className="h-10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r border-border/40">Staff</TableHead>
-            <TableHead colSpan={2} className="h-10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center border-r border-border/40 bg-blue-500/5">Attendance</TableHead>
+            <TableHead colSpan={3} className="h-10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center border-r border-border/40 bg-blue-500/5">Attendance</TableHead>
             <TableHead className="h-10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center border-r border-border/40 bg-amber-500/5">Leave Usage</TableHead>
             <TableHead colSpan={2} className="h-10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center border-r border-border/40 bg-emerald-500/5 font-mono">Monthly P1</TableHead>
             <TableHead className="h-10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center border-r border-border/40 bg-indigo-500/5 font-mono">P2</TableHead>
@@ -65,7 +66,8 @@ export function MasterReportTable({
             
             {/* Attendance Group */}
             <TableHead className="h-12 font-bold text-foreground text-center bg-blue-500/[0.02]">Present</TableHead>
-            <TableHead className="h-12 font-bold text-foreground text-center border-r border-border/30 bg-blue-500/[0.02]">Lates</TableHead>
+            <TableHead className="h-12 font-bold text-foreground text-center bg-blue-500/[0.02]">Lates</TableHead>
+            <TableHead className="h-12 font-bold text-blue-700 text-center border-r border-border/30 bg-blue-500/[0.02]">Allowance</TableHead>
             
             {/* Consumption Group */}
             <TableHead className="h-12 font-bold text-foreground text-center border-r border-border/30 bg-amber-500/[0.02]">Taken</TableHead>
@@ -87,7 +89,7 @@ export function MasterReportTable({
         <TableBody className="divide-y divide-border/40">
           {data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={10} className="h-24 text-center text-muted-foreground">
+              <TableCell colSpan={11} className="h-24 text-center text-muted-foreground">
                 No staff data found for this month.
               </TableCell>
             </TableRow>
@@ -97,20 +99,12 @@ export function MasterReportTable({
                 <TableRow className="hover:bg-muted/10 transition-colors group">
                   <TableCell className="font-medium border-r border-border/30">
                     <div className="flex items-center gap-2">
-                      {row.name}
+                      <span className="truncate max-w-[120px]" title={row.name}>{row.name}</span>
                       {row.offSiteCount > 0 && (
-                        <Badge variant="outline" className="text-rose-600 border-rose-200 bg-rose-50 text-[9px] h-4 flex items-center gap-0.5 px-1 font-bold">
-                          {row.offSiteCount} &nbsp;Outside
+                        <Badge variant="outline" className="text-rose-600 border-rose-200 bg-rose-50 text-[9px] h-4 flex items-center gap-0.5 px-1 font-bold shrink-0">
+                          {row.offSiteCount}
                         </Badge>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => setActiveSplitId(activeSplitId === row.id ? null : row.id)}
-                      >
-                        <Settings2 className="h-3 w-3" />
-                      </Button>
                     </div>
                   </TableCell>
                   
@@ -118,7 +112,7 @@ export function MasterReportTable({
                   <TableCell className="text-center font-semibold text-foreground bg-blue-500/[0.01]">
                     {row.totalPresent}
                   </TableCell>
-                  <TableCell className="text-center border-r border-border/30 bg-blue-500/[0.01]">
+                  <TableCell className="text-center bg-blue-500/[0.01]">
                     <div className="flex flex-col items-center gap-1">
                       {row.punishableLate > 0 ? (
                         <Badge variant="outline" className="text-destructive border-destructive/30 bg-destructive/10 text-[10px]">
@@ -127,10 +121,10 @@ export function MasterReportTable({
                       ) : (
                         <span className="text-muted-foreground/30 text-xs">-</span>
                       )}
-                      {row.specialCaseLate > 0 && (
-                        <span className="text-[8px] text-amber-600 font-bold uppercase tracking-tighter">+{row.specialCaseLate} Cov</span>
-                      )}
                     </div>
+                  </TableCell>
+                  <TableCell className="text-center font-bold text-blue-700 border-r border-border/30 bg-blue-500/[0.01] text-xs">
+                    {row.allowanceDays > 0 ? `${row.allowanceDays}d` : "-"}
                   </TableCell>
 
                   {/* Leave Usage */}

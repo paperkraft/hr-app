@@ -9,10 +9,18 @@ export const leaveApplicationSchema = z.object({
   category: z.enum(["MONTHLY_POLICY_1", "SEMI_ANNUAL_POLICY_2", "UNPAID"], {
     required_error: "Please select which policy to deduct this leave from.",
   }),
+  leaveType: z.enum(["CASUAL", "MEDICAL"]).optional(),
   reason: z.string().min(10, "Please provide a reason (minimum 10 characters).").max(500),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
   halfDayType: z.enum(["FIRST_HALF", "SECOND_HALF"]).optional(),
+}).refine((data) => {
+  // Requirement: Monthly leads need a type
+  if (data.category === "MONTHLY_POLICY_1" && !data.leaveType) return false;
+  return true;
+}, {
+  message: "Please select a leave type (Casual or Medical) for Monthly leave.",
+  path: ["leaveType"],
 }).refine((data) => {
   // HALF Leave Enforcement: Requires First/Second selection
   if (data.duration === "HALF" && !data.halfDayType) return false;

@@ -113,6 +113,32 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
         {errors.category && <p className="text-[11px] text-destructive font-medium">{errors.category.message}</p>}
       </div>
 
+      {/* Monthly Leave Type Selection (Sub-category) */}
+      {selectedCategory === "MONTHLY_POLICY_1" && (
+        <div className="space-y-3 p-4 bg-primary/5 border border-primary/10 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
+          <Label className="text-xs font-bold text-primary flex items-center gap-1.5 uppercase tracking-wider">
+             Monthly Leave Type
+          </Label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className={`relative flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-all ${watch("leaveType") === "CASUAL" ? "border-primary ring-1 ring-primary bg-primary/10 shadow-sm" : "border-border/40 bg-background/50"}`}>
+              <input type="radio" value="CASUAL" className="sr-only" {...register("leaveType")} />
+              <div className="flex flex-col">
+                <span className="text-xs font-bold">Casual Leave</span>
+                <span className="text-[10px] text-muted-foreground font-medium">Standard leave (Unpaid if backdated).</span>
+              </div>
+            </label>
+            <label className={`relative flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-all ${watch("leaveType") === "MEDICAL" ? "border-blue-500 ring-1 ring-blue-500 bg-blue-500/10 shadow-sm" : "border-border/40 bg-background/50"}`}>
+              <input type="radio" value="MEDICAL" className="sr-only" {...register("leaveType")} />
+              <div className="flex flex-col">
+                <span className="text-xs font-bold">Medical Leave</span>
+                <span className="text-[10px] text-muted-foreground">Auto-approved if backdated.</span>
+              </div>
+            </label>
+          </div>
+          {errors.leaveType && <p className="text-[11px] text-destructive font-medium">{errors.leaveType.message}</p>}
+        </div>
+      )}
+
       {/* Duration Selection */}
       <div className="space-y-3 pt-2 border-t border-border/50">
         <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Duration</Label>
@@ -219,4 +245,4 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
       </div>
     </form>
   );
-}
+}

@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Users, FileText, Activity, ShieldAlert, CheckCircle2, Check } from "lucide-react";
 import prisma from "@/lib/prisma";
-import { LeaveApprovalRow } from "@/components/features/manager/leave-approval-row";
 import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { getTodayRange } from "@/lib/attendance-helper";
@@ -71,6 +70,14 @@ async function getAdminStats() {
 
   const attendanceRate = staff.length > 0 ? Math.round((presentEmployees.length / staff.length) * 100) : 100;
 
+  // Fetch recent APPROVED requests (last 20)
+  const recentApprovals = await prisma.leaveRequest.findMany({
+    where: { status: "APPROVED" },
+    include: { user: true },
+    orderBy: { updatedAt: "desc" },
+    take: 20
+  });
+
   return {
     totalEmployees,
     pendingLeavesSystemWide: allPendingRequests.length,
@@ -110,6 +117,17 @@ async function getAdminStats() {
       startTime: req.startTime,
       endTime: req.endTime,
     })),
+    recentApprovals: recentApprovals.map((req: any) => ({
+      id: req.id,
+      employeeName: `${req.user.name || req.user.email}`,
+      role: req.user.role,
+      startDate: new Date(req.startDate).toISOString().split('T')[0],
+      endDate: new Date(req.endDate).toISOString().split('T')[0],
+      category: req.category,
+      leaveType: req.leaveType,
+      systemNote: req.systemNote,
+      updatedAt: req.updatedAt
+    })),
     recentActivity: [
       { id: 1, action: "Attendance System Synced", details: `${presentEmployees.length} present, ${absentEmployees.length} absent today`, time: "Just now", type: "system" },
       { id: 2, action: "Leave Policy Update", details: "Policy 2 (Semi-annual) now enforces 3-day minimum", time: "1 day ago", type: "policy" },
@@ -141,18 +159,6 @@ export default async function AdminOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-border/40">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <FileText className="size-4 text-amber-500" />
-              Pending Leaves
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-amber-600">{stats.pendingLeavesSystemWide}</div>
-            <p className="text-xs text-muted-foreground mt-1">System-wide awaiting approval</p>
-          </CardContent>
-        </Card>
 
         <Card className="shadow-sm border-border/40">
           <CardHeader className="pb-2">
@@ -290,39 +296,71 @@ export default async function AdminOverviewPage() {
         </Card>
       </div>
 
+
       <Card className="shadow-sm border-border/40 p-0 gap-0">
         <CardHeader className="bg-muted/5 border-b border-border/40 p-4">
           <CardTitle className="text-lg flex items-center gap-2">
-            <FileText className="size-5 text-amber-500" />
-            Pending Approvals
+            <CheckCircle2 className="size-5 text-emerald-500" />
+            Recently Resolved & Auto-Approved Requests
           </CardTitle>
-          <CardDescription>Leaves requiring system-wide review.</CardDescription>
+          <CardDescription>Log of manually and automatically processed leaves.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          {stats.allPendingRequests.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-              <CheckCircle2 className="w-12 h-12 mb-4 text-muted/20" />
-              <p className="text-sm font-medium">All clear! No pending requests.</p>
-            </div>
-          ) : (
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-muted/30">
                 <TableRow>
-                  <TableHead className="py-3 px-4">Employee</TableHead>
-                  <TableHead className="py-3 px-4">Dates</TableHead>
-                  <TableHead className="py-3 px-4">Reason</TableHead>
-                  <TableHead className="py-3 px-4 text-right">Action</TableHead>
+                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Employee</TableHead>
+                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Duration</TableHead>
+                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Type</TableHead>
+                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Method / Note</TableHead>
+                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-right text-muted-foreground">Processed</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {stats.allPendingRequests.map((req: any) => (
-                  <LeaveApprovalRow key={req.id} request={req} />
-                ))}
+                {stats.recentApprovals.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="py-10 text-center text-muted-foreground italic">
+                      No approval history found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  stats.recentApprovals.map((req: any) => (
+                    <TableRow key={req.id} className="hover:bg-muted/5">
+                      <TableCell className="py-3 px-4">
+                        <div className="font-semibold text-sm">{req.employeeName}</div>
+                        <div className="text-[10px] text-muted-foreground uppercase">{req.role}</div>
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-xs font-medium">
+                        {req.startDate === req.endDate ? req.startDate : `${req.startDate} to ${req.endDate}`}
+                      </TableCell>
+                      <TableCell className="py-3 px-4">
+                        <Badge variant="outline" className="text-[9px] font-bold uppercase truncate max-w-[100px]">
+                          {req.category.replace(/_/g, ' ')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="py-3 px-4">
+                        {req.systemNote ? (
+                          <div className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-100 italic">
+                            {req.systemNote}
+                          </div>
+                        ) : (
+                          <div className="text-[10px] text-muted-foreground px-2 py-1 bg-muted/20 rounded-full w-fit flex items-center gap-1">
+                            <Check className="size-3" /> Manual
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right text-[10px] font-mono whitespace-nowrap">
+                        {new Date(req.updatedAt).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
-          )}
+          </div>
         </CardContent>
-      </Card >
+      </Card>
 
     </div >
   );

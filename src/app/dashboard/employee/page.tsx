@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { PunchCard } from "@/components/features/attendance/punch-card";
 import { CalendarDays, AlertCircle, Clock as ClockIcon, CheckCircle2 } from "lucide-react";
 import { RequestLeaveButton } from "@/components/features/leave/request-leave-button";
+import { AllowanceRequestDialog } from "@/components/features/leave/allowance-request-dialog";
 import { LeaveBalanceCard } from "@/components/features/leave/leave-balance-card";
 import { RecentRequestsCard } from "@/components/features/leave/recent-requests-card";
 
@@ -100,7 +101,7 @@ async function getEmployeeData() {
         dates: req.duration === "SHORT" ? `${dateStr}${timeStr}` : (req.duration === "HALF" ? `${dateStr}${halfStr}` : `${dateStr} - ${new Date(req.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`),
         status: req.status,
         duration: req.duration,
-        category: req.category === "MONTHLY_POLICY_1" ? "Policy 1" : req.category === "UNPAID" ? "Unpaid" : "Policy 2",
+        category: req.category === "MONTHLY_POLICY_1" ? `Monthly${req.leaveType ? ` (${req.leaveType.charAt(0) + req.leaveType.slice(1).toLowerCase()})` : ""}` : req.category === "UNPAID" ? "Unpaid" : "Semi-Annual",
         managerNote: req.managerNote,
       };
     }),
@@ -126,7 +127,10 @@ export default async function EmployeeDashboard() {
             Here's your attendance and leave overview for today.
           </p>
         </div>
-        <RequestLeaveButton />
+        <div className="flex items-center gap-3">
+          <AllowanceRequestDialog />
+          <RequestLeaveButton />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

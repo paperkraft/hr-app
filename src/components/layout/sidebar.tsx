@@ -11,11 +11,6 @@ export function Sidebar({ userRole, isTeamLeader }: { userRole: string; isTeamLe
   const baseNav = roleNavigation[userRole] || roleNavigation.EMPLOYEE;
   const navItems = [...baseNav];
 
-  // Append Team Management for Team Leaders
-  if (isTeamLeader && !navItems.some(item => item.href === "/dashboard/manager")) {
-    navItems.push({ title: "Team Management", href: "/dashboard/manager", icon: ShieldCheck });
-  }
-
   return (
     <aside className="w-64 border-r border-border/40 bg-card flex-col hidden md:flex h-screen sticky top-0 z-10">
       <div className="h-16 flex items-center px-6 border-b border-border/40">

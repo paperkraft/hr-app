@@ -304,19 +304,52 @@ export async function submitLeaveRequest(formData: unknown) {
       return { error: "You already have a leave request for the selected dates." };
     }
 
-    await prisma.leaveRequest.create({
+    // --- BUSINESS LOGIC: CATEGORY CONVERSION & AUTO-APPROVAL ---
+    let effectiveCategory = data.category;
+    let isAutoApproved = true; // ALL leaves are now auto-approved by default
+    let approvalNote = "Auto-approved by system.";
+
+    const start = new Date(data.startDate);
+    start.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const isBackdated = start < today;
+
+    if (data.category === "MONTHLY_POLICY_1") {
+      if (data.leaveType === "CASUAL" && isBackdated) {
+        // Condition: Backdated casual leave is converted to UNPAID
+        effectiveCategory = "UNPAID";
+        approvalNote = `Backdated Casual Leave: Auto-converted to UNPAID and approved by system.`;
+      } else if (data.leaveType === "MEDICAL" && isBackdated) {
+        approvalNote = "Medical Leave: Backdated but approved by system.";
+      } else {
+        approvalNote = `Monthly ${data.leaveType.toLowerCase()} leave: Auto-approved.`;
+      }
+    } else if (data.category === "SEMI_ANNUAL_POLICY_2") {
+      approvalNote = "Semi-Annual Leave (Policy 2): Auto-approved by system.";
+    } else if (data.category === "UNPAID") {
+      approvalNote = "Unpaid Leave: Auto-approved by system.";
+    }
+
+    const newRequest = await prisma.leaveRequest.create({
       data: {
         userId,
         startDate: new Date(data.startDate),
         endDate: new Date(data.endDate),
         duration: data.duration,
-        category: data.category,
+        category: effectiveCategory as any,
+        leaveType: data.leaveType as any,
         reason: data.reason,
         startTime: data.startTime,
         endTime: data.endTime,
-        halfDayType: data.halfDayType, // New field
+        halfDayType: data.halfDayType, 
+        systemNote: approvalNote, // Saving note for visibility
       }
     });
+
+    if (isAutoApproved) {
+      await processLeaveRequestStatus(newRequest.id, "APPROVED", approvalNote);
+    }
 
     revalidatePath("/dashboard/employee");
     revalidatePath("/dashboard/employee/leaves");
@@ -364,185 +397,7 @@ export async function updateLeaveStatus(requestId: string, status: "APPROVED" | 
        return { error: "Unauthorized. You do not supervise this employee's leave requests." };
     }
 
-    // Ensure balance record exists for all months covered by the leave
-    const leaveMonths = splitLeaveIntoMonths(requestMeta.startDate, requestMeta.endDate);
-    for (const m of leaveMonths) {
-      await ensureBalance(requestMeta.userId, m.month, m.year);
-    }
-
-    const result = await prisma.$transaction(async (tx) => {
-      const txRequest = await tx.leaveRequest.findUnique({ 
-        where: { id: requestId } 
-      });
-
-      if (!txRequest || txRequest.status !== "PENDING") return { success: true };
-
-      if (status === "REJECTED") {
-        await tx.leaveRequest.update({ 
-          where: { id: requestId }, 
-          data: { status: "REJECTED", managerNote: note || null } 
-        });
-        return { success: true };
-      }
-
-      let totalOverflowLwp = 0;
-      const monthParts = splitLeaveIntoMonths(txRequest.startDate, txRequest.endDate);
-      
-      for (const part of monthParts) {
-        const balance = await tx.leaveBalance.findUnique({
-          where: { userId_month_year: { userId: txRequest.userId, month: part.month, year: part.year } }
-        });
-        if (!balance) throw new Error(`BALANCE_NOT_FOUND_FOR_${part.month}_${part.year}`);
-
-        let requestedNeeded = 0;
-        let balanceField: "remainingFull" | "remainingShort" | "semiAnnualRemaining" | null = null;
-        let takenField: "fullTaken" | "shortTaken" | "semiAnnualTaken" | "unpaidTaken" | null = null;
-
-        if (txRequest.category === "MONTHLY_POLICY_1") {
-          if (txRequest.duration === "FULL") {
-            requestedNeeded = part.days;
-            balanceField = "remainingFull";
-            takenField = "fullTaken";
-          } else if (txRequest.duration === "HALF") {
-            requestedNeeded = 0.5 * part.days;
-            balanceField = "remainingFull";
-            takenField = "fullTaken";
-          } else if (txRequest.duration === "SHORT") {
-            requestedNeeded = 1;
-            balanceField = "remainingShort";
-            takenField = "shortTaken";
-          }
-        } else if (txRequest.category === "SEMI_ANNUAL_POLICY_2") {
-          requestedNeeded = part.days;
-          balanceField = "semiAnnualRemaining";
-          takenField = "semiAnnualTaken";
-        } else if (txRequest.category === "UNPAID") {
-          requestedNeeded = txRequest.duration === "HALF" ? 0.5 * part.days : part.days;
-          takenField = "unpaidTaken";
-        }
-
-        if (balanceField && takenField) {
-          const available = Number(balance[balanceField]);
-          const deductAmount = Math.min(available, requestedNeeded);
-          const overflow = requestedNeeded - deductAmount;
-          totalOverflowLwp += overflow;
-
-          await tx.leaveBalance.update({
-            where: { id: balance.id },
-            data: { 
-              [balanceField]: { decrement: deductAmount },
-              [takenField]: { increment: deductAmount },
-              unpaidTaken: { increment: overflow }
-            }
-          });
-        } else if (takenField === "unpaidTaken") {
-          await tx.leaveBalance.update({
-            where: { id: balance.id },
-            data: { unpaidTaken: { increment: requestedNeeded } }
-          });
-        }
-      }
-
-      let newManagerNote = note || "";
-      if (totalOverflowLwp > 0) {
-        const sep = newManagerNote ? " | " : "";
-        newManagerNote += `${sep}[Auto-LWP: ${totalOverflowLwp}]`;
-      }
-
-      await tx.leaveRequest.update({
-        where: { id: requestId },
-        data: { status: "APPROVED", managerNote: newManagerNote || null }
-      });
-
-      // Cascade updates for all subsequent months
-      const config = await tx.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
-      const startMonthConfig = (config as any)?.semiAnnualCycleStartMonth ?? 4;
-      
-      const firstMonth = monthParts[0];
-      let m = firstMonth.month;
-      let y = firstMonth.year;
-
-      while (true) {
-        const current = await tx.leaveBalance.findFirst({
-          where: { userId: txRequest.userId, month: m, year: y }
-        });
-        if (!current) break;
-
-        const nextM = m === 12 ? 1 : m + 1;
-        const nextY = m === 12 ? y + 1 : y;
-
-        const next = await tx.leaveBalance.findFirst({
-          where: { userId: txRequest.userId, month: nextM, year: nextY }
-        });
-        if (!next) break;
-
-        // 1. Current month's balance determines what is carried forward into Next.
-        // We only auto-recalculate if the current split follows the default rule or is zero.
-        // If it was manually adjusted (e.g. forced encashment), we try to preserve that intent
-        // but must still respect the 1.0 max carry forward cap.
-        
-        const isDefaultSplit = current.carriedForward === Math.min(Number(current.remainingFull) + 1.0, 1.0) || 
-                               (current.carriedForward === 0 && current.encashed === 0);
-        
-        // Actually, for simplicity and safety, if a leave is approved, the remainingFull CHANGED.
-        // We must update the split. But we'll use the default rule UNLESS it's already been processed.
-        // For now, let's just use the default but ensure we don't blow away records that were strictly manual.
-        
-        const newCFFromCurrent = Math.min(Number(current.remainingFull), 1.0);
-        const oldCFInNext = Number(next.carriedForward);
-        const cfDiff = newCFFromCurrent - oldCFInNext;
-        const currentEncashed = Math.max(0, Number(current.remainingFull) - newCFFromCurrent);
-
-        // Update stats for Current month (what it passes forward)
-        // We only do this if the values actually changed to avoid unnecessary DB noise
-        if (current.carriedForward !== newCFFromCurrent || current.encashed !== currentEncashed) {
-           await tx.leaveBalance.update({
-            where: { id: current.id },
-            data: {
-              carriedForward: newCFFromCurrent,
-              encashed: currentEncashed
-            }
-          });
-        }
-
-        // 3. Update balance for Next month based on the change in its starting carry-forward
-        if (cfDiff !== 0) {
-          await tx.leaveBalance.update({
-            where: { id: next.id },
-            data: {
-              remainingFull: { increment: cfDiff }
-            }
-          });
-        }
-
-        // Semi-Annual Cascade (if same cycle)
-        const getCK = (month: number, year: number, sM: number) => {
-          const rel = (month - sM + 12) % 12;
-          const isH1 = rel < 6;
-          return `${year}-${isH1 ? "H1" : "H2"}`;
-        };
-
-        if (getCK(m, y, startMonthConfig) === getCK(nextM, nextY, startMonthConfig)) {
-          await tx.leaveBalance.update({
-            where: { id: next.id },
-            data: { semiAnnualRemaining: current.semiAnnualRemaining }
-          });
-        }
-
-        m = nextM;
-        y = nextY;
-      }
-
-      return { success: true };
-    }, {
-      isolationLevel: "Serializable"
-    });
-
-    revalidatePath("/dashboard", "layout");
-    revalidatePath("/dashboard/employee");
-    revalidatePath("/dashboard/manager");
-    
-    return result;
+    return await processLeaveRequestStatus(requestId, status, note);
 
   } catch (error: any) {
     console.error("Status update error:", error);
@@ -552,3 +407,182 @@ export async function updateLeaveStatus(requestId: string, status: "APPROVED" | 
     return { error: "Failed to update request status. " + error.message };
   }
 }
+
+/**
+ * Internal helper to perform the actual database changes for approval/rejection.
+ * Does NOT check permissions.
+ */
+async function processLeaveRequestStatus(requestId: string, status: "APPROVED" | "REJECTED", note?: string) {
+  const requestMeta = await prisma.leaveRequest.findUnique({ 
+    where: { id: requestId },
+    include: { user: { select: { id: true } } }
+  });
+
+  if (!requestMeta) throw new Error("Request not found.");
+  if (requestMeta.status !== "PENDING") return { success: true };
+
+  // Ensure balance record exists for all months covered by the leave
+  const leaveMonths = splitLeaveIntoMonths(requestMeta.startDate, requestMeta.endDate);
+  for (const m of leaveMonths) {
+    await ensureBalance(requestMeta.userId, m.month, m.year);
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const txRequest = await tx.leaveRequest.findUnique({ 
+      where: { id: requestId } 
+    });
+
+    if (!txRequest || txRequest.status !== "PENDING") return { success: true };
+
+    if (status === "REJECTED") {
+      await tx.leaveRequest.update({ 
+        where: { id: requestId }, 
+        data: { status: "REJECTED", managerNote: note || null } 
+      });
+      return { success: true };
+    }
+
+    let totalOverflowLwp = 0;
+    const monthParts = splitLeaveIntoMonths(txRequest.startDate, txRequest.endDate);
+    
+    for (const part of monthParts) {
+      const balance = await tx.leaveBalance.findUnique({
+        where: { userId_month_year: { userId: txRequest.userId, month: part.month, year: part.year } }
+      });
+      if (!balance) throw new Error(`BALANCE_NOT_FOUND_FOR_${part.month}_${part.year}`);
+
+      let requestedNeeded = 0;
+      let balanceField: "remainingFull" | "remainingShort" | "semiAnnualRemaining" | null = null;
+      let takenField: "fullTaken" | "shortTaken" | "semiAnnualTaken" | "unpaidTaken" | null = null;
+
+      if (txRequest.category === "MONTHLY_POLICY_1") {
+        if (txRequest.duration === "FULL") {
+          requestedNeeded = part.days;
+          balanceField = "remainingFull";
+          takenField = "fullTaken";
+        } else if (txRequest.duration === "HALF") {
+          requestedNeeded = 0.5 * part.days;
+          balanceField = "remainingFull";
+          takenField = "fullTaken";
+        } else if (txRequest.duration === "SHORT") {
+          requestedNeeded = 1;
+          balanceField = "remainingShort";
+          takenField = "shortTaken";
+        }
+      } else if (txRequest.category === "SEMI_ANNUAL_POLICY_2") {
+        requestedNeeded = part.days;
+        balanceField = "semiAnnualRemaining";
+        takenField = "semiAnnualTaken";
+      } else if (txRequest.category === "UNPAID") {
+        requestedNeeded = txRequest.duration === "HALF" ? 0.5 * part.days : part.days;
+        takenField = "unpaidTaken";
+      }
+
+      if (balanceField && takenField) {
+        const available = Number(balance[balanceField]);
+        const deductAmount = Math.min(available, requestedNeeded);
+        const overflow = requestedNeeded - deductAmount;
+        totalOverflowLwp += overflow;
+
+        await tx.leaveBalance.update({
+          where: { id: balance.id },
+          data: { 
+            [balanceField]: { decrement: deductAmount },
+            [takenField]: { increment: deductAmount },
+            unpaidTaken: { increment: overflow }
+          }
+        });
+      } else if (takenField === "unpaidTaken") {
+        await tx.leaveBalance.update({
+          where: { id: balance.id },
+          data: { unpaidTaken: { increment: requestedNeeded } }
+        });
+      }
+    }
+
+    let newManagerNote = note || "";
+    if (totalOverflowLwp > 0) {
+      const sep = newManagerNote ? " | " : "";
+      newManagerNote += `${sep}[Auto-LWP: ${totalOverflowLwp}]`;
+    }
+
+    await tx.leaveRequest.update({
+      where: { id: requestId },
+      data: { status: "APPROVED", managerNote: newManagerNote || null }
+    });
+
+    // Cascade updates for all subsequent months
+    const config = await tx.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
+    const startMonthConfig = (config as any)?.semiAnnualCycleStartMonth ?? 4;
+    
+    const firstMonth = monthParts[0];
+    let m = firstMonth.month;
+    let y = firstMonth.year;
+
+    while (true) {
+      const current = await tx.leaveBalance.findFirst({
+        where: { userId: txRequest.userId, month: m, year: y }
+      });
+      if (!current) break;
+
+      const nextM = m === 12 ? 1 : m + 1;
+      const nextY = m === 12 ? y + 1 : y;
+
+      const next = await tx.leaveBalance.findFirst({
+        where: { userId: txRequest.userId, month: nextM, year: nextY }
+      });
+      if (!next) break;
+
+      const newCFFromCurrent = Math.min(Number(current.remainingFull), 1.0);
+      const oldCFInNext = Number(next.carriedForward);
+      const cfDiff = newCFFromCurrent - oldCFInNext;
+      const currentEncashed = Math.max(0, Number(current.remainingFull) - newCFFromCurrent);
+
+      if (current.carriedForward !== newCFFromCurrent || current.encashed !== currentEncashed) {
+         await tx.leaveBalance.update({
+          where: { id: current.id },
+          data: {
+            carriedForward: newCFFromCurrent,
+            encashed: currentEncashed
+          }
+        });
+      }
+
+      if (cfDiff !== 0) {
+        await tx.leaveBalance.update({
+          where: { id: next.id },
+          data: {
+            remainingFull: { increment: cfDiff }
+          }
+        });
+      }
+
+      if (getCycleKey(m, y, startMonthConfig) === getCycleKey(nextM, nextY, startMonthConfig)) {
+        await tx.leaveBalance.update({
+          where: { id: next.id },
+          data: { semiAnnualRemaining: current.semiAnnualRemaining }
+        });
+      }
+
+      m = nextM;
+      y = nextY;
+    }
+
+    return { success: true };
+  }, {
+    isolationLevel: "Serializable"
+  });
+
+  revalidatePath("/dashboard", "layout");
+  revalidatePath("/dashboard/employee");
+  revalidatePath("/dashboard/manager");
+  
+  return result;
+}
+
+// Helper needed by processLeaveRequestStatus (duplicated/moved here for scope)
+function getCycleKey(month: number, year: number, sM: number) {
+  const rel = (month - sM + 12) % 12;
+  const isH1 = rel < 6;
+  return `${year}-${isH1 ? "H1" : "H2"}`;
+}

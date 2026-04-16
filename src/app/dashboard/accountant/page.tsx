@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, Clock, FileText, IndianRupee } from "lucide-react";
+import { Users, Clock, FileText, IndianRupee, MapPin } from "lucide-react";
 
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
@@ -73,6 +73,15 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
           status: "APPROVED",
           startDate: { gte: startOfMonth, lte: endOfMonth }
         }
+      },
+      allowances: {
+        where: {
+          OR: [
+            { fromDate: { gte: startOfMonth, lte: endOfMonth } },
+            { toDate: { gte: startOfMonth, lte: endOfMonth } },
+            { fromDate: { lte: startOfMonth }, toDate: { gte: endOfMonth } }
+          ]
+        }
       }
     },
     orderBy: { name: 'asc' }
@@ -81,18 +90,32 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
   let totalLatesSystemWide = 0;
   let totalEncashments = 0;
   let totalLwpSystemWide = 0;
+  let totalAllowancesSystemWide = 0;
 
   const reportData = users.map(user => {
     const attendances = user.attendances;
     const currentBalance = user.leaveBalances.find(lb => lb.month === currentMonth && lb.year === currentYear);
     const prevBalance = user.leaveBalances.find(lb => lb.month === prevMonth && lb.year === prevYear);
 
+    // Calculate Allowance days for this month
+    let allowanceDays = 0;
+    user.allowances.forEach(allw => {
+      const overlapStart = allw.fromDate > startOfMonth ? allw.fromDate : startOfMonth;
+      const overlapEnd = allw.toDate < endOfMonth ? allw.toDate : endOfMonth;
+      
+      if (overlapEnd >= overlapStart) {
+        const diffTime = Math.abs(overlapEnd.getTime() - overlapStart.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        allowanceDays += diffDays;
+      }
+    });
+
     // USE DATABASE COUNTERS as source of truth
     const policy1FullUsed = currentBalance?.fullTaken ?? 0;
     const policy1ShortUsed = currentBalance?.shortTaken ?? 0;
     const policy2Used = currentBalance?.semiAnnualTaken ?? 0;
     const unpaidTaken = currentBalance?.unpaidTaken ?? 0;
-    
+
     // Total Leaves Taken for month-level summary (including short leaves)
     const totalLeavesTakenInMonth = policy1FullUsed + policy1ShortUsed + policy2Used + unpaidTaken;
 
@@ -101,7 +124,7 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
     const specialCaseLate = attendances.filter(a => a.isLate && a.isLateSpecialCase).length;
     const punishableLate = totalLate - specialCaseLate;
     const lateDeduction = punishableLate > 3 ? Math.ceil((punishableLate - 3) / 3) * 0.5 : 0;
-    
+
     totalLatesSystemWide += totalLate;
 
     // Total LWP = Database Unpaid (manual + overflow) + Late Mark Penalties
@@ -109,6 +132,7 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
     totalLwpSystemWide += lwpDays;
 
     totalEncashments += (currentBalance?.encashed ?? 0);
+    totalAllowancesSystemWide += allowanceDays;
 
     return {
       id: user.id,
@@ -121,6 +145,7 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
       punishableLate,
       lwpDays: lwpDays,
       encashableDays: currentBalance?.encashed ?? 0,
+      allowanceDays: allowanceDays,
       balances: {
         full: currentBalance?.remainingFull ?? 0,
         short: currentBalance?.remainingShort ?? 0,
@@ -137,6 +162,7 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
       totalLates: totalLatesSystemWide,
       totalEncashments: totalEncashments,
       totalLwp: totalLwpSystemWide,
+      totalAllowances: totalAllowancesSystemWide,
       currentMonthName: new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' }),
       currentYear,
       currentMonth
@@ -144,10 +170,10 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
   };
 }
 
-export default async function AccountantDashboard({ 
-  searchParams 
-}: { 
-  searchParams: Promise<{ m?: string; y?: string }> 
+export default async function AccountantDashboard({
+  searchParams
+}: {
+  searchParams: Promise<{ m?: string; y?: string }>
 }) {
   const params = await searchParams;
   const m = params.m ? parseInt(params.m) : undefined;
@@ -176,57 +202,64 @@ export default async function AccountantDashboard({
       </div>
 
       {/* Quick Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card className="shadow-sm border-border/40 bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
-              Processable Staff
+          <CardHeader className="pb-2 px-4">
+            <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <Users className="size-3 text-primary" />
+              Staff
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.totalStaff}</div>
-            <p className="text-xs text-muted-foreground mt-1">Full team headcount</p>
+          <CardContent className="px-4 pb-4">
+            <div className="text-2xl font-bold">{stats.totalStaff}</div>
           </CardContent>
         </Card>
 
         <Card className="shadow-sm border-border/40 bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <IndianRupee className="w-4 h-4 text-emerald-500" />
-              Total Encashments
+          <CardHeader className="pb-2 px-4">
+            <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <IndianRupee className="size-3 text-emerald-500" />
+              Encash
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-emerald-600">{stats.totalEncashments}</div>
-            <p className="text-xs text-muted-foreground mt-1">Days to pay out system-wide</p>
+          <CardContent className="px-4 pb-4">
+            <div className="text-2xl font-bold text-emerald-600">{stats.totalEncashments}</div>
           </CardContent>
         </Card>
 
         <Card className="shadow-sm border-border/40 bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Clock className="w-4 h-4 text-amber-500" />
-              Total Late Marks
+          <CardHeader className="pb-2 px-4">
+            <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <Clock className="size-3 text-amber-500" />
+              Late
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-amber-600">{stats.totalLates}</div>
-            <p className="text-xs text-muted-foreground mt-1">System-wide this month</p>
+          <CardContent className="px-4 pb-4">
+            <div className="text-2xl font-bold text-amber-600">{stats.totalLates}</div>
           </CardContent>
         </Card>
 
-        {/* LWP Quick Stat */}
         <Card className="shadow-sm border-border/40 bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <FileText className="w-4 h-4 text-destructive" />
-              Total LWP
+          <CardHeader className="pb-2 px-4">
+            <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <FileText className="size-3 text-destructive" />
+              LWP
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-destructive">{stats.totalLwp}</div>
-            <p className="text-xs text-muted-foreground mt-1">Unpaid leaves system-wide</p>
+          <CardContent className="px-4 pb-4">
+            <div className="text-2xl font-bold text-destructive">{stats.totalLwp}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm border-border/40 bg-card">
+          <CardHeader className="pb-2 px-4">
+            <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <MapPin className="size-3 text-blue-500" />
+              Allow.
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
+            <div className="text-2xl font-bold text-blue-600">{stats.totalAllowances} Days</div>
           </CardContent>
         </Card>
       </div>
@@ -238,10 +271,10 @@ export default async function AccountantDashboard({
           <CardDescription>Consolidated data required for end-of-month salary calculations.</CardDescription>
         </CardHeader>
         <CardContent className="p-4 pt-0">
-          <MasterReportTable 
-            data={reportData} 
-            month={stats.currentMonth} 
-            year={stats.currentYear} 
+          <MasterReportTable
+            data={reportData}
+            month={stats.currentMonth}
+            year={stats.currentYear}
           />
         </CardContent>
       </Card>

@@ -55,61 +55,75 @@ export function MonthYearPicker({ currentMonth, currentYear }: MonthYearPickerPr
     handleUpdate(newMonth, newYear);
   };
 
-  return (
-    <div className="flex items-center gap-2">
-      <Button 
-        variant="outline" 
-        size="icon" 
-        onClick={goToPrevious} 
-        className="size-8 hover:bg-primary/5 hover:text-primary transition-colors"
-        title="Previous Month"
-      >
-        <ChevronLeft className="size-4" />
-      </Button>
+    const today = new Date();
+    const isFuture = (year: number, month: number) => {
+        return year > today.getFullYear() || (year === today.getFullYear() && month > (today.getMonth() + 1));
+    };
 
-      <div className="flex items-center gap-1.5">
-        <Select
-          value={currentMonth.toString()}
-          onValueChange={(val) => handleUpdate(parseInt(val), currentYear)}
-        >
-          <SelectTrigger className="w-[130px] h-8 bg-background shadow-none border-border/60 hover:border-primary/50 transition-colors">
-            <SelectValue placeholder="Month" />
-          </SelectTrigger>
-          <SelectContent position="popper" align="start" className="min-w-[130px]">
-            {MONTHS.map((month, index) => (
-              <SelectItem key={month} value={(index + 1).toString()}>
-                {month}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    const isNextDisabled = isFuture(currentYear, currentMonth + 1) || (currentMonth === 12 && isFuture(currentYear + 1, 1));
 
-        <Select
-          value={currentYear.toString()}
-          onValueChange={(val) => handleUpdate(currentMonth, parseInt(val))}
+    return (
+      <div className="flex items-center gap-2">
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={goToPrevious} 
+          className="size-8 hover:bg-primary/5 hover:text-primary transition-colors"
+          title="Previous Month"
         >
-          <SelectTrigger className="w-[90px] h-8 bg-background shadow-none border-border/60 hover:border-primary/50 transition-colors">
-            <SelectValue placeholder="Year" />
-          </SelectTrigger>
-          <SelectContent position="popper" align="start" className="min-w-[90px]">
-            {YEARS.map((year) => (
-              <SelectItem key={year} value={year.toString()}>
-                {year}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <ChevronLeft className="size-4" />
+        </Button>
+  
+        <div className="flex items-center gap-1.5">
+          <Select
+            value={currentMonth.toString()}
+            onValueChange={(val) => handleUpdate(parseInt(val), currentYear)}
+          >
+            <SelectTrigger className="w-[130px] h-8 bg-background shadow-none border-border/60 hover:border-primary/50 transition-colors">
+              <SelectValue placeholder="Month" />
+            </SelectTrigger>
+            <SelectContent position="popper" align="start" className="min-w-[130px]">
+              {MONTHS.map((month, index) => {
+                const disabled = isFuture(currentYear, index + 1);
+                return (
+                  <SelectItem key={month} value={(index + 1).toString()} disabled={disabled}>
+                    {month}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+  
+          <Select
+            value={currentYear.toString()}
+            onValueChange={(val) => handleUpdate(currentMonth, parseInt(val))}
+          >
+            <SelectTrigger className="w-[90px] h-8 bg-background shadow-none border-border/60 hover:border-primary/50 transition-colors">
+              <SelectValue placeholder="Year" />
+            </SelectTrigger>
+            <SelectContent position="popper" align="start" className="min-w-[90px]">
+              {YEARS.map((year) => {
+                const disabled = year > today.getFullYear();
+                return (
+                  <SelectItem key={year} value={year.toString()} disabled={disabled}>
+                    {year}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+  
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={goToNext} 
+          disabled={isNextDisabled}
+          className="size-8 hover:bg-primary/5 hover:text-primary transition-colors disabled:opacity-30"
+          title="Next Month"
+        >
+          <ChevronRight className="size-4" />
+        </Button>
       </div>
-
-      <Button 
-        variant="outline" 
-        size="icon" 
-        onClick={goToNext} 
-        className="size-8 hover:bg-primary/5 hover:text-primary transition-colors"
-        title="Next Month"
-      >
-        <ChevronRight className="size-4" />
-      </Button>
-    </div>
-  );
+    );
 }

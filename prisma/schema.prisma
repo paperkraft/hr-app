@@ -7,7 +7,128 @@ datasource db {
   provider = "postgresql"
 }
 
-// --- ENUMS ---
+model User {
+  id                String         @id @default(cuid())
+  name              String?
+  email             String         @unique
+  password          String?
+  role              Role           @default(EMPLOYEE)
+  managerId         String?
+  departmentId      String?
+  shiftId           String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  autoPunchOutCount Int            @default(0)
+  attendances       Attendance[]
+  ledDepartment     Department?    @relation("DepartmentLeader")
+  leaveBalances     LeaveBalance[]
+  leaveRequests     LeaveRequest[]
+  allowances        Allowance[]
+  department        Department?    @relation("DepartmentMembers", fields: [departmentId], references: [id])
+  manager           User?          @relation("ManagerToEmployee", fields: [managerId], references: [id], onUpdate: NoAction)
+  employees         User[]         @relation("ManagerToEmployee")
+  shift             Shift?         @relation(fields: [shiftId], references: [id])
+}
+
+model Department {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  teamLeaderId String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  teamLeader   User?    @relation("DepartmentLeader", fields: [teamLeaderId], references: [id])
+  members      User[]   @relation("DepartmentMembers")
+}
+
+model Shift {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  startTime String
+  endTime   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+}
+
+model Attendance {
+  id                String    @id @default(cuid())
+  userId            String
+  date              DateTime  @db.Date
+  punchIn           DateTime
+  punchOut          DateTime?
+  isLate            Boolean   @default(false)
+  isLateSpecialCase Boolean   @default(false)
+  lat               Float?
+  lng               Float?
+  ipAddress         String?
+  isOutsideOffice   Boolean   @default(false)
+  isAutoPunchOut    Boolean   @default(false)
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
+
+model LeaveRequest {
+  id          String        @id @default(cuid())
+  userId      String
+  startDate   DateTime
+  endDate     DateTime
+  duration    LeaveDuration
+  category    LeaveCategory
+  status      LeaveStatus   @default(PENDING)
+  reason      String?
+  managerNote String?
+  startTime   String?
+  endTime     String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  halfDayType String?
+  leaveType   LeaveType?
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LeaveBalance {
+  id                  String   @id @default(cuid())
+  userId              String
+  month               Int
+  year                Int
+  remainingFull       Float    @default(2.0)
+  remainingShort      Int      @default(1)
+  carriedForward      Float    @default(0.0)
+  encashed            Float    @default(0.0)
+  semiAnnualRemaining Int      @default(3)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  fullTaken           Float    @default(0.0)
+  semiAnnualTaken     Float    @default(0.0)
+  shortTaken          Int      @default(0)
+  unpaidTaken         Float    @default(0.0)
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month, year])
+}
+
+model SystemConfig {
+  id                           String   @id @default("GLOBAL_CONFIG")
+  officeStartTime              String   @default("09:00")
+  officeEndTime                String   @default("18:00")
+  graceTimeMinutes             Int      @default(15)
+  officeLat                    Float?
+  officeLng                    Float?
+  allowedRadiusMeters          Int      @default(500)
+  updatedAt                    DateTime @updatedAt
+  autoPunchOutDelayHours       Int      @default(2)
+  autoPunchOutEnabled          Boolean  @default(true)
+  autoPunchOutWarningThreshold Int      @default(3)
+  firstHalfEndTime             String   @default("13:30")
+  lateMarkAllowedCount         Int      @default(3)
+  lateMarkEnabled              Boolean  @default(true)
+  secondHalfStartTime          String   @default("13:30")
+  semiAnnualCycleStartMonth    Int      @default(4)
+  semiAnnualPolicyEnabled      Boolean  @default(true)
+  specialCaseEnabled           Boolean  @default(true)
+  specialCaseExtraMinutes      Int      @default(0)
+}
 
 enum Role {
   EMPLOYEE
@@ -34,169 +155,19 @@ enum LeaveCategory {
   UNPAID
 }
 
-// --- MODELS ---
-
-model User {
-  id       String  @id @default(cuid())
-  name     String?
-  email    String  @unique
-  password String? // Required for NextAuth Credentials provider
-  role     Role    @default(EMPLOYEE)
-
-  // Self-relation for the Chain of Command (Manager -> Employees)
-  managerId String?
-  manager   User?   @relation("ManagerToEmployee", fields: [managerId], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  employees User[]  @relation("ManagerToEmployee")
-
-  // Relations to HRMS features
-  attendances   Attendance[]
-  leaveRequests LeaveRequest[]
-  leaveBalances LeaveBalance[]
-
-  departmentId String?
-  department   Department? @relation("DepartmentMembers", fields: [departmentId], references: [id])
-  ledDepartment Department? @relation("DepartmentLeader")
-
-  shiftId String?
-  shift   Shift? @relation(fields: [shiftId], references: [id])
-
-  autoPunchOutCount Int @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum LeaveType {
+  CASUAL
+  MEDICAL
 }
 
-model Department {
-  id           String @id @default(cuid())
-  name         String @unique
-  teamLeaderId String? @unique
-  teamLeader   User?   @relation("DepartmentLeader", fields: [teamLeaderId], references: [id])
-  members      User[]  @relation("DepartmentMembers")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Shift {
-  id        String @id @default(cuid())
-  name      String @unique
-  startTime String // HH:mm format
-  endTime   String // HH:mm format
-  users     User[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Attendance {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  date              DateTime  @db.Date
-  punchIn           DateTime
-  punchOut          DateTime?
-  isLate              Boolean   @default(false)
-  isLateSpecialCase Boolean   @default(false)
-  isAutoPunchOut    Boolean   @default(false)
-
-  // Geofencing & Location Tracking
-  lat             Float?
-  lng             Float?
-  ipAddress       String?
-  isOutsideOffice Boolean @default(false)
-
-  @@unique([userId, date]) // Strict constraint: One attendance record per user per day
-}
-
-model LeaveRequest {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  startDate   DateTime
-  endDate     DateTime
-  duration    LeaveDuration
-  category    LeaveCategory
-  status      LeaveStatus   @default(PENDING)
-  reason      String?       @db.Text
-  managerNote String?       @db.Text
-
-  // Short Leave Time Window (Max 2 hours)
-  startTime String? // Format: HH:mm
-  endTime   String? // Format: HH:mm
-
-  // Half-Day Selection
-  halfDayType String? // "FIRST_HALF" or "SECOND_HALF"
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model LeaveBalance {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  month Int // e.g., 1 for January, 12 for December
-  year  Int // e.g., 2026
-
-  // Policy 1: The Monthly Cycle
-  remainingFull  Float @default(2.0)
-  remainingShort Int   @default(1)
-  carriedForward Float @default(0.0)
-  encashed       Float @default(0.0)
-
-  // Policy 2: The Semi-Annual Cycle
-  semiAnnualRemaining Int @default(3)
-
-  // --- NEW: Monthly Usage Source of Truth ---
-  fullTaken       Float @default(0.0)
-  shortTaken      Int   @default(0)
-  semiAnnualTaken Float @default(0.0)
-  unpaidTaken     Float @default(0.0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([userId, month, year]) // Strict constraint: Only one balance record per month per user
-}
-
-model SystemConfig {
-  id String @id @default("GLOBAL_CONFIG") // Only one record ever
-
-  officeStartTime  String @default("09:00") // 24h format HH:mm
-  officeEndTime    String @default("18:00") // 24h format HH:mm
-  graceTimeMinutes Int    @default(15)
-
-  // Late Mark Policy
-  lateMarkEnabled      Boolean @default(true)
-  lateMarkAllowedCount Int     @default(3)
-
-  // Special Case Handling (Extra work hours "waive" late mark)
-  specialCaseEnabled      Boolean @default(true)
-  specialCaseExtraMinutes Int     @default(0)
-
-  // Automation Settings
-  autoPunchOutEnabled         Boolean @default(true)
-  autoPunchOutDelayHours      Int     @default(2)
-  autoPunchOutWarningThreshold Int     @default(3)
-
-  // Leave Cycle Configuration
-  semiAnnualPolicyEnabled   Boolean @default(true)
-  semiAnnualCycleStartMonth Int     @default(4) // 1=Jan, 4=Apr, etc.
-
-  // Half-Day Configuration
-  firstHalfEndTime    String @default("13:30")
-  secondHalfStartTime String @default("13:30")
-
-  // Geofencing Config
-  officeLat           Float?
-  officeLng           Float?
-  allowedRadiusMeters Int    @default(500)
-
-  // Future expansion:
-  // weekendDays Int[] @default([6, 0]) // 0=Sunday, 6=Saturday
-
-  updatedAt DateTime @updatedAt
+model Allowance {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fromDate  DateTime    @db.Date
+  toDate    DateTime    @db.Date
+  location  String
+  status    LeaveStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }

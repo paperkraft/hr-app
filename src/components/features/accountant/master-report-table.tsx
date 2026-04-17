@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import {
   Table,
   TableHeader,
@@ -101,9 +102,11 @@ export function MasterReportTable({
                     <div className="flex items-center gap-2">
                       <span className="truncate max-w-[120px]" title={row.name}>{row.name}</span>
                       {row.offSiteCount > 0 && (
-                        <Badge variant="outline" className="text-rose-600 border-rose-200 bg-rose-50 text-[9px] h-4 flex items-center gap-0.5 px-1 font-bold shrink-0">
-                          {row.offSiteCount}
-                        </Badge>
+                        <Link href={`/dashboard/accountant/location-logs?m=${month}&y=${year}`} title="View location logs">
+                          <Badge variant="outline" className="text-rose-600 border-rose-200 bg-rose-50 text-[9px] h-4 flex items-center gap-0.5 px-1 font-bold shrink-0 hover:bg-rose-100 transition-colors cursor-pointer">
+                            {row.offSiteCount}
+                          </Badge>
+                        </Link>
                       )}
                     </div>
                   </TableCell>

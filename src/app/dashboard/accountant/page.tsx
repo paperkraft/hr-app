@@ -9,6 +9,7 @@ import { ExportLedgerButton } from "@/components/features/accountant/export-ledg
 import { MasterReportTable } from "@/components/features/accountant/master-report-table";
 import { MonthYearPicker } from "@/components/features/accountant/month-year-picker";
 import { ensureBalance } from "@/actions/leave";
+import Link from "next/link";
 
 export const dynamic = 'force-dynamic';
 
@@ -102,7 +103,7 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
     user.allowances.forEach(allw => {
       const overlapStart = allw.fromDate > startOfMonth ? allw.fromDate : startOfMonth;
       const overlapEnd = allw.toDate < endOfMonth ? allw.toDate : endOfMonth;
-      
+
       if (overlapEnd >= overlapStart) {
         const diffTime = Math.abs(overlapEnd.getTime() - overlapStart.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
@@ -202,7 +203,7 @@ export default async function AccountantDashboard({
       </div>
 
       {/* Quick Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card className="shadow-sm border-border/40 bg-card">
           <CardHeader className="pb-2 px-4">
             <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -261,6 +262,27 @@ export default async function AccountantDashboard({
           <CardContent className="px-4 pb-4">
             <div className="text-2xl font-bold text-blue-600">{stats.totalAllowances} Days</div>
           </CardContent>
+        </Card>
+
+        <Card className="shadow-sm border-rose-500/20 bg-rose-500/2 cursor-pointer hover:bg-rose-500/5 transition-colors group relative overflow-hidden">
+          <Link href={`/dashboard/accountant/location-logs?m=${stats.currentMonth}&y=${stats.currentYear}`}>
+            <div>
+              <CardHeader className="pb-2 px-4">
+                <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-rose-600 flex items-center gap-2">
+                  <MapPin className="size-3" />
+                  Out-Office
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4">
+                <div className="flex items-baseline gap-2">
+                  <div className="text-2xl font-bold text-rose-600">
+                    {reportData.reduce((acc, curr) => acc + curr.offSiteCount, 0)}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground font-medium">Punches</div>
+                </div>
+              </CardContent>
+            </div>
+          </Link>
         </Card>
       </div>
 

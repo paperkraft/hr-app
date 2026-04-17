@@ -92,8 +92,16 @@ async function getEmployeeData() {
 
   // Staff members currently on leave (Global visibility for transparency)
   let teamOnLeave: any[] = [];
-  const { start: today } = getTodayRange();
+  const { start: today, end: tomorrow } = getTodayRange();
 
+  // 1. Fetch people who have already punched in today
+  const todayAttendance = await prisma.attendance.findMany({
+    where: { date: { gte: today, lte: tomorrow } },
+    select: { userId: true }
+  });
+  const presentIds = new Set(todayAttendance.map(a => a.userId));
+
+  // 2. Fetch people with approved leaves covering today
   const onLeave = await prisma.leaveRequest.findMany({
     where: {
       status: "APPROVED",
@@ -108,10 +116,14 @@ async function getEmployeeData() {
         include: { department: true }
       }
     },
-    take: 5
+    take: 10 // Fetch more then filter
   });
 
-  teamOnLeave = onLeave.map((l) => ({
+  // 3. Only show in widget if they ARE supposed to be out AND haven't punched in
+  teamOnLeave = onLeave
+    .filter(l => !presentIds.has(l.userId))
+    .slice(0, 5) // Cap at 5 displayable items
+    .map((l) => ({
     id: l.user.id,
     name: l.user.name || "Unknown",
     role: l.user.role || "Team Member",

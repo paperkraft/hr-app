@@ -9,21 +9,13 @@ import { authOptions } from "@/lib/auth";
 export async function triggerMaintenance() {
   const session = await getServerSession(authOptions);
   
-  // Security: Only Accountant or Admins can trigger manual maintenance
   if (!session?.user || (session.user.role !== "ACCOUNTANT" && session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
-    return { error: "Unauthorized. Required Accountant or Admin role." };
+    return { error: "Unauthorized." };
   }
 
   try {
-    console.log("[MAINTENANCE] Manual trigger started by", session.user.email);
-
-    // 1. Process Auto Punch-Outs
     const punchOutCount = await processAllAutoPunchOuts();
-    
-    // 2. Generate Monthly Balances
     const accrualCount = await generateAllMonthlyBalances();
-
-    // 3. Sync Existing Balances (Corrects any historical rounding issues)
     const syncCount = await syncAllBalances();
 
     revalidatePath("/dashboard/accountant");
@@ -31,10 +23,9 @@ export async function triggerMaintenance() {
     
     return { 
       success: true, 
-      message: `Maintenance Complete: ${punchOutCount} punch-outs processed, ${accrualCount} balances created, and ${syncCount} accounts synchronized.`
+      message: `Correction Complete: ${syncCount} balance distributions updated. ${accrualCount} new rows checked. Please refresh your page to see the +0.5 update.`
     };
   } catch (error: any) {
-    console.error("[MAINTENANCE] Manual trigger failed:", error);
     return { error: "Maintenance failed: " + error.message };
   }
 }

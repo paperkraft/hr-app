@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 const tabs = [
   { name: "Dashboard", href: "/dashboard/employee", icon: LayoutDashboard },
   { name: "Request Leave", href: "/dashboard/employee/leaves", icon: CalendarRange },
-  { name: "Calendar", href: "/dashboard/employee/calendar", icon: Calendar },
   { name: "History", href: "/dashboard/employee/attendance", icon: History },
 ];
 
@@ -25,8 +24,8 @@ export function DashboardTabs() {
             href={tab.href}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-              isActive 
-                ? "bg-background text-primary shadow-sm ring-1 ring-border/20" 
+              isActive
+                ? "bg-background text-primary shadow-sm ring-1 ring-border/20"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             )}
           >

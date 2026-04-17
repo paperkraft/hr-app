@@ -55,11 +55,11 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
     try {
       const result = await submitLeaveRequest(data);
       if (result.error) {
-         setServerError(result.error);
-         toast.error(result.error);
-         return;
+        setServerError(result.error);
+        toast.error(result.error);
+        return;
       }
-      
+
       toast.success("Leave application submitted successfully!");
       reset(); // Reset form on success
       if (onSuccess) onSuccess();
@@ -79,34 +79,34 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
   const semiAnnualEnabled = config?.semiAnnualPolicyEnabled ?? true;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-4 md:space-y-6">
       {/* Policy Category Selection */}
       <div className="space-y-3">
         <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Leave Category</Label>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <label className={`relative flex cursor-pointer rounded-lg border bg-background p-3 shadow-sm transition-all ${selectedCategory === "MONTHLY_POLICY_1" ? "border-primary ring-1 ring-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}>
+          <label className={`relative flex cursor-pointer rounded-lg border bg-background p-2.5 md:p-3 shadow-sm transition-all ${selectedCategory === "MONTHLY_POLICY_1" ? "border-primary ring-1 ring-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}>
             <input type="radio" value="MONTHLY_POLICY_1" className="sr-only" {...register("category")} />
             <div className="flex flex-col">
               <span className="block text-sm font-semibold">Monthly</span>
-              <span className="mt-1 flex items-center text-[10px] text-muted-foreground">Standard 2 + 1 quota.</span>
+              <span className="mt-0.5 flex items-center text-[10px] text-muted-foreground">Standard 2 + 1 quota.</span>
             </div>
           </label>
 
           {semiAnnualEnabled && (
-            <label className={`relative flex cursor-pointer rounded-lg border bg-background p-3 shadow-sm transition-all animate-in fade-in zoom-in duration-300 ${selectedCategory === "SEMI_ANNUAL_POLICY_2" ? "border-amber-500 ring-1 ring-amber-500 bg-amber-500/5" : "border-border hover:bg-muted/50"}`}>
+            <label className={`relative flex cursor-pointer rounded-lg border bg-background p-2.5 md:p-3 shadow-sm transition-all animate-in fade-in zoom-in duration-300 ${selectedCategory === "SEMI_ANNUAL_POLICY_2" ? "border-amber-500 ring-1 ring-amber-500 bg-amber-500/5" : "border-border hover:bg-muted/50"}`}>
               <input type="radio" value="SEMI_ANNUAL_POLICY_2" className="sr-only" {...register("category")} />
               <div className="flex flex-col">
                 <span className="block text-sm font-semibold">Semi-Annual</span>
-                <span className="mt-1 flex items-center text-[10px] text-muted-foreground">Cycle based (H1/H2).</span>
+                <span className="mt-0.5 flex items-center text-[10px] text-muted-foreground">Cycle based (H1/H2).</span>
               </div>
             </label>
           )}
 
-          <label className={`relative flex cursor-pointer rounded-lg border bg-background p-3 shadow-sm transition-all ${selectedCategory === "UNPAID" ? "border-rose-500 ring-1 ring-rose-500 bg-rose-500/5" : "border-border hover:bg-muted/50"}`}>
+          <label className={`relative flex cursor-pointer rounded-lg border bg-background p-2.5 md:p-3 shadow-sm transition-all ${selectedCategory === "UNPAID" ? "border-rose-500 ring-1 ring-rose-500 bg-rose-500/5" : "border-border hover:bg-muted/50"}`}>
             <input type="radio" value="UNPAID" className="sr-only" {...register("category")} />
             <div className="flex flex-col">
               <span className="block text-sm font-semibold text-rose-600 dark:text-rose-400">Unpaid</span>
-              <span className="mt-1 flex items-center text-[10px] text-muted-foreground">No balance required.</span>
+              <span className="mt-0.5 flex items-center text-[10px] text-muted-foreground">No balance required.</span>
             </div>
           </label>
         </div>
@@ -117,7 +117,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
       {selectedCategory === "MONTHLY_POLICY_1" && (
         <div className="space-y-3 p-4 bg-primary/5 border border-primary/10 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
           <Label className="text-xs font-bold text-primary flex items-center gap-1.5 uppercase tracking-wider">
-             Monthly Leave Type
+            Monthly Leave Type
           </Label>
           <div className="grid grid-cols-2 gap-3">
             <label className={`relative flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-all ${watch("leaveType") === "CASUAL" ? "border-primary ring-1 ring-primary bg-primary/10 shadow-sm" : "border-border/40 bg-background/50"}`}>
@@ -140,7 +140,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
       )}
 
       {/* Duration Selection */}
-      <div className="space-y-3 pt-2 border-t border-border/50">
+      <div className="space-y-3 pt-1 border-t border-border/50">
         <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Duration</Label>
         <div className="grid grid-cols-3 gap-3">
           {["FULL", "HALF", "SHORT"].map((type) => {
@@ -163,7 +163,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
       {selectedDuration === "HALF" && (
         <div className="space-y-3 p-4 bg-muted/20 border border-border/40 rounded-xl animate-in slide-in-from-top-4 duration-500">
           <Label className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 uppercase">
-             Which Session?
+            Which Session?
           </Label>
           <div className="grid grid-cols-2 gap-3">
             <label className={`relative flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-all ${selectedHalf === "FIRST_HALF" ? "border-emerald-500 ring-1 ring-emerald-500 bg-emerald-500/10 shadow-sm" : "border-border/40 bg-background/50"}`}>
@@ -218,7 +218,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
       )}
 
       {/* Reason Textarea */}
-      <div className="space-y-2 pt-2 border-t border-border/20">
+      <div className="space-y-2 pt-1 border-t border-border/20">
         <Label htmlFor="reason" className="text-xs font-bold text-muted-foreground uppercase">Reason for Leave</Label>
         <Textarea
           id="reason"

@@ -14,16 +14,30 @@ export function RequestLeaveButton() {
       <DialogTrigger asChild>
         <Button className="h-10 px-5">Request Leave</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogTitle className="sr-only">Apply for Leave</DialogTitle>
-        <DialogHeader>
-          <div className="flex items-center gap-2 pb-4 border-b border-border/50">
-            <CalendarRange className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-semibold">Apply for Leave</h2>
+      <DialogContent className="sm:max-w-xl p-0 border-none shadow-2xl overflow-hidden rounded-2xl">
+        <div className="flex flex-col max-h-[96vh]">
+          {/* Fixed Header */}
+          <div className="px-6 py-5 border-b border-border/50 bg-background/50 backdrop-blur-sm shrink-0">
+            <DialogTitle className="sr-only">Apply for Leave</DialogTitle>
+            <DialogHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <CalendarRange className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold tracking-tight">Apply for Leave</h2>
+                  <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Submit your request for administrative review</p>
+                </div>
+              </div>
+            </DialogHeader>
+            <DialogDescription className="sr-only">Fill in the details below to request time off.</DialogDescription>
           </div>
-        </DialogHeader>
-        <DialogDescription className="sr-only">Apply for Leave</DialogDescription>
-        <LeaveApplicationForm onSuccess={() => setDialogOpen(false)} />
+
+          {/* Scrollable Form Body */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 pt-4">
+            <LeaveApplicationForm onSuccess={() => setDialogOpen(false)} />
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

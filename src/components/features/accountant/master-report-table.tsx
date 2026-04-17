@@ -66,15 +66,15 @@ export function MasterReportTable({
             <TableHead className="h-12 font-bold text-foreground border-r border-border/30">Employee Name</TableHead>
             
             {/* Attendance Group */}
-            <TableHead className="h-12 font-bold text-foreground text-center bg-blue-500/[0.02]">Present</TableHead>
-            <TableHead className="h-12 font-bold text-foreground text-center bg-blue-500/[0.02]">Lates</TableHead>
-            <TableHead className="h-12 font-bold text-blue-700 text-center border-r border-border/30 bg-blue-500/[0.02]">Allowance</TableHead>
+            <TableHead className="h-12 font-bold text-foreground text-center bg-blue-500/2">Present</TableHead>
+            <TableHead className="h-12 font-bold text-foreground text-center bg-blue-500/2">Lates</TableHead>
+            <TableHead className="h-12 font-bold text-blue-700 text-center border-r border-border/30 bg-blue-500/2">Allowance</TableHead>
             
             {/* Consumption Group */}
             <TableHead className="h-12 font-bold text-foreground text-center border-r border-border/30 bg-amber-500/[0.02]">Taken</TableHead>
             
             {/* P1 Group */}
-            <TableHead className="h-12 font-bold text-foreground text-center bg-emerald-500/[0.02]">Monthly</TableHead>
+            <TableHead className="h-12 font-bold text-foreground text-center bg-emerald-500/2">Monthly</TableHead>
             <TableHead className="h-12 font-bold text-foreground text-center border-r border-border/30 bg-emerald-500/[0.02]">Short</TableHead>
             
             {/* P2 Group */}

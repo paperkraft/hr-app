@@ -109,14 +109,14 @@ export async function ensureBalance(userId: string, month: number, year: number,
       
       const createdPrev = await ensureBalance(userId, prevMonth, prevYear, startMonth);
       
-      const hasExistingSplit = createdPrev.carriedForward > 0 || createdPrev.encashed > 0;
+      const hasExistingSplit = (createdPrev.carriedForward > 0 || createdPrev.encashed > 0);
       if (!hasExistingSplit && createdPrev.remainingFull > 0) {
-        carryForward = Math.min(createdPrev.remainingFull, 1.0);
+        carryForward = Math.min(Number(createdPrev.remainingFull.toFixed(2)), 1.0);
         await prisma.leaveBalance.update({
           where: { id: createdPrev.id },
           data: {
             carriedForward: carryForward,
-            encashed: Math.max(0, createdPrev.remainingFull - carryForward)
+            encashed: Number(Math.max(0, createdPrev.remainingFull - carryForward).toFixed(2))
           }
         });
       } else {
@@ -323,7 +323,8 @@ export async function submitLeaveRequest(formData: unknown) {
       } else if (data.leaveType === "MEDICAL" && isBackdated) {
         approvalNote = "Medical Leave: Backdated but approved by system.";
       } else {
-        approvalNote = `Monthly ${data.leaveType.toLowerCase()} leave: Auto-approved.`;
+        const typeLabel = data?.leaveType?.toLowerCase() || "standard";
+        approvalNote = `Monthly ${typeLabel} leave: Auto-approved.`;
       }
     } else if (data.category === "SEMI_ANNUAL_POLICY_2") {
       approvalNote = "Semi-Annual Leave (Policy 2): Auto-approved by system.";
@@ -343,7 +344,8 @@ export async function submitLeaveRequest(formData: unknown) {
         startTime: data.startTime,
         endTime: data.endTime,
         halfDayType: data.halfDayType, 
-        systemNote: approvalNote, // Saving note for visibility
+        managerNote: approvalNote,
+        // systemNote: approvalNote, // Saving note for visibility
       }
     });
 
@@ -533,10 +535,10 @@ async function processLeaveRequestStatus(requestId: string, status: "APPROVED" |
       });
       if (!next) break;
 
-      const newCFFromCurrent = Math.min(Number(current.remainingFull), 1.0);
+      const newCFFromCurrent = Math.min(Number(current.remainingFull.toFixed(2)), 1.0);
       const oldCFInNext = Number(next.carriedForward);
-      const cfDiff = newCFFromCurrent - oldCFInNext;
-      const currentEncashed = Math.max(0, Number(current.remainingFull) - newCFFromCurrent);
+      const cfDiff = Number((newCFFromCurrent - oldCFInNext).toFixed(2));
+      const currentEncashed = Number(Math.max(0, current.remainingFull - newCFFromCurrent).toFixed(2));
 
       if (current.carriedForward !== newCFFromCurrent || current.encashed !== currentEncashed) {
          await tx.leaveBalance.update({
@@ -580,9 +582,163 @@ async function processLeaveRequestStatus(requestId: string, status: "APPROVED" |
   return result;
 }
 
+export async function cancelApprovedLeave(requestId: string, note?: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return { error: "Login required." };
+
+  const { role } = session.user as any;
+  const isAdminOrAccountant = ["ADMIN", "SYSTEM_ADMIN", "ACCOUNTANT"].includes(role);
+
+  if (!isAdminOrAccountant) {
+    return { error: "Unauthorized. Only Accountants or Admins can cancel approved leaves." };
+  }
+
+  try {
+    const request = await prisma.leaveRequest.findUnique({
+      where: { id: requestId },
+      include: { user: true }
+    });
+
+    if (!request) return { error: "Request not found." };
+    if (request.status !== "APPROVED") return { error: "Only approved requests can be cancelled." };
+
+    const result = await prisma.$transaction(async (tx) => {
+      const monthParts = splitLeaveIntoMonths(request.startDate, request.endDate);
+
+      for (const part of monthParts) {
+        const balance = await tx.leaveBalance.findUnique({
+          where: { userId_month_year: { userId: request.userId, month: part.month, year: part.year } }
+        });
+
+        if (!balance) continue;
+
+        let amountToRevert = 0;
+        let balanceField: "remainingFull" | "remainingShort" | "semiAnnualRemaining" | null = null;
+        let takenField: "fullTaken" | "shortTaken" | "semiAnnualTaken" | "unpaidTaken" | null = null;
+
+        if (request.category === "MONTHLY_POLICY_1") {
+          if (request.duration === "FULL") {
+            amountToRevert = part.days;
+            balanceField = "remainingFull";
+            takenField = "fullTaken";
+          } else if (request.duration === "HALF") {
+            amountToRevert = 0.5 * part.days;
+            balanceField = "remainingFull";
+            takenField = "fullTaken";
+          } else if (request.duration === "SHORT") {
+            amountToRevert = 1;
+            balanceField = "remainingShort";
+            takenField = "shortTaken";
+          }
+        } else if (request.category === "SEMI_ANNUAL_POLICY_2") {
+          amountToRevert = part.days;
+          balanceField = "semiAnnualRemaining";
+          takenField = "semiAnnualTaken";
+        } else if (request.category === "UNPAID") {
+          amountToRevert = request.duration === "HALF" ? 0.5 * part.days : part.days;
+          takenField = "unpaidTaken";
+        }
+
+        if (balanceField && takenField) {
+          let overflowRevert = 0;
+          if (request.managerNote?.includes("[Auto-LWP:")) {
+             const match = request.managerNote.match(/\[Auto-LWP: ([\d.]+)\]/);
+             if (match) overflowRevert = parseFloat(match[1]);
+          }
+
+          const deductedFromBalance = amountToRevert - overflowRevert;
+
+          await tx.leaveBalance.update({
+            where: { id: balance.id },
+            data: {
+              [balanceField]: { increment: deductedFromBalance },
+              [takenField]: { decrement: deductedFromBalance },
+              unpaidTaken: { decrement: overflowRevert }
+            }
+          });
+        } else if (takenField === "unpaidTaken") {
+          await tx.leaveBalance.update({
+            where: { id: balance.id },
+            data: { unpaidTaken: { decrement: amountToRevert } }
+          });
+        }
+      }
+
+      await tx.leaveRequest.update({
+        where: { id: requestId },
+        data: { 
+          status: "REJECTED", 
+          managerNote: `CANCELLED: ${note || "Cancelled by administrator."}` 
+        }
+      });
+
+      const config = await tx.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
+      const startMonthConfig = (config as any)?.semiAnnualCycleStartMonth ?? 4;
+      
+      let m = monthParts[0].month;
+      let y = monthParts[0].year;
+
+      while (true) {
+        const current = await tx.leaveBalance.findFirst({
+          where: { userId: request.userId, month: m, year: y }
+        });
+        if (!current) break;
+
+        const nextM = m === 12 ? 1 : m + 1;
+        const nextY = m === 12 ? y + 1 : y;
+
+        const next = await tx.leaveBalance.findFirst({
+          where: { userId: request.userId, month: nextM, year: nextY }
+        });
+        if (!next) break;
+
+        const newCFFromCurrent = Math.min(Number(current.remainingFull), 1.0);
+        const oldCFInNext = Number(next.carriedForward);
+        const cfDiff = newCFFromCurrent - oldCFInNext;
+        const currentEncashed = Math.max(0, Number(current.remainingFull) - newCFFromCurrent);
+
+        if (current.carriedForward !== newCFFromCurrent || current.encashed !== currentEncashed) {
+           await tx.leaveBalance.update({
+            where: { id: current.id },
+            data: { carriedForward: newCFFromCurrent, encashed: currentEncashed }
+          });
+        }
+
+        if (cfDiff !== 0) {
+          await tx.leaveBalance.update({
+            where: { id: next.id },
+            data: { remainingFull: { increment: cfDiff } }
+          });
+        }
+        
+        if (getCycleKey(m, y, startMonthConfig) === getCycleKey(nextM, nextY, startMonthConfig)) {
+          await tx.leaveBalance.update({
+            where: { id: next.id },
+            data: { semiAnnualRemaining: current.semiAnnualRemaining }
+          });
+        }
+
+        m = nextM;
+        y = nextY;
+      }
+
+      return { success: true };
+    });
+
+    revalidatePath("/dashboard/admin");
+    revalidatePath("/dashboard/accountant");
+    revalidatePath("/dashboard/employee/leaves");
+    return result;
+
+  } catch (error: any) {
+    console.error("Cancellation error:", error);
+    return { error: "Failed to cancel leave: " + error.message };
+  }
+}
+
 // Helper needed by processLeaveRequestStatus (duplicated/moved here for scope)
 function getCycleKey(month: number, year: number, sM: number) {
   const rel = (month - sM + 12) % 12;
   const isH1 = rel < 6;
   return `${year}-${isH1 ? "H1" : "H2"}`;
-}
+}

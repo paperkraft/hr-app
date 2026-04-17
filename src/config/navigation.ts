@@ -20,16 +20,17 @@ export const roleNavigation: Record<string, NavItem[]> = {
   ],
   ADMIN: [
     { title: "System Overview", href: "/dashboard/admin", icon: LayoutDashboard },
-    { title: "Location Status", href: "/dashboard/accountant/location-logs", icon: MapPin },
-    { title: "Configuration", href: "/dashboard/admin/settings", icon: Settings }, // Added configuration page
-    { title: "Directory", href: "/dashboard/admin/users", icon: Users },
-    { title: "Departments", href: "/dashboard/admin/departments", icon: Building2 },
-  ],
-  SYSTEM_ADMIN: [
-    { title: "System Overview", href: "/dashboard/admin", icon: LayoutDashboard },
-    { title: "Location Status", href: "/dashboard/accountant/location-logs", icon: MapPin },
     { title: "Configuration", href: "/dashboard/admin/settings", icon: Settings },
     { title: "Directory", href: "/dashboard/admin/users", icon: Users },
     { title: "Departments", href: "/dashboard/admin/departments", icon: Building2 },
+    { title: "Location Status", href: "/dashboard/accountant/location-logs", icon: MapPin },
+  ],
+  SYSTEM_ADMIN: [
+    { title: "System Overview", href: "/dashboard/admin", icon: LayoutDashboard },
+    { title: "Configuration", href: "/dashboard/admin/settings", icon: Settings },
+    { title: "Directory", href: "/dashboard/admin/users", icon: Users },
+    { title: "Departments", href: "/dashboard/admin/departments", icon: Building2 },
+    { title: "Location Status", href: "/dashboard/accountant/location-logs", icon: MapPin },
+    { title: "Payroll & Processing", href: "/dashboard/accountant", icon: Calculator },
   ],
 };

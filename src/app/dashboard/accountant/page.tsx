@@ -1,5 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, Clock, FileText, IndianRupee, MapPin } from "lucide-react";
+import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from "@/components/ui/table";
+import { CheckCircle2, Check, Users, Clock, FileText, IndianRupee, MapPin } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { CancelLeaveButton } from "@/components/features/leave/cancel-leave-button";
 
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
@@ -9,6 +12,8 @@ import { ExportLedgerButton } from "@/components/features/accountant/export-ledg
 import { MasterReportTable } from "@/components/features/accountant/master-report-table";
 import { MonthYearPicker } from "@/components/features/accountant/month-year-picker";
 import { ensureBalance } from "@/actions/leave";
+import { StatWidget } from "@/components/features/dashboard/stat-widget";
+import { MaintenanceButton } from "@/components/features/accountant/maintenance-button";
 import Link from "next/link";
 
 export const dynamic = 'force-dynamic';
@@ -156,8 +161,32 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
     };
   });
 
+  // Fetch recent APPROVED requests (last 20) for cancellation capability
+  const recentApprovals = await prisma.leaveRequest.findMany({
+    where: { 
+      status: "APPROVED",
+      updatedAt: { gte: startOfMonth } // Only show approvals relevant to this cycle or recent
+    },
+    include: { user: true },
+    orderBy: { updatedAt: "desc" },
+    take: 20
+  });
+
   return {
     reportData,
+    recentApprovals: recentApprovals.map((req: any) => ({
+      id: req.id,
+      employeeName: `${req.user.name || req.user.email}`,
+      role: req.user.role,
+      startDate: new Date(req.startDate).toISOString().split('T')[0],
+      endDate: new Date(req.endDate).toISOString().split('T')[0],
+      category: req.category,
+      duration: req.duration,
+      halfDayType: req.halfDayType,
+      leaveType: req.leaveType,
+      systemNote: req.systemNote,
+      updatedAt: req.updatedAt
+    })),
     stats: {
       totalStaff: users.length,
       totalLates: totalLatesSystemWide,
@@ -180,7 +209,7 @@ export default async function AccountantDashboard({
   const m = params.m ? parseInt(params.m) : undefined;
   const y = params.y ? parseInt(params.y) : undefined;
 
-  const { reportData, stats } = await getPayrollReportData(m, y);
+  const { reportData, stats, recentApprovals } = await getPayrollReportData(m, y);
 
   return (
     <div className="flex flex-col gap-8 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
@@ -199,91 +228,57 @@ export default async function AccountantDashboard({
             <MonthYearPicker currentMonth={stats.currentMonth} currentYear={stats.currentYear} />
           </div>
         </div>
-        <ExportLedgerButton data={reportData} month={stats.currentMonthName} />
+        <div className="flex items-center gap-3">
+          <MaintenanceButton />
+          <ExportLedgerButton data={reportData} month={stats.currentMonthName} />
+        </div>
       </div>
 
       {/* Quick Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card className="shadow-sm border-border/40 bg-card">
-          <CardHeader className="pb-2 px-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <Users className="size-3 text-primary" />
-              Staff
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <div className="text-2xl font-bold">{stats.totalStaff}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm border-border/40 bg-card">
-          <CardHeader className="pb-2 px-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <IndianRupee className="size-3 text-emerald-500" />
-              Encash
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <div className="text-2xl font-bold text-emerald-600">{stats.totalEncashments}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm border-border/40 bg-card">
-          <CardHeader className="pb-2 px-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <Clock className="size-3 text-amber-500" />
-              Late
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <div className="text-2xl font-bold text-amber-600">{stats.totalLates}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm border-border/40 bg-card">
-          <CardHeader className="pb-2 px-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <FileText className="size-3 text-destructive" />
-              LWP
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <div className="text-2xl font-bold text-destructive">{stats.totalLwp}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm border-border/40 bg-card">
-          <CardHeader className="pb-2 px-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <MapPin className="size-3 text-blue-500" />
-              Allow.
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <div className="text-2xl font-bold text-blue-600">{stats.totalAllowances} Days</div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm border-rose-500/20 bg-rose-500/2 cursor-pointer hover:bg-rose-500/5 transition-colors group relative overflow-hidden">
-          <Link href={`/dashboard/accountant/location-logs?m=${stats.currentMonth}&y=${stats.currentYear}`}>
-            <div>
-              <CardHeader className="pb-2 px-4">
-                <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-rose-600 flex items-center gap-2">
-                  <MapPin className="size-3" />
-                  Out-Office
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-4 pb-4">
-                <div className="flex items-baseline gap-2">
-                  <div className="text-2xl font-bold text-rose-600">
-                    {reportData.reduce((acc, curr) => acc + curr.offSiteCount, 0)}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground font-medium">Punches</div>
-                </div>
-              </CardContent>
-            </div>
-          </Link>
-        </Card>
+        <StatWidget 
+          title="Total Staff" 
+          value={stats.totalStaff} 
+          icon={<Users className="size-4 text-primary" />}
+        />
+        <StatWidget 
+          title="Encash" 
+          value={stats.totalEncashments} 
+          unit="Days"
+          icon={<IndianRupee className="size-4 text-emerald-500" />}
+          progressColor="bg-emerald-500"
+        />
+        <StatWidget 
+          title="Total Late" 
+          value={stats.totalLates} 
+          unit="Punches"
+          icon={<Clock className="size-4 text-amber-500" />}
+          progressColor="bg-amber-500"
+        />
+        <StatWidget 
+          title="Total LWP" 
+          value={stats.totalLwp} 
+          unit="Days"
+          icon={<FileText className="size-4 text-destructive" />}
+          progressColor="bg-destructive"
+        />
+        <StatWidget 
+          title="Allowance" 
+          value={stats.totalAllowances} 
+          unit="Days"
+          icon={<MapPin className="size-4 text-blue-500" />}
+          progressColor="bg-blue-500"
+        />
+        <Link href={`/dashboard/accountant/location-logs?m=${stats.currentMonth}&y=${stats.currentYear}`} className="block h-full">
+          <StatWidget 
+            title="Out-Office" 
+            value={reportData.reduce((acc, curr) => acc + curr.offSiteCount, 0)} 
+            unit="Punches"
+            icon={<MapPin className="size-4" />}
+            className="border-rose-500/20 bg-rose-500/2 hover:bg-rose-500/5 cursor-pointer"
+            progressColor="bg-rose-500"
+          />
+        </Link>
       </div>
 
       {/* The Master Data Table */}
@@ -301,6 +296,92 @@ export default async function AccountantDashboard({
         </CardContent>
       </Card>
 
+      {/* Recent Approvals & Cancellation Table */}
+      <Card className="shadow-sm border-border/40 p-0 gap-0">
+        <CardHeader className="bg-muted/5 border-b border-border/40 p-4">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <CheckCircle2 className="size-5 text-emerald-500" />
+            Recent Approvals & Maintenance
+          </CardTitle>
+          <CardDescription>Review and manage recently approved leaves to prevent double-counting.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-muted/30">
+                <TableRow>
+                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Employee</TableHead>
+                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Duration</TableHead>
+                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Type</TableHead>
+                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Method / Note</TableHead>
+                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-right text-muted-foreground">Processed</TableHead>
+                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-right text-muted-foreground w-10">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentApprovals.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-10 text-center text-muted-foreground italic">
+                      No approval history found for this month.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  recentApprovals.map((req: any) => (
+                    <TableRow key={req.id} className="hover:bg-muted/5">
+                      <TableCell className="py-3 px-4">
+                        <div className="font-semibold text-sm">{req.employeeName}</div>
+                        <div className="text-[10px] text-muted-foreground uppercase">{req.role}</div>
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-xs font-medium">
+                        <div className="flex flex-col">
+                          <span>{req.startDate === req.endDate ? req.startDate : `${req.startDate} to ${req.endDate}`}</span>
+                          {req.duration === 'HALF' && (
+                            <span className="text-[10px] text-primary font-bold uppercase tracking-tight">
+                              Half Day ({req.halfDayType === 'FIRST_HALF' ? '1st Half' : '2nd Half'})
+                            </span>
+                          )}
+                          {req.duration === 'SHORT' && (
+                            <span className="text-[10px] text-amber-600 font-bold uppercase tracking-tight">
+                              Short Leave
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3 px-4">
+                        <Badge variant="outline" className="text-[9px] font-bold uppercase truncate max-w-[100px] border-border/60">
+                          {req.category.replace(/_/g, ' ')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="py-3 px-4">
+                        {req.systemNote ? (
+                          <div className="flex items-center gap-1.5 overflow-hidden">
+                            <Badge variant="outline" className="h-5 px-1.5 text-[9px] font-bold uppercase tracking-tight shrink-0 border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-900/40">
+                              System
+                            </Badge>
+                            <span className="text-[10px] text-muted-foreground italic truncate max-w-[120px]" title={req.systemNote}>
+                              {req.systemNote}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="text-[10px] text-muted-foreground px-2 py-1 bg-muted/20 rounded-full w-fit flex items-center gap-1">
+                            <Check className="size-3" /> Manual
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right text-[10px] font-mono whitespace-nowrap">
+                        {new Date(req.updatedAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <CancelLeaveButton requestId={req.id} employeeName={req.employeeName} />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

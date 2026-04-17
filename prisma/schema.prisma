@@ -102,6 +102,7 @@ model LeaveRequest {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   halfDayType String?
+  systemNote  String?
   leaveType   LeaveType?
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { getTodayRange } from "@/lib/attendance-helper";
+import { CancelLeaveButton } from "@/components/features/leave/cancel-leave-button";
 
 export const dynamic = 'force-dynamic';
 
@@ -317,12 +318,13 @@ export default async function AdminOverviewPage() {
                   <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Type</TableHead>
                   <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Method / Note</TableHead>
                   <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-right text-muted-foreground">Processed</TableHead>
+                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-right text-muted-foreground w-10">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {stats.recentApprovals.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="py-10 text-center text-muted-foreground italic">
+                    <TableCell colSpan={6} className="py-10 text-center text-muted-foreground italic">
                       No approval history found.
                     </TableCell>
                   </TableRow>
@@ -371,6 +373,9 @@ export default async function AdminOverviewPage() {
                       </TableCell>
                       <TableCell className="py-3 px-4 text-right text-[10px] font-mono whitespace-nowrap">
                         {new Date(req.updatedAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <CancelLeaveButton requestId={req.id} employeeName={req.employeeName} />
                       </TableCell>
                     </TableRow>
                   ))

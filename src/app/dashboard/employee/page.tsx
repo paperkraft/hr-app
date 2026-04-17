@@ -1,11 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PunchCard } from "@/components/features/attendance/punch-card";
-import { CalendarDays, AlertCircle, Clock as ClockIcon, CheckCircle2 } from "lucide-react";
+import {
+  CalendarDays,
+  AlertCircle,
+  Clock as ClockIcon,
+  CheckCircle2,
+  History,
+  Users,
+  PieChart,
+  CalendarRange,
+  Bell,
+  ArrowRight
+} from "lucide-react";
 import { RequestLeaveButton } from "@/components/features/leave/request-leave-button";
 import { AllowanceRequestDialog } from "@/components/features/leave/allowance-request-dialog";
-import { LeaveBalanceCard } from "@/components/features/leave/leave-balance-card";
-import { RecentRequestsCard } from "@/components/features/leave/recent-requests-card";
+import { DashboardTabs } from "@/components/features/dashboard/dashboard-tabs";
+import { StatWidget } from "@/components/features/dashboard/stat-widget";
+import { TeamOnLeave } from "@/components/features/dashboard/team-on-leave";
+import { UpcomingLeave } from "@/components/features/dashboard/upcoming-leave";
 import Link from "next/link";
 
 import prisma from "@/lib/prisma";
@@ -19,191 +32,247 @@ export const dynamic = 'force-dynamic';
 
 async function getEmployeeData() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return {
-      attendanceStatus: "PENDING" as const,
-      balances: { monthlyFull: 0, monthlyShort: 0, semiAnnual: 0 },
-      recentLogs: [],
-      recentRequests: [],
-      userName: "Employee",
-      autoPunchOutCount: 0
-    };
-  }
+  if (!session?.user?.id) return null;
 
-  // 1. Process any forgotten punch-outs from previous days
   await processAutoPunchOuts(session.user.id);
-
-  // 2. Fetch User to get autoPunchOutCount
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { name: true, autoPunchOutCount: true }
+    include: { department: true }
   });
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
-
-  // This will automatically create the record if it doesn't exist (e.g. start of new month)
   const balances = await ensureBalance(session.user.id, currentMonth, currentYear);
 
-  // 1. Fetch exactly today's log using strict boundaries to guarantee state accuracy
   const { start, end } = getTodayRange();
   const todaysLog = await prisma.attendance.findFirst({
-    where: {
-      userId: session.user.id,
-      date: { gte: start, lte: end }
-    }
+    where: { userId: session.user.id, date: { gte: start, lte: end } }
   });
 
   let attendanceStatus: "PENDING" | "PUNCHED_IN" | "PUNCHED_OUT" = "PENDING";
   if (todaysLog) {
-    if (todaysLog.punchOut) attendanceStatus = "PUNCHED_OUT";
-    else attendanceStatus = "PUNCHED_IN";
+    attendanceStatus = todaysLog.punchOut ? "PUNCHED_OUT" : "PUNCHED_IN";
   }
 
-  // 2. Fetch recent logs separately for the history table
   const recentLogs = await prisma.attendance.findMany({
     where: { userId: session.user.id },
     orderBy: { date: 'desc' },
+    take: 4
+  });
+
+  const leaveRequests = await prisma.leaveRequest.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  // Calculate stats based on Policy: 12 Casual, 12 Sick yearly
+  const approvedThisYear = leaveRequests.filter(
+    (r) => r.status === "APPROVED" && new Date(r.startDate).getFullYear() === currentYear
+  );
+
+  const casualTaken = approvedThisYear
+    .filter((r) => r.leaveType === "CASUAL")
+    .reduce((acc, r) => {
+      const diff = Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      return acc + diff;
+    }, 0);
+
+  const medicalTaken = approvedThisYear
+    .filter((r) => r.leaveType === "MEDICAL")
+    .reduce((acc, r) => {
+      const diff = Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      return acc + diff;
+    }, 0);
+
+  const approvalRate = leaveRequests.length > 0
+    ? Math.round((leaveRequests.filter((r) => r.status === "APPROVED").length / leaveRequests.length) * 100)
+    : 100;
+
+  const pendingCount = leaveRequests.filter(r => r.status === "PENDING").length;
+
+  // Staff members currently on leave (Global visibility for transparency)
+  let teamOnLeave: any[] = [];
+  const { start: today } = getTodayRange();
+
+  const onLeave = await prisma.leaveRequest.findMany({
+    where: {
+      status: "APPROVED",
+      startDate: { lte: today },
+      endDate: { gte: today },
+      user: {
+        id: { not: session.user.id }
+      }
+    },
+    include: {
+      user: {
+        include: { department: true }
+      }
+    },
     take: 5
   });
 
-  const formattedLogs = recentLogs.map((log: any) => ({
-    date: new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    in: log.punchIn ? new Date(log.punchIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : "N/A",
-    out: log.isAutoPunchOut ? "AUTO" : (log.punchOut ? new Date(log.punchOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : "---"),
-    late: log.isLate,
-    lateSpecialCase: log.isLateSpecialCase,
-    isAutoPunchOut: log.isAutoPunchOut
+  teamOnLeave = onLeave.map((l) => ({
+    id: l.user.id,
+    name: l.user.name || "Unknown",
+    role: l.user.role || "Team Member",
+    startDate: l.startDate,
+    endDate: l.endDate,
+    leaveType: l.category === "UNPAID" ? "Unpaid" : "Paid"
   }));
 
-  const recentRequests = await prisma.leaveRequest.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: 'desc' },
-    take: 5
-  });
-
-  const config = await prisma.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
-
   return {
+    userName: user?.name || "Employee",
     attendanceStatus,
+    autoPunchOutCount: user?.autoPunchOutCount ?? 0,
     balances: {
       monthlyFull: balances?.remainingFull ?? 0,
       monthlyShort: balances?.remainingShort ?? 0,
       semiAnnual: balances?.semiAnnualRemaining ?? 0,
     },
-    recentLogs: formattedLogs,
-    recentRequests: recentRequests.map((req: any) => {
-      const dateStr = new Date(req.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      const timeStr = req.duration === "SHORT" && req.startTime ? ` (${req.startTime} - ${req.endTime})` : "";
-      const halfStr = req.duration === "HALF" && req.halfDayType ? ` (${req.halfDayType === 'FIRST_HALF' ? '1st Half' : '2nd Half'})` : "";
-      
-      return {
-        id: req.id,
-        dates: req.duration === "SHORT" ? `${dateStr}${timeStr}` : (req.duration === "HALF" ? `${dateStr}${halfStr}` : `${dateStr} - ${new Date(req.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`),
-        status: req.status,
-        duration: req.duration,
-        category: req.category === "MONTHLY_POLICY_1" ? `Monthly${req.leaveType ? ` (${req.leaveType.charAt(0) + req.leaveType.slice(1).toLowerCase()})` : ""}` : req.category === "UNPAID" ? "Unpaid" : "Semi-Annual",
-        managerNote: req.managerNote,
-      };
-    }),
-    userName: user?.name ?? session.user.name ?? "Employee",
-    autoPunchOutCount: (user as any)?.autoPunchOutCount ?? 0,
-    autoPunchOutThreshold: (config as any)?.autoPunchOutWarningThreshold ?? 3
+    stats: {
+      casualTaken,
+      medicalTaken,
+      casualRemaining: Math.max(0, 12 - casualTaken),
+      medicalRemaining: Math.max(0, 12 - medicalTaken),
+      approvalRate,
+      pendingCount,
+      teamCount: teamOnLeave.length
+    },
+    recentLogs: recentLogs.map((log: any) => ({
+      date: new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      in: log.punchIn ? new Date(log.punchIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : "N/A",
+      out: log.isAutoPunchOut ? "AUTO" : (log.punchOut ? new Date(log.punchOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : "---"),
+      status: log.isAutoPunchOut ? "FORGOTTEN" : log.isLate ? "LATE" : "ON_TIME"
+    })),
+    leaveRequests,
+    teamOnLeave
   };
 }
 
 export default async function EmployeeDashboard() {
   const data = await getEmployeeData();
+  if (!data) return null;
+
   const currentHour = new Date().getHours();
   const greeting = currentHour < 12 ? "Good morning" : currentHour < 18 ? "Good afternoon" : "Good evening";
 
   return (
     <div className="flex flex-col gap-8 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            {greeting}, {data.userName.split(' ')[0]} 👋
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm md:text-base">
-            Here's your attendance and leave overview for today.
-          </p>
+      {/* Top Section: Greeting & Tabs */}
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col md:flex-row items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+              {greeting}, {data.userName.split(' ')[0]} 👋
+            </h1>
+            <p className="text-muted-foreground mt-1 text-sm md:text-base">
+              Manage your attendance and leave requests from one place.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <AllowanceRequestDialog />
+            <RequestLeaveButton />
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <AllowanceRequestDialog />
-          <RequestLeaveButton />
-        </div>
+
+        <DashboardTabs />
       </div>
 
+      {/* Row 1: Stat Widgets */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <StatWidget
+          title="Casual Leave Taken"
+          value={data.stats.casualTaken}
+          unit="days"
+          description={`${data.stats.casualRemaining} days remaining out of 12`}
+          icon={<CalendarRange className="size-4" />}
+          progress={(data.stats.casualTaken / 12) * 100}
+          progressColor="bg-indigo-500"
+        />
+        <StatWidget
+          title="Sick Leave Taken"
+          value={data.stats.medicalTaken}
+          unit="days"
+          description={`${data.stats.medicalRemaining} days remaining out of 12`}
+          icon={<AlertCircle className="size-4 text-rose-500" />}
+          progress={(data.stats.medicalTaken / 12) * 100}
+          progressColor="bg-rose-500"
+        />
+        <StatWidget
+          title="Approval Rate"
+          value={`${data.stats.approvalRate}%`}
+          description="Consistent request history"
+          icon={<PieChart className="size-4 text-emerald-500" />}
+          progress={data.stats.approvalRate}
+          progressColor="bg-emerald-500"
+        />
+        <StatWidget
+          title="Pending Request"
+          value={data.stats.pendingCount}
+          unit={data.stats.pendingCount === 1 ? "request" : "requests"}
+          description="Awaiting manager review"
+          icon={<History className="size-4 text-amber-500" />}
+        />
+      </div>
+
+      {/* Row 2: Attendance & Leave Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1">
-          <PunchCard 
-            initialStatus={data.attendanceStatus} 
-            autoPunchOutCount={data.autoPunchOutCount}
-            warningThreshold={data.autoPunchOutThreshold}
-          />
-        </div>
-        <div className="lg:col-span-2">
-          <LeaveBalanceCard balances={data.balances} />
-        </div>
-      </div>
+        <div className="lg:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <PunchCard
+              initialStatus={data.attendanceStatus}
+              autoPunchOutCount={data.autoPunchOutCount}
+              warningThreshold={3}
+            />
+            <UpcomingLeave requests={data.leaveRequests.map(r => ({
+              id: r.id,
+              category: r.category === "MONTHLY_POLICY_1" ? (r.leaveType === "CASUAL" ? "Casual" : "Sick") : "Paid",
+              startDate: r.startDate,
+              endDate: r.endDate,
+              status: r.status,
+              days: Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
+            }))} />
+          </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-        <Card className="shadow-sm border-border/40 hover:shadow-md transition-shadow duration-200 flex flex-col overflow-hidden">
-          <CardHeader className="pb-3 border-b border-border/40 bg-muted/5 p-4 shrink-0 flex flex-row items-center justify-between space-y-0">
-            <div className="flex items-center gap-2">
-              <ClockIcon className="w-4 h-4 text-primary" />
-              <CardTitle className="text-base font-semibold">Attendance Log</CardTitle>
-            </div>
-            <Link 
-              href="/dashboard/employee/attendance" 
-              className="text-xs font-medium text-primary hover:underline underline-offset-4"
-            >
-              View All
-            </Link>
-          </CardHeader>
-          <CardContent className="p-0 flex-1 overflow-auto">
-            <div className="divide-y divide-border/40">
-              {data.recentLogs.length === 0 ? (
-                <div className="py-8 flex flex-col items-center justify-center text-muted-foreground h-full">
-                  <CalendarDays className="w-8 h-8 mb-2 opacity-20" />
-                  <p className="text-xs">No records yet.</p>
-                </div>
-              ) : (
-                data.recentLogs.map((log: any, i: number) => (
-                  <div key={i} className="flex items-center justify-between p-3.5 hover:bg-muted/30 transition-colors">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="font-semibold text-xs">{log.date}</span>
-                      <div className="flex items-center text-[10px] text-muted-foreground font-mono bg-secondary/40 px-1.5 py-0.5 rounded w-fit">
-                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">{log.in}</span>
-                        <span className="mx-1.5 text-border">—</span>
-                        <span>{log.out}</span>
-                      </div>
-                    </div>
-                    {log.isAutoPunchOut ? (
-                      <Badge variant="outline" className="text-[9px] h-5 border-amber-200 bg-amber-50 text-amber-600 font-bold px-1.5">
-                        <AlertCircle className="w-2.5 h-2.5 mr-1" /> Forgotten
-                      </Badge>
-                    ) : log.lateSpecialCase ? (
-                      <Badge variant="outline" className="text-[9px] h-5 border-blue-200 bg-blue-50 text-blue-600 font-bold px-1.5">
-                        <ClockIcon className="w-2.5 h-2.5 mr-1" /> Covered
-                      </Badge>
-                    ) : log.late ? (
-                      <Badge variant="outline" className="text-[9px] h-5 border-destructive/20 bg-destructive/5 text-destructive font-bold px-1.5">
-                        <AlertCircle className="w-2.5 h-2.5 mr-1" /> Late
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="text-[9px] h-5 border-emerald-100 bg-emerald-50/50 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20 font-bold px-1.5">
-                        <CheckCircle2 className="w-2.5 h-2.5 mr-1" /> On Time
-                      </Badge>
-                    )}
+          {/* Notifications Mockup */}
+          <Card className="shadow-sm border-border/40 overflow-hidden">
+            <CardHeader className="pb-3 border-b border-border/40 p-4">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <Bell className="size-4 text-primary" />
+                Notifications
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-border/40">
+                <div className="p-4 flex items-start gap-3 hover:bg-muted/30 transition-colors">
+                  <div className="p-1.5 rounded-full bg-emerald-100 mt-1">
+                    <CheckCircle2 className="size-4 text-emerald-600" />
                   </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                  <div>
+                    <p className="text-sm font-medium">Your leave request for Mar 10-11 has been approved</p>
+                    <p className="text-[10px] text-muted-foreground mt-1 font-medium">2 days ago</p>
+                  </div>
+                </div>
+                <div className="p-4 flex items-start gap-3 hover:bg-muted/30 transition-colors">
+                  <div className="p-1.5 rounded-full bg-blue-100 mt-1">
+                    <Bell className="size-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Remember to submit your timesheet for this week</p>
+                    <p className="text-[10px] text-muted-foreground mt-1 font-medium">1 days ago</p>
+                  </div>
+                </div>
+              </div>
+              <Link href="#" className="p-3 block text-center text-xs font-bold text-primary hover:bg-primary/5 transition-colors border-t border-border/40">
+                View All Notifications
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
 
-        <RecentRequestsCard requests={data.recentRequests} />
+        <div className="lg:col-span-1 space-y-6">
+          <TeamOnLeave members={data.teamOnLeave} />
+        </div>
       </div>
     </div>
   );

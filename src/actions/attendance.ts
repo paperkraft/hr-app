@@ -13,35 +13,55 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) return { success: false, error: "Unauthorized" }
 
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: { 
+        location: true,
+        shift: true 
+      }
+    })
+
+    if (!user) return { success: false, error: "User not found" }
+
     const headerList = await headers();
     const forwarded = headerList.get("x-forwarded-for");
     const ipAddress = forwarded ? forwarded.split(',')[0] : "127.0.0.1";
 
     const { start, end } = getTodayRange()
 
-    // FETCH GLOBAL CONFIG FOR LATE CALCULATION & GEOFENCING
+    // 1. Determine Office Timings & Policy
     const config = await prisma.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } })
-    const startTime = config?.officeStartTime || "09:00"
-    const graceMinutes = config?.graceTimeMinutes ?? 15
-    const officeLat = config?.officeLat;
-    const officeLng = config?.officeLng;
-    const allowedRadius = config?.allowedRadiusMeters ?? 500;
+    
+    // Priority for timings: Shift > Location > System Default
+    const startTime = user.shift?.startTime || user.location?.startTime || config?.defaultOfficeStartTime || "09:00"
+    const endTime = user.shift?.endTime || user.location?.endTime || config?.defaultOfficeEndTime || "18:00"
+    const graceMinutes = user.location?.graceTimeMinutes ?? config?.defaultGraceTimeMinutes ?? 15
 
+    // 2. Geofencing Logic based on Work Mode
     let isOutsideOffice = false;
-    if (coords && officeLat != null && officeLng != null) {
-      const distance = getDistanceInMeters(coords.lat, coords.lng, officeLat, officeLng);
-      if (distance > allowedRadius) {
-        isOutsideOffice = true;
+    
+    if (user.workMode === "OFFICE") {
+      // For strictly on-site mode, check against their assigned location
+      if (user.location && !user.location.isRemote && user.location.lat != null && user.location.lng != null) {
+        if (coords) {
+          const distance = getDistanceInMeters(coords.lat, coords.lng, user.location.lat, user.location.lng);
+          if (distance > user.location.radiusMeters) {
+            isOutsideOffice = true;
+          }
+        } else {
+          // If in OFFICE mode but no coords provided, mark as outside
+          isOutsideOffice = true;
+        }
       }
+    } else if (user.workMode === "REMOTE" || user.workMode === "HYBRID") {
+      // Remote & Hybrid employees are never "outside office" in the penalty sense
+      isOutsideOffice = false;
     }
 
     const existingLog = await prisma.attendance.findFirst({
       where: {
         userId: session.user.id,
-        date: {
-          gte: start,
-          lte: end,
-        }
+        date: { gte: start, lte: end }
       }
     })
 
@@ -52,7 +72,6 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
       const lateThreshold = new Date(start)
       lateThreshold.setHours(hours, minutes + graceMinutes, 0, 0)
       
-      // Dynamic Late Mark Policy
       const lateMarkEnabled = config?.lateMarkEnabled ?? true;
       const isLate = lateMarkEnabled ? (punchInTime > lateThreshold) : false;
 
@@ -71,23 +90,17 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
     } else if (!existingLog.punchOut) {
       const punchOutTime = new Date();
       
-      // Dynamic Special Case Logic (Extra work hours "waive" late mark)
       let isSpecialCase = false;
       const specialCaseEnabled = config?.specialCaseEnabled ?? true;
       const extraMinutes = config?.specialCaseExtraMinutes ?? 0;
 
       if (specialCaseEnabled && existingLog.isLate) {
-        const endTime = config?.officeEndTime || "18:00";
-        
-        // Calculate standard duration in minutes
         const [sH, sM] = startTime.split(":").map(Number);
         const [eH, eM] = endTime.split(":").map(Number);
         const standardMinutes = (eH * 60 + eM) - (sH * 60 + sM);
         
-        // Calculate actual duration in minutes
         const actualMinutes = Math.floor((punchOutTime.getTime() - existingLog.punchIn.getTime()) / (1000 * 60));
         
-        // Check threshold: standard context + optional extra minutes required by policy
         if (actualMinutes >= (standardMinutes + extraMinutes)) {
           isSpecialCase = true;
         }
@@ -112,4 +125,4 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
     console.error("Punch Error:", error);
     return { success: false, error: "Failed to process punch: " + error.message }
   }
-}
+}

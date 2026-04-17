@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { revalidatePath } from "next/cache"
-import { Role } from "@prisma/client"
+import { Role, WorkMode } from "@prisma/client"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { ensureBalance } from "./leave"
@@ -28,6 +28,8 @@ export async function createUser(data: any) {
         managerId: data.managerId || null,
         departmentId: data.departmentId || null,
         shiftId: data.shiftId || null,
+        locationId: data.locationId || null,
+        workMode: (data.workMode as WorkMode) || "OFFICE",
       }
     })
 
@@ -53,6 +55,8 @@ export async function updateUser(id: string, data: any) {
       managerId: data.managerId || null,
       departmentId: data.departmentId || null,
       shiftId: data.shiftId || null,
+      locationId: data.locationId || null,
+      workMode: (data.workMode as WorkMode) || "OFFICE",
     }
 
     if (data.password) {

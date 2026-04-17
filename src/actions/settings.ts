@@ -11,9 +11,9 @@ export async function getSystemConfig() {
     update: {},
     create: {
       id: "GLOBAL_CONFIG",
-      officeStartTime: "09:00",
-      officeEndTime: "18:00",
-      graceTimeMinutes: 15,
+      defaultOfficeStartTime: "09:00",
+      defaultOfficeEndTime: "18:00",
+      defaultGraceTimeMinutes: 15,
       lateMarkEnabled: true,
       lateMarkAllowedCount: 3,
       specialCaseEnabled: true,
@@ -32,9 +32,9 @@ export async function getSystemConfig() {
 }
 
 export async function updateSystemConfig(data: {
-  officeStartTime: string;
-  officeEndTime: string;
-  graceTimeMinutes: number;
+  defaultOfficeStartTime: string;
+  defaultOfficeEndTime: string;
+  defaultGraceTimeMinutes: number;
   lateMarkEnabled: boolean;
   lateMarkAllowedCount: number;
   specialCaseEnabled: boolean;
@@ -46,9 +46,6 @@ export async function updateSystemConfig(data: {
   semiAnnualCycleStartMonth: number;
   firstHalfEndTime: string;
   secondHalfStartTime: string;
-  officeLat?: number;
-  officeLng?: number;
-  allowedRadiusMeters?: number;
 }) {
   const session = await getServerSession(authOptions)
   
@@ -60,9 +57,9 @@ export async function updateSystemConfig(data: {
     const updated = await prisma.systemConfig.update({
       where: { id: "GLOBAL_CONFIG" },
       data: {
-        officeStartTime: data.officeStartTime,
-        officeEndTime: data.officeEndTime,
-        graceTimeMinutes: data.graceTimeMinutes,
+        defaultOfficeStartTime: data.defaultOfficeStartTime,
+        defaultOfficeEndTime: data.defaultOfficeEndTime,
+        defaultGraceTimeMinutes: data.defaultGraceTimeMinutes,
         lateMarkEnabled: data.lateMarkEnabled,
         lateMarkAllowedCount: data.lateMarkAllowedCount,
         specialCaseEnabled: data.specialCaseEnabled,
@@ -74,9 +71,6 @@ export async function updateSystemConfig(data: {
         semiAnnualCycleStartMonth: data.semiAnnualCycleStartMonth,
         firstHalfEndTime: data.firstHalfEndTime,
         secondHalfStartTime: data.secondHalfStartTime,
-        officeLat: data.officeLat,
-        officeLng: data.officeLng,
-        allowedRadiusMeters: data.allowedRadiusMeters,
       },
     })
     
@@ -85,5 +79,69 @@ export async function updateSystemConfig(data: {
   } catch (error) {
     console.error("Failed to update system config:", error)
     return { error: "Failed to update configuration." }
+  }
+}
+
+// New action to manage locations
+export async function getLocations() {
+  return prisma.location.findMany({
+    orderBy: { name: 'asc' }
+  })
+}
+
+export async function upsertLocation(data: {
+  id?: string;
+  name: string;
+  address?: string;
+  startTime: string;
+  endTime: string;
+  lat?: number;
+  lng?: number;
+  radiusMeters: number;
+  graceTimeMinutes: number;
+  isRemote: boolean;
+}) {
+  const session = await getServerSession(authOptions)
+  if (!session || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
+    return { error: "Unauthorized" }
+  }
+
+  try {
+    if (data.id) {
+      const updated = await prisma.location.update({
+        where: { id: data.id },
+        data: {
+          name: data.name,
+          address: data.address,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          lat: data.lat,
+          lng: data.lng,
+          radiusMeters: data.radiusMeters,
+          graceTimeMinutes: data.graceTimeMinutes,
+          isRemote: data.isRemote,
+        }
+      })
+      revalidatePath("/dashboard/admin/settings")
+      return { success: true, data: updated }
+    } else {
+      const created = await prisma.location.create({
+        data: {
+          name: data.name,
+          address: data.address,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          lat: data.lat,
+          lng: data.lng,
+          radiusMeters: data.radiusMeters,
+          graceTimeMinutes: data.graceTimeMinutes,
+          isRemote: data.isRemote,
+        }
+      })
+      revalidatePath("/dashboard/admin/settings")
+      return { success: true, data: created }
+    }
+  } catch (error: any) {
+    return { error: error.message || "Failed to save location" }
   }
 }

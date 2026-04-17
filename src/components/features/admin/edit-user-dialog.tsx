@@ -19,12 +19,12 @@ export function EditUserDialog({
   user,
   managers, 
   departments,
-  shifts
+  locations
 }: { 
   user: any,
   managers: { id: string, name: string | null, email: string }[],
   departments: { id: string, name: string }[],
-  shifts: { id: string, name: string }[]
+  locations: { id: string, name: string, isRemote: boolean }[]
 }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -39,14 +39,15 @@ export function EditUserDialog({
     const data = {
       name: formData.get("name"),
       email: formData.get("email"),
-      password: formData.get("password") || undefined, // Only update if provided
+      password: formData.get("password") || undefined,
       role: formData.get("role"),
       managerId: formData.get("managerId") === "none" ? null : formData.get("managerId"),
       departmentId: formData.get("departmentId") === "none" ? null : formData.get("departmentId"),
-      shiftId: formData.get("shiftId") === "none" ? null : formData.get("shiftId"),
+      locationId: formData.get("locationId") === "none" ? null : formData.get("locationId"),
+      workMode: formData.get("workMode"),
     }
 
-    const res = await updateUser(user.id, data)
+    const res = await updateUser(user.id, data as any)
     setLoading(false)
 
     if (res.success) {
@@ -63,31 +64,58 @@ export function EditUserDialog({
           <Edit2 className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Edit Employee: {user.name}</DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4 mt-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Name</Label>
-              <Input name="name" defaultValue={user.name || ""} required />
+            <div className="space-y-1">
+              <Label className="text-xs">Name</Label>
+              <Input name="name" defaultValue={user.name || ""} required className="h-9" />
             </div>
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <Input type="email" name="email" defaultValue={user.email} required />
+            <div className="space-y-1">
+              <Label className="text-xs">Email</Label>
+              <Input type="email" name="email" defaultValue={user.email} required className="h-9" />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label>New Password (Optional)</Label>
-            <Input type="password" name="password" placeholder="Leave blank to keep current" />
+          
+          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/40">
+             <div className="space-y-1">
+                <Label className="text-xs text-primary font-bold">Work Mode</Label>
+                <Select name="workMode" defaultValue={user.workMode || "OFFICE"}>
+                    <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Select mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    <SelectItem value="OFFICE">On-site (Office)</SelectItem>
+                    <SelectItem value="REMOTE">Remote (WFH)</SelectItem>
+                    <SelectItem value="HYBRID">Hybrid</SelectItem>
+                    </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-primary font-bold">Office/Hub Location</Label>
+                <Select name="locationId" defaultValue={user.locationId || "none"}>
+                    <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Select location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    <SelectItem value="none">Default Office</SelectItem>
+                    {locations.map(l => (
+                        <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                    ))}
+                    </SelectContent>
+                </Select>
+              </div>
           </div>
+
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Role</Label>
+            <div className="space-y-1">
+              <Label className="text-xs">Role</Label>
               <Select name="role" defaultValue={user.role} required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a role" />
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Role" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="EMPLOYEE">Employee</SelectItem>
@@ -96,11 +124,11 @@ export function EditUserDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Department</Label>
+            <div className="space-y-1">
+              <Label className="text-xs">Department</Label>
               <Select name="departmentId" defaultValue={user.departmentId || "none"}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a department" />
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="Dept" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">None</SelectItem>
@@ -111,40 +139,31 @@ export function EditUserDialog({
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Shift</Label>
-              <Select name="shiftId" defaultValue={user.shiftId || "none"}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a shift" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {shifts.map(s => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Assign Manager</Label>
-              <Select name="managerId" defaultValue={user.managerId || "none"}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a manager" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None (Top Level)</SelectItem>
-                  {managers.filter(m => m.id !== user.id).map(m => (
-                    <SelectItem key={m.id} value={m.id}>{m.name || m.email}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+
+          <div className="space-y-1 pt-2 border-t border-border/40">
+            <Label className="text-xs text-muted-foreground uppercase font-bold tracking-widest">Assign Manager</Label>
+            <Select name="managerId" defaultValue={user.managerId || "none"}>
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Select a manager" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None (Top Level)</SelectItem>
+                {managers.filter(m => m.id !== user.id).map(m => (
+                  <SelectItem key={m.id} value={m.id}>{m.name || m.email}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          {error && <p className="text-sm text-destructive font-medium">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
+
+          <div className="space-y-1">
+            <Label className="text-xs">Update Password (Optional)</Label>
+            <Input type="password" name="password" placeholder="Leave blank to keep current" className="h-9" />
+          </div>
+
+          {error && <p className="text-xs text-destructive font-medium bg-destructive/5 p-2 rounded border border-destructive/20">{error}</p>}
+          <Button type="submit" className="w-full mt-2" disabled={loading}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-            Update Account
+            Update Employee Profile
           </Button>
         </form>
       </DialogContent>

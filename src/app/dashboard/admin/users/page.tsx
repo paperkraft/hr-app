@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Clock } from "lucide-react";
+import { Users, Clock, MapPin, Globe, Laptop } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { AddUserDialog } from "@/components/features/admin/add-user-dialog";
 import { EditUserDialog } from "@/components/features/admin/edit-user-dialog";
@@ -16,14 +16,15 @@ export default async function AdminUsersPage() {
     include: {
       manager: true,
       department: true,
-      shift: true
+      shift: true,
+      location: true
     },
     orderBy: { createdAt: 'desc' }
   });
 
   const validManagers = await prisma.user.findMany({
     where: {
-      role: { in: ['ADMIN', 'EMPLOYEE', 'ACCOUNTANT'] }
+      role: { in: ['ADMIN', 'EMPLOYEE', 'ACCOUNTANT', 'SYSTEM_ADMIN'] }
     },
     select: { id: true, name: true, email: true },
     orderBy: { name: 'asc' }
@@ -34,8 +35,8 @@ export default async function AdminUsersPage() {
     orderBy: { name: 'asc' }
   });
 
-  const shifts = await prisma.shift.findMany({
-    select: { id: true, name: true, startTime: true, endTime: true },
+  const locations = await prisma.location.findMany({
+    select: { id: true, name: true, isRemote: true },
     orderBy: { name: 'asc' }
   });
 
@@ -50,14 +51,35 @@ export default async function AdminUsersPage() {
     }
   };
 
+  const getWorkModeBadge = (mode: string) => {
+    switch (mode) {
+      case "REMOTE":
+        return <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50 text-[10px] h-5 flex items-center gap-1">
+          <Laptop className="w-2.5 h-2.5" /> REMOTE
+        </Badge>;
+      case "HYBRID":
+        return <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50 text-[10px] h-5 flex items-center gap-1">
+          <Globe className="w-2.5 h-2.5" /> HYBRID
+        </Badge>;
+      default:
+        return <Badge variant="outline" className="text-slate-600 border-slate-200 bg-slate-50 text-[10px] h-5 flex items-center gap-1">
+          <MapPin className="w-2.5 h-2.5" /> ON-SITE
+        </Badge>;
+    }
+  };
+
   return (
     <div className="flex flex-col gap-8 p-6 md:p-10 max-w-7xl mx-auto">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Employee Directory</h1>
-          <p className="text-muted-foreground mt-1">Manage all user accounts, roles, and manager assignments.</p>
+          <p className="text-muted-foreground mt-1">Institutional workforce management for distributed teams.</p>
         </div>
-        <AddUserDialog managers={validManagers} departments={departments} shifts={shifts} />
+        <AddUserDialog 
+          managers={validManagers} 
+          departments={departments} 
+          locations={locations}
+        />
       </div>
 
       <Card className="shadow-sm border-border/50 p-0">
@@ -68,10 +90,8 @@ export default async function AdminUsersPage() {
                 <tr className="border-b">
                   <th className="h-12 px-6 text-left align-middle font-medium text-muted-foreground">User</th>
                   <th className="h-12 px-6 text-left align-middle font-medium text-muted-foreground">Role</th>
-                  <th className="h-12 px-6 text-left align-middle font-medium text-muted-foreground">Department</th>
-                  <th className="h-12 px-6 text-left align-middle font-medium text-muted-foreground">Shift</th>
-                  <th className="h-12 px-6 text-left align-middle font-medium text-muted-foreground">Manager</th>
-                  <th className="h-12 px-6 text-left align-middle font-medium text-muted-foreground">Joined</th>
+                  <th className="h-12 px-6 text-left align-middle font-medium text-muted-foreground">Work Mode</th>
+                  <th className="h-12 px-6 text-left align-middle font-medium text-muted-foreground">Location</th>
                   <th className="h-12 px-6 align-middle font-medium text-muted-foreground text-right">Actions</th>
                 </tr>
               </thead>
@@ -85,7 +105,7 @@ export default async function AdminUsersPage() {
                         </div>
                         <div className="flex flex-col">
                           <span className="font-semibold text-foreground">{user.name}</span>
-                          <span className="text-xs text-muted-foreground">{user.email}</span>
+                          <span className="text-[10px] text-muted-foreground">{user.email}</span>
                         </div>
                       </div>
                     </td>
@@ -93,37 +113,17 @@ export default async function AdminUsersPage() {
                       {getRoleBadge(user.role)}
                     </td>
                     <td className="p-2 px-6 align-middle">
-                      {user.department ? (
-                        <span className="text-sm font-medium text-foreground">{user.department.name}</span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground italic tracking-tight">Unassigned</span>
-                      )}
+                      {getWorkModeBadge(user.workMode)}
                     </td>
                     <td className="p-2 px-6 align-middle">
-                      {user.shift ? (
+                      {user.location ? (
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-sm font-medium">{user.shift.name}</span>
-                          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                            <Clock className="w-2.5 h-2.5" />
-                            {user.shift.startTime} - {user.shift.endTime}
-                          </span>
+                            <span className="text-sm font-medium text-foreground">{user.location.name}</span>
+                            {user.location.isRemote && <span className="text-[9px] text-blue-500 font-bold uppercase">Remote Hub</span>}
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground italic tracking-tight">Standard</span>
+                        <span className="text-xs text-muted-foreground italic tracking-tight">Default Office</span>
                       )}
-                    </td>
-                    <td className="p-2 px-6 align-middle">
-                      {user.manager ? (
-                        <div className="flex items-center gap-2">
-                          <Users className="w-3 h-3 text-muted-foreground" />
-                          <span className="text-sm text-foreground">{user.manager.name}</span>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-muted-foreground italic tracking-tight">None</span>
-                      )}
-                    </td>
-                    <td className="p-2 px-6 align-middle text-muted-foreground text-xs">
-                      {user.createdAt.toLocaleDateString()}
                     </td>
                     <td className="p-2 px-6 align-middle text-right">
                       <div className="flex justify-end gap-1">
@@ -131,7 +131,7 @@ export default async function AdminUsersPage() {
                           user={user} 
                           managers={validManagers} 
                           departments={departments} 
-                          shifts={shifts} 
+                          locations={locations}
                         />
                         <DeleteUserButton id={user.id} />
                       </div>

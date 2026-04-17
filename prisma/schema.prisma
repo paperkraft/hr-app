@@ -16,6 +16,8 @@ model User {
   managerId         String?
   departmentId      String?
   shiftId           String?
+  locationId        String?
+  workMode          WorkMode       @default(OFFICE)
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   autoPunchOutCount Int            @default(0)
@@ -28,6 +30,23 @@ model User {
   manager           User?          @relation("ManagerToEmployee", fields: [managerId], references: [id], onUpdate: NoAction)
   employees         User[]         @relation("ManagerToEmployee")
   shift             Shift?         @relation(fields: [shiftId], references: [id])
+  location          Location?      @relation(fields: [locationId], references: [id])
+}
+
+model Location {
+  id               String   @id @default(cuid())
+  name             String   @unique
+  address          String?
+  startTime        String   @default("09:00")
+  endTime          String   @default("18:00")
+  lat              Float?
+  lng              Float?
+  radiusMeters     Int      @default(500)
+  graceTimeMinutes Int      @default(15)
+  isRemote         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  users            User[]
 }
 
 model Department {
@@ -110,12 +129,9 @@ model LeaveBalance {
 
 model SystemConfig {
   id                           String   @id @default("GLOBAL_CONFIG")
-  officeStartTime              String   @default("09:00")
-  officeEndTime                String   @default("18:00")
-  graceTimeMinutes             Int      @default(15)
-  officeLat                    Float?
-  officeLng                    Float?
-  allowedRadiusMeters          Int      @default(500)
+  defaultOfficeStartTime       String   @default("09:00")
+  defaultOfficeEndTime         String   @default("18:00")
+  defaultGraceTimeMinutes      Int      @default(15)
   updatedAt                    DateTime @updatedAt
   autoPunchOutDelayHours       Int      @default(2)
   autoPunchOutEnabled          Boolean  @default(true)
@@ -135,6 +151,12 @@ enum Role {
   ACCOUNTANT
   ADMIN
   SYSTEM_ADMIN
+}
+
+enum WorkMode {
+  OFFICE
+  REMOTE
+  HYBRID
 }
 
 enum LeaveStatus {

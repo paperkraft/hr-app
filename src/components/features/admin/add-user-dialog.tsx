@@ -18,11 +18,11 @@ import {
 export function AddUserDialog({ 
   managers, 
   departments,
-  shifts
+  locations
 }: { 
   managers: { id: string, name: string | null, email: string }[],
   departments: { id: string, name: string }[],
-  shifts: { id: string, name: string }[]
+  locations: { id: string, name: string, isRemote: boolean }[]
 }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -41,10 +41,11 @@ export function AddUserDialog({
       role: formData.get("role"),
       managerId: formData.get("managerId") === "none" ? null : formData.get("managerId"),
       departmentId: formData.get("departmentId") === "none" ? null : formData.get("departmentId"),
-      shiftId: formData.get("shiftId") === "none" ? null : formData.get("shiftId"),
+      locationId: formData.get("locationId") === "none" ? null : formData.get("locationId"),
+      workMode: formData.get("workMode"),
     }
 
-    const res = await createUser(data)
+    const res = await createUser(data as any)
     setLoading(false)
 
     if (res.success) {
@@ -62,44 +63,78 @@ export function AddUserDialog({
           Add Employee
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Add New Employee</DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4 mt-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Name</Label>
-              <Input name="name" required />
+            <div className="space-y-1">
+              <Label className="text-xs">Full Name</Label>
+              <Input name="name" required className="h-9" />
             </div>
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <Input type="email" name="email" required />
+            <div className="space-y-1">
+              <Label className="text-xs">Email Address</Label>
+              <Input type="email" name="email" required className="h-9" />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label>Password</Label>
-            <Input type="password" name="password" required />
-          </div>
+          
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Role</Label>
-              <Select name="role" defaultValue="EMPLOYEE" required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a role" />
+             <div className="space-y-1">
+                <Label className="text-xs">Password</Label>
+                <Input type="password" name="password" required className="h-9" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Role</Label>
+                <Select name="role" defaultValue="EMPLOYEE" required>
+                    <SelectTrigger className="h-9 font-medium">
+                    <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    <SelectItem value="EMPLOYEE">Employee</SelectItem>
+                    <SelectItem value="ACCOUNTANT">Accountant</SelectItem>
+                    <SelectItem value="ADMIN">Admin</SelectItem>
+                    </SelectContent>
+                </Select>
+              </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/40">
+            <div className="space-y-1">
+              <Label className="text-xs">Work Mode</Label>
+              <Select name="workMode" defaultValue="OFFICE">
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Select mode" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="EMPLOYEE">Employee</SelectItem>
-                  <SelectItem value="ACCOUNTANT">Accountant</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
+                  <SelectItem value="OFFICE">On-site (Office)</SelectItem>
+                  <SelectItem value="REMOTE">Remote (WFH)</SelectItem>
+                  <SelectItem value="HYBRID">Hybrid</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Department</Label>
+            <div className="space-y-1">
+              <Label className="text-xs">Assigned Office/Hub</Label>
+              <Select name="locationId" defaultValue="none">
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Select location" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Default Office</SelectItem>
+                  {locations.map(l => (
+                    <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <Label className="text-xs">Department</Label>
               <Select name="departmentId" defaultValue="none">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a department" />
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="Select dept" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">None</SelectItem>
@@ -109,30 +144,14 @@ export function AddUserDialog({
                 </SelectContent>
               </Select>
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Shift</Label>
-              <Select name="shiftId" defaultValue="none">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a shift" />
+            <div className="space-y-1">
+              <Label className="text-xs">Manager</Label>
+              <Select name="managerId" defaultValue="none">
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="Select manager" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">None</SelectItem>
-                  {shifts.map(s => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Assign Manager</Label>
-              <Select name="managerId" defaultValue="none">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a manager" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None (Top Level)</SelectItem>
                   {managers.map(m => (
                     <SelectItem key={m.id} value={m.id}>{m.name || m.email}</SelectItem>
                   ))}
@@ -140,8 +159,9 @@ export function AddUserDialog({
               </Select>
             </div>
           </div>
-          {error && <p className="text-sm text-destructive font-medium">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
+
+          {error && <p className="text-xs text-destructive font-medium bg-destructive/5 p-2 rounded border border-destructive/20">{error}</p>}
+          <Button type="submit" className="w-full mt-2" disabled={loading}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
             Create Account
           </Button>

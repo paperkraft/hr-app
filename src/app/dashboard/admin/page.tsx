@@ -124,6 +124,8 @@ async function getAdminStats() {
       startDate: new Date(req.startDate).toISOString().split('T')[0],
       endDate: new Date(req.endDate).toISOString().split('T')[0],
       category: req.category,
+      duration: req.duration,
+      halfDayType: req.halfDayType,
       leaveType: req.leaveType,
       systemNote: req.systemNote,
       updatedAt: req.updatedAt
@@ -332,10 +334,22 @@ export default async function AdminOverviewPage() {
                         <div className="text-[10px] text-muted-foreground uppercase">{req.role}</div>
                       </TableCell>
                       <TableCell className="py-3 px-4 text-xs font-medium">
-                        {req.startDate === req.endDate ? req.startDate : `${req.startDate} to ${req.endDate}`}
+                        <div className="flex flex-col">
+                           <span>{req.startDate === req.endDate ? req.startDate : `${req.startDate} to ${req.endDate}`}</span>
+                           {req.duration === 'HALF' && (
+                             <span className="text-[10px] text-primary font-bold uppercase tracking-tight">
+                               Half Day ({req.halfDayType === 'FIRST_HALF' ? '1st Half' : '2nd Half'})
+                             </span>
+                           )}
+                           {req.duration === 'SHORT' && (
+                             <span className="text-[10px] text-amber-600 font-bold uppercase tracking-tight">
+                               Short Leave
+                             </span>
+                           )}
+                        </div>
                       </TableCell>
                       <TableCell className="py-3 px-4">
-                        <Badge variant="outline" className="text-[9px] font-bold uppercase truncate max-w-[100px]">
+                        <Badge variant="outline" className="text-[9px] font-bold uppercase truncate max-w-[100px] border-border/60">
                           {req.category.replace(/_/g, ' ')}
                         </Badge>
                       </TableCell>

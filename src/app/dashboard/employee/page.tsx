@@ -6,6 +6,7 @@ import { RequestLeaveButton } from "@/components/features/leave/request-leave-bu
 import { AllowanceRequestDialog } from "@/components/features/leave/allowance-request-dialog";
 import { LeaveBalanceCard } from "@/components/features/leave/leave-balance-card";
 import { RecentRequestsCard } from "@/components/features/leave/recent-requests-card";
+import Link from "next/link";
 
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
@@ -146,48 +147,53 @@ export default async function EmployeeDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="shadow-sm border-border/40 hover:shadow-md transition-shadow duration-20 p-0 gap-0">
-          <CardHeader className="pb-3 border-b border-border/40 bg-muted/10 p-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+        <Card className="shadow-sm border-border/40 hover:shadow-md transition-shadow duration-200 flex flex-col overflow-hidden">
+          <CardHeader className="pb-3 border-b border-border/40 bg-muted/5 p-4 shrink-0 flex flex-row items-center justify-between space-y-0">
             <div className="flex items-center gap-2">
-              <ClockIcon className="w-5 h-5 text-primary" />
-              <CardTitle className="text-lg font-semibold">Recent Attendance</CardTitle>
+              <ClockIcon className="w-4 h-4 text-primary" />
+              <CardTitle className="text-base font-semibold">Attendance Log</CardTitle>
             </div>
-            <CardDescription>Your check-in and check-out logs for the past 5 days.</CardDescription>
+            <Link 
+              href="/dashboard/employee/attendance" 
+              className="text-xs font-medium text-primary hover:underline underline-offset-4"
+            >
+              View All
+            </Link>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent className="p-0 flex-1 overflow-auto">
             <div className="divide-y divide-border/40">
               {data.recentLogs.length === 0 ? (
-                <div className="py-8 flex flex-col items-center justify-center text-muted-foreground">
+                <div className="py-8 flex flex-col items-center justify-center text-muted-foreground h-full">
                   <CalendarDays className="w-8 h-8 mb-2 opacity-20" />
-                  <p className="text-sm">No attendance records yet.</p>
+                  <p className="text-xs">No records yet.</p>
                 </div>
               ) : (
                 data.recentLogs.map((log: any, i: number) => (
-                  <div key={i} className="flex items-center justify-between p-4 hover:bg-muted/20 transition-colors">
-                    <div className="flex flex-col gap-1">
-                      <span className="font-medium text-sm">{log.date}</span>
-                      <div className="flex items-center text-xs text-muted-foreground font-mono bg-secondary/30 px-2 py-1 rounded-md w-fit">
-                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{log.in}</span>
-                        <span className="mx-2 text-border">—</span>
+                  <div key={i} className="flex items-center justify-between p-3.5 hover:bg-muted/30 transition-colors">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-semibold text-xs">{log.date}</span>
+                      <div className="flex items-center text-[10px] text-muted-foreground font-mono bg-secondary/40 px-1.5 py-0.5 rounded w-fit">
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">{log.in}</span>
+                        <span className="mx-1.5 text-border">—</span>
                         <span>{log.out}</span>
                       </div>
                     </div>
                     {log.isAutoPunchOut ? (
-                      <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50">
-                        <AlertCircle className="w-3 h-3 mr-1" /> Forgotten
+                      <Badge variant="outline" className="text-[9px] h-5 border-amber-200 bg-amber-50 text-amber-600 font-bold px-1.5">
+                        <AlertCircle className="w-2.5 h-2.5 mr-1" /> Forgotten
                       </Badge>
                     ) : log.lateSpecialCase ? (
-                      <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50">
-                        <ClockIcon className="w-3 h-3 mr-1" /> Covered
+                      <Badge variant="outline" className="text-[9px] h-5 border-blue-200 bg-blue-50 text-blue-600 font-bold px-1.5">
+                        <ClockIcon className="w-2.5 h-2.5 mr-1" /> Covered
                       </Badge>
                     ) : log.late ? (
-                      <Badge variant="outline" className="text-destructive border-destructive/30 bg-destructive/10">
-                        <AlertCircle className="w-3 h-3 mr-1" /> Late
+                      <Badge variant="outline" className="text-[9px] h-5 border-destructive/20 bg-destructive/5 text-destructive font-bold px-1.5">
+                        <AlertCircle className="w-2.5 h-2.5 mr-1" /> Late
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-500/10 dark:border-emerald-500/20">
-                        <CheckCircle2 className="w-3 h-3 mr-1" /> On Time
+                      <Badge variant="outline" className="text-[9px] h-5 border-emerald-100 bg-emerald-50/50 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20 font-bold px-1.5">
+                        <CheckCircle2 className="w-2.5 h-2.5 mr-1" /> On Time
                       </Badge>
                     )}
                   </div>

@@ -1,4 +1,4 @@
-import { Home, Users, Calculator, FileText, Settings, ShieldCheck, LayoutDashboard, Building2 } from "lucide-react";
+import { Home, Users, Calculator, FileText, Settings, ShieldCheck, LayoutDashboard, Building2, Activity } from "lucide-react";
 
 export type NavItem = {
   title: string;
@@ -9,10 +9,12 @@ export type NavItem = {
 export const roleNavigation: Record<string, NavItem[]> = {
   EMPLOYEE: [
     { title: "My Space", href: "/dashboard/employee", icon: Home },
+    { title: "My Attendance", href: "/dashboard/employee/attendance", icon: Activity },
     { title: "My Leaves", href: "/dashboard/employee/leaves", icon: FileText },
   ],
   ACCOUNTANT: [
     { title: "My Space", href: "/dashboard/employee", icon: Home },
+    { title: "My Attendance", href: "/dashboard/employee/attendance", icon: Activity },
     { title: "Payroll & Processing", href: "/dashboard/accountant", icon: Calculator },
   ],
   ADMIN: [

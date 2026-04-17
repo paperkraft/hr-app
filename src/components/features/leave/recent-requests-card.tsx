@@ -1,5 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { FileText, Inbox } from "lucide-react";
 
 interface Request {
   id: string;
@@ -15,30 +16,50 @@ interface RecentRequestsCardProps {
 
 export function RecentRequestsCard({ requests }: RecentRequestsCardProps) {
   return (
-    <Card className="shadow-sm border-border/50">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">Leave Requests</CardTitle>
+    <Card className="shadow-sm border-border/40 hover:shadow-md transition-shadow duration-200 flex flex-col overflow-hidden">
+      <CardHeader className="pb-3 border-b border-border/40 bg-muted/5 p-4 shrink-0 flex flex-row items-center justify-between space-y-0">
+        <div className="flex items-center gap-2">
+          <FileText className="w-4 h-4 text-primary" />
+          <CardTitle className="text-base font-semibold">Leave Requests</CardTitle>
+        </div>
       </CardHeader>
-      <CardContent>
-        <div className="divide-y">
+      <CardContent className="p-0 flex-1 overflow-auto">
+        <div className="divide-y divide-border/40 h-full">
           {requests.length === 0 ? (
-            <p className="py-4 text-center text-muted-foreground text-sm">No leave requests yet.</p>
+            <div className="py-8 flex flex-col items-center justify-center text-muted-foreground h-full">
+              <Inbox className="w-8 h-8 mb-2 opacity-20" />
+              <p className="text-xs">No pending requests.</p>
+            </div>
           ) : (
             requests.map((req) => (
-              <div key={req.id} className="flex items-center justify-between py-3">
-                <div className="flex flex-col">
-                  <span className="font-medium">{req.dates}</span>
-                  <span className="text-sm text-muted-foreground">{req.category}</span>
+              <div key={req.id} className="flex items-center justify-between p-3.5 hover:bg-muted/30 transition-colors">
+                <div className="flex flex-col gap-0.5">
+                  <span className="font-semibold text-xs">{req.dates}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-tight">{req.category}</span>
                   {req.managerNote && (
-                    <div className={`mt-2 p-2 rounded text-xs border ${req.status === 'REJECTED' ? 'bg-destructive/5 border-destructive/20 text-destructive' : 'bg-muted/50 border-border text-muted-foreground'} italic animate-in fade-in slide-in-from-left-2 duration-300`}>
-                      <span className="font-semibold block mb-0.5">Note:</span>
-                      {req.managerNote}
+                    <div className="mt-1 flex items-center gap-1.5 overflow-hidden">
+                      <Badge variant="outline" className={`h-4 px-1 text-[8px] font-bold uppercase tracking-tighter shrink-0 ${
+                        req.status === 'REJECTED' 
+                          ? 'border-destructive/30 bg-destructive/5 text-destructive' 
+                          : 'border-primary/20 bg-primary/5 text-primary'
+                      }`}>
+                        Note
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground italic truncate max-w-[150px]" title={req.managerNote}>
+                        {req.managerNote}
+                      </span>
                     </div>
                   )}
                 </div>
                 <Badge 
-                  variant={req.status === "APPROVED" ? "secondary" : req.status === "REJECTED" ? "destructive" : "outline"}
-                  className={req.status === "APPROVED" ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border-none" : ""}
+                  variant={req.status === "APPROVED" ? "outline" : req.status === "REJECTED" ? "destructive" : "outline"}
+                  className={`text-[9px] h-5 font-bold px-1.5 ${
+                    req.status === "APPROVED" 
+                      ? "border-emerald-100 bg-emerald-50/50 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20" 
+                      : req.status === "REJECTED"
+                      ? ""
+                      : "text-amber-600 border-amber-200 bg-amber-50"
+                  }`}
                 >
                   {req.status}
                 </Badge>

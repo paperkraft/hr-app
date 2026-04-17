@@ -341,8 +341,13 @@ export default async function AdminOverviewPage() {
                       </TableCell>
                       <TableCell className="py-3 px-4">
                         {req.systemNote ? (
-                          <div className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-100 italic">
-                            {req.systemNote}
+                          <div className="flex items-center gap-1.5 overflow-hidden">
+                            <Badge variant="outline" className="h-5 px-1.5 text-[9px] font-bold uppercase tracking-tight shrink-0 border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-900/40">
+                              System
+                            </Badge>
+                            <span className="text-[10px] text-muted-foreground italic truncate max-w-[120px]" title={req.systemNote}>
+                               {req.systemNote}
+                            </span>
                           </div>
                         ) : (
                           <div className="text-[10px] text-muted-foreground px-2 py-1 bg-muted/20 rounded-full w-fit flex items-center gap-1">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Bell, Activity, ShieldCheck } from "lucide-react";
+import { Menu, Bell, Activity, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/layout/user-nav";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -14,8 +14,21 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
   const baseNav = roleNavigation[userRole] || roleNavigation.EMPLOYEE;
   const navItems = [...baseNav];
 
+  // Helper to get descriptive page title
+  const getPageTitle = () => {
+    if (pathname.includes("/attendance")) return "My Attendance";
+    if (pathname.includes("/leaves")) return "Leave Management";
+    if (pathname.includes("/admin/users")) return "Employee Directory";
+    if (pathname.includes("/admin/settings")) return "System Configuration";
+    if (pathname.includes("/admin/departments")) return "Departments";
+    if (pathname.includes("/admin")) return "Admin Overview";
+    if (pathname.includes("/accountant")) return "Payroll & Processing";
+    if (pathname === "/dashboard/employee") return "My Space";
+    return "HR Workspace";
+  };
+
   return (
-    <header className="h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4 md:px-8 sticky top-0 z-50 transition-all">
+    <header className="h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4 md:px-6 sticky top-0 z-50 transition-all">
       <div className="flex items-center gap-4">
         {/* Mobile Menu Toggle via Sheet */}
         <Sheet>
@@ -54,6 +67,13 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
             </nav>
           </SheetContent>
         </Sheet>
+
+        {/* Page Title for Desktop */}
+        <div className="hidden md:flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <span className="hover:text-foreground transition-colors cursor-default capitalize">{userRole.toLowerCase()}</span>
+          <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
+          <span className="text-foreground font-semibold">{getPageTitle()}</span>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 md:gap-4">

@@ -1,12 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Clock, Calendar, CheckCircle2, AlertCircle, LogOut, Coffee, Download, Filter, Search } from "lucide-react";
+import { Clock, Calendar, CheckCircle2, AlertCircle, LogOut, Coffee, Download, Filter, Search, ArrowLeft, MoreHorizontal } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 export const dynamic = 'force-dynamic';
 
@@ -29,165 +30,212 @@ export default async function EmployeeAttendanceHistory() {
   const onTimeCount = totalDays - lateCount;
 
   return (
-    <div className="flex flex-col gap-8 p-6 lg:p-10 max-w-[1600px] mx-auto animate-in fade-in duration-700">
+    <div className="flex flex-col gap-8 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto animate-in fade-in duration-500">
       
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Attendance Logs</h1>
-          <p className="text-slate-400 font-medium text-[15px]">Tracking your professional consistency and shift reliability.</p>
-        </div>
-        <div className="flex items-center gap-3 shrink-0">
-          <Button variant="outline" className="hiveq-btn-secondary h-11">
-             <Download className="size-4 mr-2 text-slate-400" />
-             Download CSV
-          </Button>
-          <Button className="hiveq-btn-primary h-11 px-6">
-             Request Correction
-          </Button>
-        </div>
-      </div>
-
-      {/* Stats Summary Bento Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="hiveq-card p-6 flex items-center justify-between border-l-4 border-l-slate-400">
-           <div className="flex flex-col">
-              <span className="text-3xl font-black text-slate-900 leading-none">{totalDays}</span>
-              <span className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest leading-none">Total Logs</span>
-           </div>
-           <div className="w-12 h-12 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center border border-slate-100 shadow-sm">
-              <Calendar className="size-6" />
-           </div>
-        </div>
-
-        <div className="hiveq-card p-6 flex items-center justify-between border-l-4 border-l-emerald-500">
-           <div className="flex flex-col">
-              <span className="text-3xl font-black text-emerald-600 leading-none">{onTimeCount}</span>
-              <span className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest leading-none">On Time</span>
-           </div>
-           <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center border border-emerald-100 shadow-sm">
-              <CheckCircle2 className="size-6" />
-           </div>
-        </div>
-
-        <div className="hiveq-card p-6 flex items-center justify-between border-l-4 border-l-rose-500">
-           <div className="flex flex-col">
-              <span className="text-3xl font-black text-rose-600 leading-none">{lateCount}</span>
-              <span className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest leading-none">Late Marks</span>
-           </div>
-           <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center border border-rose-100 shadow-sm">
-              <AlertCircle className="size-6" />
-           </div>
-        </div>
-
-        <div className="hiveq-card p-6 flex items-center justify-between border-l-4 border-l-amber-500">
-           <div className="flex flex-col">
-              <span className="text-3xl font-black text-amber-600 leading-none">{autoOutCount}</span>
-              <span className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest leading-none">Auto Outs</span>
-           </div>
-           <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center border border-amber-100 shadow-sm">
-              <LogOut className="size-6" />
-           </div>
-        </div>
-      </div>
-
-      {/* Main Table Card */}
-      <Card className="hiveq-card p-0 overflow-hidden border-none shadow-sm">
-        <CardHeader className="p-8 border-b border-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-             <h3 className="text-lg font-black text-slate-900">Historical Records</h3>
-             <Badge className="bg-slate-50 text-slate-400 border border-slate-100 rounded-lg text-[10px] py-0.5 px-2">Verified</Badge>
+      {/* breadcrumbs-like navigation and Header */}
+      <div className="flex flex-col gap-4">
+        <Link 
+          href="/dashboard/employee" 
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors w-fit"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Dashboard
+        </Link>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Attendance History</h1>
+            <p className="text-muted-foreground">A comprehensive record of your work shifts and punctuality.</p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative group w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input 
-                 placeholder="Search logs..." 
-                 className="pl-9 h-11 bg-slate-50 border-transparent focus:bg-white focus:border-slate-200 transition-all text-sm rounded-xl" 
-              />
-            </div>
-            <Button variant="ghost" size="icon" className="h-11 w-11 rounded-xl border border-slate-100 text-slate-400">
-               <Filter className="size-4" />
+          <div className="flex items-center gap-3 shrink-0">
+            <Button variant="outline" className="h-10 border-border/60 hover:bg-muted/50">
+               <Download className="w-4 h-4 mr-2" />
+               Export Logs
             </Button>
+            <Button className="h-10 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
+               Request Correction
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="shadow-sm border-border/40 overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 bg-primary/5 rounded-full blur-2xl" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Records</CardTitle>
+            <Calendar className="w-4 h-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalDays}</div>
+            <p className="text-xs text-muted-foreground mt-1">Logged shifts since start</p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm border-border/40 overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 bg-emerald-500/5 rounded-full blur-2xl" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Punctuality</CardTitle>
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-emerald-600">{onTimeCount}</div>
+            <p className="text-xs text-muted-foreground mt-1">On-time arrivals</p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm border-border/40 overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 bg-rose-500/5 rounded-full blur-2xl" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Late Marks</CardTitle>
+            <AlertCircle className="w-4 h-4 text-rose-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-rose-600">{lateCount}</div>
+            <p className="text-xs text-muted-foreground mt-1">Delayed check-ins</p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm border-border/40 overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 bg-amber-500/5 rounded-full blur-2xl" />
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Auto-Punch Outs</CardTitle>
+            <LogOut className="w-4 h-4 text-amber-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-amber-600">{autoOutCount}</div>
+            <p className="text-xs text-muted-foreground mt-1">Forgotten check-outs</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Table Section */}
+      <Card className="shadow-md border-border/40 overflow-hidden">
+        <CardHeader className="pb-4 bg-muted/10 border-b border-border/40">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-xl font-bold">Historical Log</CardTitle>
+              <CardDescription>View and manage all your attendance data</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="relative group w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                <Input 
+                   placeholder="Search by date..." 
+                   className="pl-9 h-10 border-border/60 focus:border-primary transition-all text-sm rounded-lg" 
+                />
+              </div>
+              <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 border-border/60">
+                 <Filter className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="relative w-full overflow-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50/50">
-                <tr className="border-b border-slate-100">
-                  <th className="h-14 px-8 text-[11px] font-black uppercase text-slate-400 text-left tracking-widest min-w-[200px]">Log Date</th>
-                  <th className="h-14 px-8 text-[11px] font-black uppercase text-slate-400 text-left tracking-widest">Punch In</th>
-                  <th className="h-14 px-8 text-[11px] font-black uppercase text-slate-400 text-left tracking-widest">Punch Out</th>
-                  <th className="h-14 px-8 text-[11px] font-black uppercase text-slate-400 text-left tracking-widest">Status</th>
-                  <th className="h-14 px-8 text-[11px] font-black uppercase text-slate-400 text-right tracking-widest">System Info</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {logs.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="py-20 text-center">
-                      <div className="flex flex-col items-center gap-3 text-slate-300">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30 border-b border-border/40">
+                  <TableHead className="w-[180px] font-semibold py-4 px-6 text-foreground">Date</TableHead>
+                  <TableHead className="font-semibold py-4 px-6 text-foreground">Punch In</TableHead>
+                  <TableHead className="font-semibold py-4 px-6 text-foreground">Punch Out</TableHead>
+                  <TableHead className="font-semibold py-4 px-6 text-foreground">Status</TableHead>
+                  <TableHead className="font-semibold py-4 px-6 text-foreground">Shift Quality</TableHead>
+                  <TableHead className="text-right font-semibold py-4 px-6 text-foreground">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {logs.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-64 text-center">
+                      <div className="flex flex-col items-center gap-3 text-muted-foreground">
                         <Coffee className="w-12 h-12 opacity-20" />
-                        <p className="text-sm font-black italic">No activity recorded for this period</p>
+                        <p className="text-lg font-medium">No activity recorded yet</p>
+                        <p className="text-sm max-w-xs mx-auto">Once you check in, your attendance records will appear here.</p>
                       </div>
-                    </td>
-                  </tr>
-                )}
-                {logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="px-8 py-5 align-middle">
-                       <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 shadow-sm flex flex-col items-center justify-center group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-colors">
-                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{new Date(log.date).toLocaleString('en-US', { month: 'short' })}</span>
-                             <span className="text-sm font-black text-slate-900 leading-none">{new Date(log.date).getDate()}</span>
-                          </div>
-                          <span className="text-sm font-black text-slate-900">
-                             {new Date(log.date).toLocaleDateString('en-US', { weekday: 'long' })}
-                          </span>
-                       </div>
-                    </td>
-                    <td className="px-8 py-5 align-middle">
-                       <div className="flex flex-col">
-                          <span className="text-sm font-black text-emerald-600">{new Date(log.punchIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Entry Point</span>
-                       </div>
-                    </td>
-                    <td className="px-8 py-5 align-middle">
-                       {log.punchOut ? (
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  logs.map((log) => (
+                    <TableRow key={log.id} className="hover:bg-muted/20 transition-colors group border-b border-border/10">
+                      <TableCell className="py-4 px-6">
                          <div className="flex flex-col">
-                            <span className="text-sm font-black text-slate-700">{new Date(log.punchOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Exit Point</span>
-                         </div>
-                       ) : (
-                         <Badge className="bg-slate-100 text-slate-400 border-none rounded-lg text-[10px] font-black">ACTIVE NOW</Badge>
-                       )}
-                    </td>
-                    <td className="px-8 py-5 align-middle">
-                       {log.isAutoPunchOut ? (
-                         <Badge className="bg-amber-100 text-amber-600 border-none rounded-lg text-[10px] font-black uppercase tracking-tight">Auto-Out</Badge>
-                       ) : log.isLateSpecialCase ? (
-                         <Badge className="bg-blue-100 text-blue-600 border-none rounded-lg text-[10px] font-black uppercase tracking-tight">Approved</Badge>
-                       ) : log.isLate ? (
-                         <Badge className="bg-rose-100 text-rose-600 border-none rounded-lg text-[10px] font-black uppercase tracking-tight">Late Entry</Badge>
-                       ) : (
-                         <Badge className="bg-emerald-100 text-emerald-600 border-none rounded-lg text-[10px] font-black uppercase tracking-tight">Punctual</Badge>
-                       )}
-                    </td>
-                    <td className="px-8 py-5 align-middle text-right">
-                       <div className="flex flex-col items-end gap-1">
-                          <span className="text-[11px] font-black text-slate-400 tracking-tight">{log.ipAddress || "Internal Server"}</span>
-                          {log.isOutsideOffice && (
-                            <span className="text-[9px] font-black text-rose-500 uppercase flex items-center gap-1">
-                               <AlertCircle className="size-2.5" /> Off-Site Punch
+                            <span className="font-semibold text-foreground">
+                               {new Date(log.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </span>
-                          )}
-                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                            <span className="text-xs text-muted-foreground">
+                               {new Date(log.date).toLocaleDateString('en-US', { weekday: 'long' })}
+                            </span>
+                         </div>
+                      </TableCell>
+                      <TableCell className="py-4 px-6">
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-full bg-emerald-500/10">
+                            <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                          </div>
+                          <span className="font-mono text-sm font-medium">
+                            {new Date(log.punchIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4 px-6">
+                         {log.punchOut ? (
+                           <div className="flex items-center gap-2">
+                             <div className="p-1.5 rounded-full bg-slate-500/10">
+                               <Clock className="w-3.5 h-3.5 text-slate-600" />
+                             </div>
+                             <span className="font-mono text-sm font-medium">
+                               {new Date(log.punchOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                             </span>
+                           </div>
+                         ) : (
+                           <Badge variant="secondary" className="bg-primary/10 text-primary border-none text-[10px] font-bold py-0.5 px-2">
+                             IN PROGRESS
+                           </Badge>
+                         )}
+                      </TableCell>
+                      <TableCell className="py-4 px-6">
+                         {log.isAutoPunchOut ? (
+                           <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/40">
+                             <AlertCircle className="w-3 h-3 mr-1" /> Auto-Out
+                           </Badge>
+                         ) : log.isLateSpecialCase ? (
+                           <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-900/40">
+                             <CheckCircle2 className="w-3 h-3 mr-1" /> Covered
+                           </Badge>
+                         ) : log.isLate ? (
+                           <Badge variant="outline" className="text-destructive border-destructive/20 bg-destructive/5">
+                             <AlertCircle className="w-3 h-3 mr-1" /> Late
+                           </Badge>
+                         ) : (
+                           <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-900/40">
+                             <CheckCircle2 className="w-3 h-3 mr-1" /> On Time
+                           </Badge>
+                         )}
+                      </TableCell>
+                      <TableCell className="py-4 px-6">
+                        <div className="flex flex-col gap-1">
+                           <div className="flex items-center gap-1.5">
+                              <div className={`w-2 h-2 rounded-full ${log.isOutsideOffice ? 'bg-destructive' : 'bg-emerald-500'}`} />
+                              <span className="text-xs font-medium uppercase tracking-tight">
+                                {log.isOutsideOffice ? 'Off-Site Entry' : 'Verified Location'}
+                              </span>
+                           </div>
+                           <span className="text-[10px] text-muted-foreground font-mono">
+                             IP: {log.ipAddress || "Internal Gateway"}
+                           </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4 px-6 text-right">
+                         <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
+                            <MoreHorizontal className="w-4 h-4" />
+                         </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>

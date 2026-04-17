@@ -1,7 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { CalendarDays } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { CalendarDays, Users } from "lucide-react";
+import { PageSection } from "@/components/ui";
 
 interface TeamMember {
   id: string;
@@ -18,42 +17,48 @@ interface TeamOnLeaveProps {
 
 export function TeamOnLeave({ members }: TeamOnLeaveProps) {
   return (
-    <Card className="shadow-sm border-border/40 h-full overflow-hidden">
-      <CardHeader className="pb-3 border-b border-border/40 p-4">
-        <CardTitle className="text-sm font-bold flex items-center gap-2">
-          <CalendarDays className="size-4 text-primary" />
-          Team Members on Leave
-        </CardTitle>
-        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-0.5">
-          Currently or soon to be out
-        </p>
-      </CardHeader>
-      <CardContent className="p-0">
-        <div className="divide-y divide-border/40">
+    <PageSection
+      title="Team Visibility"
+      description="Who is currently or soon to be out"
+      className="h-full animate-fade-in"
+      noPadding
+    >
+      <div className="flex flex-col h-full">
+        <div className="divide-y divide-border/40 flex-1">
           {members.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground italic text-xs">
-              No team members are out today.
+            <div className="p-12 text-center text-muted-foreground italic text-xs flex flex-col items-center justify-center gap-3 opacity-60">
+               <Users className="size-6 opacity-20" />
+               <p className="font-bold">No team members are out today.</p>
             </div>
           ) : (
             members.map((member) => (
-              <div key={member.id} className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
+              <div key={member.id} className="p-4 flex items-center justify-between hover:bg-muted/10 transition-colors group">
                 <div className="flex items-center gap-3">
-                  <Avatar className="size-9 border border-border/60">
-                    <AvatarFallback className="bg-primary/5 text-primary text-[10px] font-bold">
+                  <Avatar className="size-10 border border-border/40 shadow-sm transition-transform group-hover:scale-105">
+                    <AvatarFallback className="bg-primary/5 text-primary text-[10px] font-black uppercase">
                       {member.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-bold leading-none">{member.name}</span>
+                  <div className="flex flex-col">
+                     <span className="text-sm font-bold text-foreground leading-none mb-1">{member.name}</span>
+                     <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{member.role || "Team Member"}</span>
+                  </div>
                 </div>
 
-                <span className="text-[10px] font-mono font-bold text-foreground bg-muted px-1.5 py-0.5 rounded">
-                  {new Date(member.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(member.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                </span>
+                <div className="flex flex-col items-end gap-1">
+                    <span className="text-[10px] font-black text-primary bg-primary/5 border border-primary/10 px-2 py-0.5 rounded uppercase tracking-tighter">
+                      {member.leaveType}
+                    </span>
+                    <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest">
+                      UNTIL {new Date(member.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </span>
+                </div>
               </div>
             ))
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </PageSection>
   );
 }
+

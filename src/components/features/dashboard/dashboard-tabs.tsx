@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CalendarRange, Calendar, History } from "lucide-react";
+import { LayoutDashboard, CalendarRange, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [

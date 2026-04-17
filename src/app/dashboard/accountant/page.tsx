@@ -12,9 +12,17 @@ import { ExportLedgerButton } from "@/components/features/accountant/export-ledg
 import { MasterReportTable } from "@/components/features/accountant/master-report-table";
 import { MonthYearPicker } from "@/components/features/accountant/month-year-picker";
 import { ensureBalance } from "@/actions/leave";
-import { StatWidget } from "@/components/features/dashboard/stat-widget";
 import { MaintenanceButton } from "@/components/features/accountant/maintenance-button";
 import Link from "next/link";
+import { 
+  PageContainer, 
+  PageHeader, 
+  PageSection, 
+  Grid, 
+  StatCard, 
+  Divider,
+  StatusBadge
+} from "@/components/ui";
 
 export const dynamic = 'force-dynamic';
 
@@ -212,176 +220,175 @@ export default async function AccountantDashboard({
   const { reportData, stats, recentApprovals } = await getPayrollReportData(m, y);
 
   return (
-    <div className="flex flex-col gap-8 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
-
+    <PageContainer maxWidth="full" className="py-8">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Payroll & Processing
-          </h1>
-          <div className="flex flex-col md:flex-row md:items-center gap-3 mt-1">
-            <p className="text-muted-foreground text-sm md:text-base">
-              Comprehensive attendance and leave report for {stats.currentMonthName} {stats.currentYear}.
-            </p>
-            <div className="hidden md:block h-4 w-px bg-border/60 mx-1" />
-            <MonthYearPicker currentMonth={stats.currentMonth} currentYear={stats.currentYear} />
+      <PageHeader 
+        title="Payroll & Processing"
+        description={`Comprehensive attendance and leave report for ${stats.currentMonthName} ${stats.currentYear}.`}
+        breadcrumb={<MonthYearPicker currentMonth={stats.currentMonth} currentYear={stats.currentYear} />}
+        action={
+          <div className="flex items-center gap-3">
+            <MaintenanceButton />
+            <ExportLedgerButton data={reportData} month={stats.currentMonthName} />
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <MaintenanceButton />
-          <ExportLedgerButton data={reportData} month={stats.currentMonthName} />
-        </div>
-      </div>
+        }
+      />
 
-      {/* Quick Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <StatWidget 
-          title="Total Staff" 
+      {/* Quick Stats Grid */}
+      <Grid cols={6} className="mb-8">
+        <StatCard 
+          title="Staff" 
+          label="Total Staff" 
           value={stats.totalStaff} 
-          icon={<Users className="size-4 text-primary" />}
+          icon={<Users className="w-8 h-8 opacity-20" />}
+          className="animate-fade-in"
         />
-        <StatWidget 
+        <StatCard 
           title="Encash" 
+          label="Encashments" 
           value={stats.totalEncashments} 
-          unit="Days"
-          icon={<IndianRupee className="size-4 text-emerald-500" />}
-          progressColor="bg-emerald-500"
+          icon={<IndianRupee className="w-8 h-8 text-emerald-500 opacity-20" />}
+          className="animate-fade-in"
+          change={{ value: "Days", trend: "up" }}
         />
-        <StatWidget 
-          title="Total Late" 
+        <StatCard 
+          title="Lates" 
+          label="Total Late" 
           value={stats.totalLates} 
-          unit="Punches"
-          icon={<Clock className="size-4 text-amber-500" />}
-          progressColor="bg-amber-500"
+          icon={<Clock className="w-8 h-8 text-amber-500 opacity-20" />}
+          className="animate-fade-in"
+          change={{ value: "Punches", trend: "down" }}
         />
-        <StatWidget 
-          title="Total LWP" 
+        <StatCard 
+          title="LWP" 
+          label="Total LWP" 
           value={stats.totalLwp} 
-          unit="Days"
-          icon={<FileText className="size-4 text-destructive" />}
-          progressColor="bg-destructive"
+          icon={<FileText className="w-8 h-8 text-rose-500 opacity-20" />}
+          className="animate-fade-in"
+          change={{ value: "Days", trend: "neutral" }}
         />
-        <StatWidget 
+        <StatCard 
           title="Allowance" 
+          label="Allowance" 
           value={stats.totalAllowances} 
-          unit="Days"
-          icon={<MapPin className="size-4 text-blue-500" />}
-          progressColor="bg-blue-500"
+          icon={<MapPin className="w-8 h-8 text-blue-500 opacity-20" />}
+          className="animate-fade-in"
+          change={{ value: "Days", trend: "up" }}
         />
-        <Link href={`/dashboard/accountant/location-logs?m=${stats.currentMonth}&y=${stats.currentYear}`} className="block h-full">
-          <StatWidget 
+        <Link href={`/dashboard/accountant/location-logs?m=${stats.currentMonth}&y=${stats.currentYear}`} className="block h-full group">
+          <StatCard 
             title="Out-Office" 
+            label="Out-Office" 
             value={reportData.reduce((acc, curr) => acc + curr.offSiteCount, 0)} 
-            unit="Punches"
-            icon={<MapPin className="size-4" />}
-            className="border-rose-500/20 bg-rose-500/2 hover:bg-rose-500/5 cursor-pointer"
-            progressColor="bg-rose-500"
+            icon={<MapPin className="w-8 h-8 text-rose-500 opacity-20 group-hover:opacity-40 transition-opacity" />}
+            className="animate-fade-in border-rose-500/20 bg-rose-500/5 hover-lift"
+            change={{ value: "Punches", trend: "neutral" }}
           />
         </Link>
-      </div>
+      </Grid>
 
-      {/* The Master Data Table */}
-      <Card className="shadow-sm border-border/40 p-0">
-        <CardHeader className="border-b border-border/40 bg-muted/10 p-4">
-          <CardTitle className="text-lg">Master Attendance & Leave Report</CardTitle>
-          <CardDescription>Consolidated data required for end-of-month salary calculations.</CardDescription>
-        </CardHeader>
-        <CardContent className="p-4 pt-0">
+      {/* Main Report Section */}
+      <PageSection
+        title="Master Attendance & Leave Report"
+        description="Consolidated data required for end-of-month salary calculations."
+        className="mb-8 animate-fade-in-up"
+        noPadding
+      >
+        <div className="p-4">
           <MasterReportTable
             data={reportData}
             month={stats.currentMonth}
             year={stats.currentYear}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </PageSection>
 
-      {/* Recent Approvals & Cancellation Table */}
-      <Card className="shadow-sm border-border/40 p-0 gap-0">
-        <CardHeader className="bg-muted/5 border-b border-border/40 p-4">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <CheckCircle2 className="size-5 text-emerald-500" />
-            Recent Approvals & Maintenance
-          </CardTitle>
-          <CardDescription>Review and manage recently approved leaves to prevent double-counting.</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-muted/30">
+      {/* Approvals & Maintenance Section */}
+      <PageSection
+        title="Recent Approvals & History"
+        description="Review and manage recently approved leaves to prevent double-counting in payroll."
+        className="animate-fade-in-up"
+        noPadding
+      >
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-muted/10">
+              <TableRow className="border-b border-border/40 hover:bg-transparent">
+                <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Employee</TableHead>
+                <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Duration</TableHead>
+                <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Allowance Category</TableHead>
+                <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Processing Detail</TableHead>
+                <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground text-right">Processed On</TableHead>
+                <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground text-right w-10">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recentApprovals.length === 0 ? (
                 <TableRow>
-                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Employee</TableHead>
-                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Duration</TableHead>
-                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Type</TableHead>
-                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Method / Note</TableHead>
-                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-right text-muted-foreground">Processed</TableHead>
-                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-right text-muted-foreground w-10">Action</TableHead>
+                  <TableCell colSpan={6} className="py-20 text-center">
+                    <div className="flex flex-col items-center gap-2 opacity-30">
+                      <FileText className="size-10 mb-2" />
+                      <p className="text-sm font-bold uppercase tracking-widest">No Recent Approvals</p>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentApprovals.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="py-10 text-center text-muted-foreground italic">
-                      No approval history found for this month.
+              ) : (
+                recentApprovals.map((req: any) => (
+                  <TableRow key={req.id} className="hover:bg-muted/5 transition-colors border-b border-border/40 last:border-0">
+                    <TableCell className="py-4 px-6">
+                      <div className="font-bold text-sm text-foreground">{req.employeeName}</div>
+                      <div className="text-[10px] text-muted-foreground font-black mt-0.5 uppercase tracking-tighter">{req.role}</div>
                     </TableCell>
-                  </TableRow>
-                ) : (
-                  recentApprovals.map((req: any) => (
-                    <TableRow key={req.id} className="hover:bg-muted/5">
-                      <TableCell className="py-3 px-4">
-                        <div className="font-semibold text-sm">{req.employeeName}</div>
-                        <div className="text-[10px] text-muted-foreground uppercase">{req.role}</div>
-                      </TableCell>
-                      <TableCell className="py-3 px-4 text-xs font-medium">
-                        <div className="flex flex-col">
-                          <span>{req.startDate === req.endDate ? req.startDate : `${req.startDate} to ${req.endDate}`}</span>
+                    <TableCell className="py-4 px-6">
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-xs font-bold text-foreground">
+                          {req.startDate === req.endDate ? req.startDate : `${req.startDate} to ${req.endDate}`}
+                        </span>
+                        <div className="flex gap-1">
                           {req.duration === 'HALF' && (
-                            <span className="text-[10px] text-primary font-bold uppercase tracking-tight">
-                              Half Day ({req.halfDayType === 'FIRST_HALF' ? '1st Half' : '2nd Half'})
-                            </span>
+                            <StatusBadge status="info" label={`HALF (${req.halfDayType === 'FIRST_HALF' ? '1st' : '2nd'})`} size="sm" withDot={false} className="font-bold" />
                           )}
                           {req.duration === 'SHORT' && (
-                            <span className="text-[10px] text-amber-600 font-bold uppercase tracking-tight">
-                              Short Leave
-                            </span>
+                            <StatusBadge status="warning" label="SHORT LEAVE" size="sm" withDot={false} className="font-bold" />
+                          )}
+                          {req.duration === 'FULL' && (
+                            <StatusBadge status="success" label="FULL DAY" size="sm" withDot={false} className="font-bold" />
                           )}
                         </div>
-                      </TableCell>
-                      <TableCell className="py-3 px-4">
-                        <Badge variant="outline" className="text-[9px] font-bold uppercase truncate max-w-[100px] border-border/60">
-                          {req.category.replace(/_/g, ' ')}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="py-3 px-4">
-                        {req.systemNote ? (
-                          <div className="flex items-center gap-1.5 overflow-hidden">
-                            <Badge variant="outline" className="h-5 px-1.5 text-[9px] font-bold uppercase tracking-tight shrink-0 border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-900/40">
-                              System
-                            </Badge>
-                            <span className="text-[10px] text-muted-foreground italic truncate max-w-[120px]" title={req.systemNote}>
-                              {req.systemNote}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="text-[10px] text-muted-foreground px-2 py-1 bg-muted/20 rounded-full w-fit flex items-center gap-1">
-                            <Check className="size-3" /> Manual
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="py-3 px-4 text-right text-[10px] font-mono whitespace-nowrap">
-                        {new Date(req.updatedAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="py-3 px-4 text-right">
-                        <CancelLeaveButton requestId={req.id} employeeName={req.employeeName} />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4 px-6">
+                      <Badge variant="outline" className="font-black text-[10px] px-2 py-0.5 border-border/60 bg-muted/5 uppercase tracking-tight">
+                        {req.category.replace(/_/g, ' ')}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="py-4 px-6">
+                      {req.systemNote ? (
+                        <div className="flex items-center gap-2">
+                          <StatusBadge status="success" label="Auto" size="sm" withDot={false} className="h-4 px-1" />
+                          <span className="text-[11px] text-muted-foreground font-medium italic truncate max-w-[140px]" title={req.systemNote}>
+                            {req.systemNote}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="text-[11px] font-bold text-muted-foreground/60 flex items-center gap-1.5">
+                          <CheckCircle2 className="size-3 text-emerald-500" /> Manual Approval
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-4 px-6 text-right text-xs font-mono font-bold text-muted-foreground/70">
+                      {new Date(req.updatedAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="py-4 px-6 text-right">
+                      <CancelLeaveButton requestId={req.id} employeeName={req.employeeName} />
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </PageSection>
+    </PageContainer>
   );
-}
+}

@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Plane, AlertCircle, Clock } from "lucide-react";
+import { Plane, AlertCircle } from "lucide-react";
+import { PageSection, StatusBadge } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 interface LeaveRequest {
   id: string;
@@ -20,56 +20,54 @@ export function UpcomingLeave({ requests }: UpcomingLeaveProps) {
   const pending = requests.find(r => r.status === "PENDING");
 
   return (
-    <Card className="shadow-sm border-border/40 h-full overflow-hidden flex flex-col">
-      <CardHeader className="pb-3 border-b border-border/40 p-4 shrink-0">
-        <CardTitle className="text-sm font-bold flex items-center gap-2">
-          <Plane className="size-4 text-primary" />
-          Upcoming Leave
-        </CardTitle>
-        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-0.5">
-          Your scheduled time off
-        </p>
-      </CardHeader>
-      <CardContent className="p-5 flex-1 space-y-4">
+    <PageSection
+      title="Upcoming Leave"
+      description="Your scheduled time off"
+      className="h-full animate-fade-in"
+      noPadding
+    >
+      <div className="p-6 flex flex-col gap-6">
         {upcoming ? (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-bold">{upcoming.category}</p>
-                <p className="text-[11px] text-muted-foreground mt-1">
+                <p className="text-sm font-bold text-foreground">{upcoming.category}</p>
+                <p className="text-[11px] text-muted-foreground mt-1 font-medium">
                   {new Date(upcoming.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} to {new Date(upcoming.endDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                 </p>
               </div>
-              <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50">
-                Approved
-              </Badge>
+              <StatusBadge status="success" label="Approved" size="sm" withDot={false} className="font-black" />
             </div>
-            <p className="text-[10px] font-bold text-muted-foreground italic px-2 py-1 bg-muted/50 rounded inline-block">
-              {upcoming.days} {upcoming.days === 1 ? 'day' : 'days'} total
-            </p>
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-primary/5 text-primary border border-primary/10">
+               <span className="text-[10px] font-black uppercase tracking-widest">
+                 {upcoming.days} {upcoming.days === 1 ? 'day' : 'days'} total
+               </span>
+            </div>
           </div>
         ) : (
-          <div className="py-4 flex flex-col items-center justify-center text-muted-foreground text-xs text-center border-2 border-dashed border-muted/50 rounded-xl">
-            <p>No upcoming approved leave.</p>
+          <div className="py-6 flex flex-col items-center justify-center text-muted-foreground text-xs text-center border-2 border-dashed border-border/40 rounded-2xl bg-muted/5 opacity-60">
+            <Plane className="size-5 mb-2 opacity-20" />
+            <p className="font-bold">No upcoming approved leave.</p>
           </div>
         )}
 
         {pending && (
-          <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 shadow-sm animate-pulse-subtle">
+          <div className="p-4 rounded-xl bg-orange-500/[0.03] border border-orange-500/10 shadow-sm animate-pulse-soft">
             <div className="flex items-start gap-3">
-              <div className="p-1.5 rounded-full bg-amber-100">
-                <AlertCircle className="size-4 text-amber-600" />
+              <div className="p-1.5 rounded-lg bg-orange-500/10 shrink-0">
+                <AlertCircle className="size-4 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
-                <p className="text-xs font-bold text-amber-900">Pending Approval</p>
-                <p className="text-[10px] text-amber-700 mt-1 leading-relaxed">
-                  Your leave request for {new Date(pending.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} is awaiting manager approval.
+                <p className="text-xs font-black text-orange-900 dark:text-orange-200 uppercase tracking-widest">Pending Approval</p>
+                <p className="text-[10px] text-orange-700/80 dark:text-orange-300/60 mt-1 leading-relaxed font-medium">
+                  {new Date(pending.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} request is awaiting manager review.
                 </p>
               </div>
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </PageSection>
   );
 }
+

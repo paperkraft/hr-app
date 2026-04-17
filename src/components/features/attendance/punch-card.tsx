@@ -1,11 +1,11 @@
-"use client";
-
+'use client';
 import { useState, useEffect, useTransition } from "react";
 import { punchInOutAction } from "@/actions/attendance";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { Clock, CheckCircle2, Loader2, AlertCircle, MapPin, Play, Square } from "lucide-react";
 import { toast } from "sonner";
+import { PageSection, StatusBadge, Divider } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 interface PunchCardProps {
   initialStatus: "PENDING" | "PUNCHED_IN" | "PUNCHED_OUT";
@@ -18,7 +18,6 @@ export function PunchCard({ initialStatus, autoPunchOutCount = 0, warningThresho
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  // Keep state perfectly in sync with the server prop
   useEffect(() => {
     setStatus(initialStatus);
   }, [initialStatus]);
@@ -30,14 +29,12 @@ export function PunchCard({ initialStatus, autoPunchOutCount = 0, warningThresho
   }, []);
 
   const handlePunch = () => {
-    // Determine target state
     const targetStatus = status === "PENDING" ? "PUNCHED_IN" : "PUNCHED_OUT";
-    
+
     startTransition(async () => {
       let coords = undefined;
-      
+
       try {
-        // Request location
         const position = await new Promise<GeolocationPosition>((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject, {
             enableHighAccuracy: true,
@@ -45,14 +42,13 @@ export function PunchCard({ initialStatus, autoPunchOutCount = 0, warningThresho
             maximumAge: 0
           });
         });
-        
+
         coords = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
       } catch (err) {
         console.warn("Location access denied or unavailable:", err);
-        // We continue anyway as per "Flag only, don't block" policy
       }
 
       const result = await punchInOutAction(coords);
@@ -67,69 +63,97 @@ export function PunchCard({ initialStatus, autoPunchOutCount = 0, warningThresho
   };
 
   return (
-    <Card className="h-full shadow-sm border-border/40 flex flex-col p-0">
-      <CardHeader className="pb-2 border-b border-border/40 bg-muted/10 p-4">
-        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <Clock className="w-5 h-5 text-primary" />
-          Today's Attendance
-        </CardTitle>
-      </CardHeader>
+    <PageSection
+      title="Daily Attendance"
+      description="Track your daily shift entry and exit."
+      className="h-full animate-fade-in flex flex-col"
+      noPadding
+    >
+      <div className="flex-1 p-6 flex flex-col items-center justify-center gap-6 relative overflow-hidden">
+        {/* Background Accent */}
+        <div className="absolute top-0 right-0 p-4 opacity-5 select-none pointer-events-none">
+          <Clock className="size-32 rotate-12" />
+        </div>
 
-      <CardContent className="flex-1 flex flex-col items-center justify-center gap-5 p-4">
-        <div className="text-4xl font-bold tabular-nums tracking-tighter text-foreground">
-          {currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--"}
+        <div className="flex flex-col items-center gap-1">
+          <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-1">
+            Current Server Time
+          </div>
+          <div className="text-5xl font-black tabular-nums tracking-tighter text-foreground drop-shadow-sm">
+            {currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "--:--"}
+          </div>
         </div>
 
         {status === "PUNCHED_OUT" ? (
-          <div className="flex flex-col items-center justify-center gap-2 mt-2">
-            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-500/10 px-5 py-2.5 rounded-full border border-emerald-200 dark:border-emerald-500/20">
-              <CheckCircle2 className="w-5 h-5" />
-              Shift Completed
+          <div className="flex flex-col items-center justify-center gap-3 mt-2 animate-scale-in">
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-6 py-3 rounded-2xl border border-emerald-500/20 shadow-sm">
+              <CheckCircle2 className="size-5" />
+              SHIFT COMPLETED
             </div>
-            <p className="text-xs text-muted-foreground">Great work today!</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Great work today!</p>
           </div>
         ) : (
-          <Button
-            size="lg"
-            className={`w-full max-w-55 h-12 text-lg rounded-full font-semibold transition-all duration-300 shadow-md ${status === "PUNCHED_IN"
-              ? "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
-              : "bg-primary hover:bg-primary/90 shadow-primary/20"
-              }`}
-            disabled={isPending}
-            onClick={handlePunch}
-          >
-            {isPending ? (
-              <Loader2 className="w-6 h-6 animate-spin" />
-            ) : status === "PENDING" ? (
-              "Punch In"
-            ) : (
-              "Punch Out"
-            )}
-          </Button>
+          <div className="w-full max-w-[240px] relative">
+            <Button
+              size="lg"
+              className={cn(
+                "w-full h-16 text-xs font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-500 shadow-xl active:scale-95 group overflow-hidden",
+                status === "PUNCHED_IN"
+                  ? "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
+                  : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20"
+              )}
+              disabled={isPending}
+              onClick={handlePunch}
+            >
+              <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+              <div className="relative flex items-center justify-center gap-3">
+                {isPending ? (
+                  <Loader2 className="size-5 animate-spin" />
+                ) : status === "PENDING" ? (
+                  <>
+                    <Play className="size-4 fill-current" />
+                    Punch In
+                  </>
+                ) : (
+                  <>
+                    <Square className="size-4 fill-current" />
+                    Punch Out
+                  </>
+                )}
+              </div>
+            </Button>
+          </div>
         )}
 
         {status === "PUNCHED_IN" && !isPending && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1 bg-secondary/50 px-3 py-1 rounded-full">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-            You are clocked in
+          <div className="animate-fade-in">
+            <StatusBadge
+              status="success"
+              label="Currently Clocked In"
+              size="sm"
+              withDot={true}
+              animated
+              className="font-black uppercase tracking-widest text-[9px] px-4"
+            />
           </div>
         )}
 
         {/* Auto Punch-Out Warning */}
         {autoPunchOutCount >= warningThreshold && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
-            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+          <div className="w-full mt-4 bg-rose-500/5 border border-rose-500/10 rounded-2xl p-4 flex gap-3 animate-fade-in-up">
+            <div className="p-2 rounded-xl bg-rose-500/10 shrink-0">
+              <AlertCircle className="size-4 text-rose-500" />
+            </div>
             <div className="space-y-1">
-              <p className="text-xs font-bold text-amber-800">Attendance Policy Warning</p>
-              <p className="text-[10px] text-amber-700 leading-relaxed">
-                You have <span className="font-bold underline">{autoPunchOutCount}</span> forgotten punch-outs. 
-                Failing to punch out after {warningThreshold} warnings may result in a <span className="font-bold text-rose-600 uppercase">Late Mark</span> penalty. 
-                Please remember to clock out daily.
+              <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Policy Warning</p>
+              <p className="text-[10px] text-muted-foreground leading-relaxed font-medium">
+                You have <span className="font-bold text-foreground underline">{autoPunchOutCount}</span> forgotten punch-outs.
+                Please ensure you clock out daily to avoid penalties.
               </p>
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </PageSection>
   );
 }

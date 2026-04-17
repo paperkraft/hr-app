@@ -1,10 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, FileText, Activity, ShieldAlert, CheckCircle2, Check } from "lucide-react";
+import { Users, FileText, Activity, ShieldAlert, CheckCircle2, Check, TrendingUp, Calendar, Briefcase } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { getTodayRange } from "@/lib/attendance-helper";
 import { CancelLeaveButton } from "@/components/features/leave/cancel-leave-button";
+import {
+  PageContainer,
+  PageHeader,
+  PageSection,
+  Grid,
+  StatCard,
+  StatusBadge,
+  Divider,
+} from "@/components/ui";
 
 export const dynamic = 'force-dynamic';
 
@@ -142,80 +151,90 @@ export default async function AdminOverviewPage() {
   const stats = await getAdminStats();
 
   return (
-    <div className="flex flex-col gap-8 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">System Overview</h1>
-        <p className="text-muted-foreground mt-1">High-level administration and system metrics.</p>
-      </div>
+    <PageContainer maxWidth="full" className="py-8">
+      {/* Header */}
+      <PageHeader
+        title="System Overview"
+        description="Real-time administration and key metrics"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="shadow-sm border-border/40">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Users className="size-4 text-primary" />
-              Total Employees
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.totalEmployees}</div>
-            <p className="text-xs text-muted-foreground mt-1">Active across all departments</p>
-          </CardContent>
-        </Card>
+      {/* Key Metrics */}
+      <Grid cols={4} className="mb-8">
+        <StatCard
+          icon={<Users className="w-8 h-8" />}
+          label="Total Employees"
+          value={stats.totalEmployees}
+          className="animate-fade-in"
+        />
 
+        <StatCard
+          icon={<CheckCircle2 className="w-8 h-8 text-emerald-500" />}
+          label="Present Today"
+          value={stats.presentEmployees.length}
+          className="animate-fade-in"
+          change={{ value: "Active", trend: "up" }}
+        />
 
-        <Card className="shadow-sm border-border/40">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              Today's Attendance
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-emerald-600">{stats.attendanceRate}</div>
-            <p className="text-xs text-muted-foreground mt-1">Punched in on time</p>
-          </CardContent>
-        </Card>
-      </div>
+        <StatCard
+          icon={<ShieldAlert className="w-8 h-8 text-rose-500" />}
+          label="Absent Today"
+          value={stats.absentEmployees.length}
+          className="animate-fade-in"
+          change={{ value: "Check", trend: "down" }}
+        />
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        <Card className="shadow-sm border-border/40 p-0 gap-0">
-          <CardHeader className="bg-muted/5 border-b border-border/40 p-4">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Activity className="size-5 text-primary" />
-              Today's Attendance Status
-            </CardTitle>
-            <CardDescription>Real-time headcount as of today.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="grid grid-cols-3 divide-x divide-border/40 border-b border-border/40">
-              <div className="p-4 text-center">
-                <div className="text-2xl font-bold text-emerald-600">{stats.presentEmployees.length}</div>
-                <div className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">Present</div>
+        <StatCard
+          icon={<Calendar className="w-8 h-8 text-amber-500" />}
+          label="On Leave Today"
+          value={stats.onLeaveEmployees.length}
+          className="animate-fade-in"
+          change={{ value: "Approved", trend: "neutral" }}
+        />
+      </Grid>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Attendance Status Card */}
+        <PageSection
+          title="Attendance Status"
+          description="Real-time headcount overview"
+          className="animate-fade-in-up"
+        >
+          <div className="space-y-6">
+            {/* Status Summary Grid */}
+            <div className="grid grid-cols-3 gap-4 p-6 bg-muted/10 rounded-xl border border-border/40">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-emerald-600">{stats.presentEmployees.length}</div>
+                <p className="text-[10px] font-bold text-muted-foreground mt-2 uppercase tracking-widest">Present</p>
               </div>
-              <div className="p-4 text-center">
-                <div className="text-2xl font-bold text-rose-600">{stats.absentEmployees.length}</div>
-                <div className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">Absent</div>
+              <div className="flex justify-center items-center">
+                <Divider vertical className="h-12" />
               </div>
-              <div className="p-4 text-center">
-                <div className="text-2xl font-bold text-amber-600">{stats.onLeaveEmployees.length}</div>
-                <div className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">On Leave</div>
+              <div className="text-center">
+                <div className="text-4xl font-bold text-rose-600">{stats.absentEmployees.length}</div>
+                <p className="text-[10px] font-bold text-muted-foreground mt-2 uppercase tracking-widest">Absent</p>
+              </div>
+              <div className="flex justify-center items-center">
+                <Divider vertical className="h-12" />
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold text-amber-600">{stats.onLeaveEmployees.length}</div>
+                <p className="text-[10px] font-bold text-muted-foreground mt-2 uppercase tracking-widest">On Leave</p>
               </div>
             </div>
 
-            <div className="max-h-[400px] overflow-y-auto">
+            {/* Detailed Lists */}
+            <div className="space-y-4 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
               {stats.onLeaveEmployees.length > 0 && (
-                <div className="p-4 border-b border-border/40 bg-amber-50/30">
-                  <h3 className="text-xs font-bold text-amber-800 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <CheckCircle2 className="size-3" /> Currently On Leave
-                  </h3>
-                  <div className="space-y-2">
+                <div className="p-4 bg-amber-50/50 dark:bg-amber-950/10 border border-amber-200/50 dark:border-amber-900/20 rounded-xl">
+                  <h4 className="text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                    <Calendar className="w-3.5 h-3.5" /> Currently On Leave
+                  </h4>
+                  <div className="grid grid-cols-1 gap-2">
                     {stats.onLeaveEmployees.map(e => (
-                      <div key={e.id} className="flex items-center justify-between bg-card p-2 rounded border border-amber-200/50 shadow-sm">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">{e.name}</span>
-                          {e.category && <span className="text-[10px] text-muted-foreground uppercase">{e.category.replace(/_/g, ' ')}</span>}
-                        </div>
-                        <Badge variant="outline" className="text-[9px] uppercase">{e.role}</Badge>
+                      <div key={e.id} className="flex items-center justify-between p-3 bg-white/80 dark:bg-background/40 rounded-lg shadow-sm border border-amber-100 dark:border-amber-900/30">
+                        <span className="text-sm font-semibold">{e.name}</span>
+                        <StatusBadge status="warning" label="Away" withDot={false} size="sm" />
                       </div>
                     ))}
                   </div>
@@ -223,158 +242,126 @@ export default async function AdminOverviewPage() {
               )}
 
               {stats.absentEmployees.length > 0 && (
-                <div className="p-4 border-b border-border/40 bg-rose-50/30">
-                  <h3 className="text-xs font-bold text-rose-800 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <ShieldAlert className="size-3" /> Still Not In
-                  </h3>
-                  <div className="space-y-2">
-                    {stats.absentEmployees.map(e => (
-                      <div key={e.id} className="flex items-center justify-between bg-card p-2 rounded border border-rose-200/50 shadow-sm">
-                        <span className="text-sm font-medium">{e.name}</span>
-                        <Badge variant="outline" className="text-[9px] uppercase">{e.role}</Badge>
+                <div className="p-4 bg-rose-50/50 dark:bg-rose-950/10 border border-rose-200/50 dark:border-rose-900/20 rounded-xl">
+                  <h4 className="text-[10px] font-bold text-rose-800 dark:text-rose-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                    <ShieldAlert className="w-3.5 h-3.5" /> Still Not In
+                  </h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {stats.absentEmployees.slice(0, 5).map(e => (
+                      <div key={e.id} className="flex items-center justify-between p-3 bg-white/80 dark:bg-background/40 rounded-lg shadow-sm border border-rose-100 dark:border-rose-900/30">
+                        <span className="text-sm font-semibold">{e.name}</span>
+                        <StatusBadge status="error" label="Pending" withDot={false} size="sm" />
                       </div>
                     ))}
+                    {stats.absentEmployees.length > 5 && (
+                      <p className="text-[10px] text-muted-foreground italic text-center py-2 font-medium">+{stats.absentEmployees.length - 5} more absent</p>
+                    )}
                   </div>
                 </div>
               )}
-
-              <div className="p-4">
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Present Staff</h3>
-                {stats.presentEmployees.length === 0 ? (
-                  <p className="text-sm text-muted-foreground italic">No one has punched in yet today.</p>
-                ) : (
-                  <div className="space-y-2">
-                    {stats.presentEmployees.map(e => (
-                      <div key={e.id} className="flex items-center justify-between p-2 rounded border border-border/40 bg-muted/10">
-                        <span className="text-sm">{e.name}</span>
-                        <Badge variant="secondary" className="text-[9px] uppercase">{e.role}</Badge>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </PageSection>
 
-        {/* Monthly Leave Summary Card */}
-        <Card className="shadow-sm border-border/40 p-0 gap-0">
-          <CardHeader className="bg-muted/5 border-b border-border/40 p-4">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <FileText className="size-5 text-primary" />
-              Monthly Leave Summary
-            </CardTitle>
-            <CardDescription>Total days on leave for this month.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader className="bg-muted/30">
-                <TableRow>
-                  <TableHead className="py-3 px-4">Employee</TableHead>
-                  <TableHead className="py-3 px-4 text-center">Days Taken</TableHead>
-                  <TableHead className="py-3 px-4 text-right">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {stats.monthlyLeaveSummary.map((item) => (
-                  <TableRow key={item.id} className="hover:bg-muted/10">
-                    <TableCell className="py-3 px-4 font-medium">{item.name}</TableCell>
-                    <TableCell className="py-3 px-4 text-center font-bold">
-                      {item.totalDays} {item.totalDays === 1 ? 'day' : 'days'}
-                    </TableCell>
-                    <TableCell className="py-3 px-4 text-right">
-                      {item.totalDays > 3 ? (
-                        <Badge variant="outline" className="text-amber-600 bg-amber-50">High Usage</Badge>
-                      ) : item.totalDays > 0 ? (
-                        <Badge variant="outline" className="text-emerald-600 bg-emerald-50">Normal</Badge>
-                      ) : (
-                        <span className="text-muted-foreground text-xs italic">No leaves</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        {/* Leave Summary Card */}
+        <PageSection
+          title="Monthly Leave Summary"
+          description="Total days taken this month"
+          className="animate-fade-in-up"
+        >
+          <div className="space-y-3 max-h-[440px] overflow-y-auto pr-2 custom-scrollbar">
+            {stats.monthlyLeaveSummary.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground opacity-40">
+                <FileText className="w-12 h-12 mb-4" />
+                <p className="text-sm font-medium italic">No leave data available</p>
+              </div>
+            ) : (
+              stats.monthlyLeaveSummary.slice(0, 10).map((item) => (
+                <div key={item.id} className="flex items-center justify-between p-4 bg-muted/5 rounded-xl border border-border/40 hover:bg-muted/10 transition-all duration-200 group">
+                  <div className="flex-1">
+                    <p className="font-bold text-sm group-hover:text-primary transition-colors">{item.name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 font-medium">{item.totalDays} {item.totalDays === 1 ? 'day' : 'days'} taken</p>
+                  </div>
+                  <div>
+                    {item.totalDays > 3 ? (
+                      <StatusBadge status="error" label="High Usage" withDot={false} size="sm" />
+                    ) : item.totalDays > 0 ? (
+                      <StatusBadge status="success" label="On Track" withDot={false} size="sm" />
+                    ) : (
+                      <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">Perfect record</span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </PageSection>
       </div>
 
-
-      <Card className="shadow-sm border-border/40 p-0 gap-0">
-        <CardHeader className="bg-muted/5 border-b border-border/40 p-4">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <CheckCircle2 className="size-5 text-emerald-500" />
-            Recently Resolved & Auto-Approved Requests
-          </CardTitle>
-          <CardDescription>Log of manually and automatically processed leaves.</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
+      {/* Recent Approvals Table Section */}
+      <PageSection
+        title="Recent Leave Approvals"
+        description="Processed leave requests and auto-approvals"
+        className="animate-fade-in-up"
+      >
+        <div className="border border-border/40 rounded-xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-muted/30">
-                <TableRow>
-                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Employee</TableHead>
-                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Duration</TableHead>
-                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Type</TableHead>
-                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-muted-foreground">Method / Note</TableHead>
-                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-right text-muted-foreground">Processed</TableHead>
-                  <TableHead className="py-3 px-4 text-[10px] uppercase font-bold text-right text-muted-foreground w-10">Action</TableHead>
+              <TableHeader className="bg-muted/10">
+                <TableRow className="border-b border-border/40 hover:bg-transparent">
+                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Employee</TableHead>
+                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Duration</TableHead>
+                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Type</TableHead>
+                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Method</TableHead>
+                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground text-right">Processed</TableHead>
+                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground text-right w-10">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {stats.recentApprovals.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="py-10 text-center text-muted-foreground italic">
-                      No approval history found.
+                    <TableCell colSpan={6} className="py-12 text-center text-muted-foreground opacity-50 italic font-medium">
+                      No approval history found
                     </TableCell>
                   </TableRow>
                 ) : (
                   stats.recentApprovals.map((req: any) => (
-                    <TableRow key={req.id} className="hover:bg-muted/5">
-                      <TableCell className="py-3 px-4">
-                        <div className="font-semibold text-sm">{req.employeeName}</div>
-                        <div className="text-[10px] text-muted-foreground uppercase">{req.role}</div>
+                    <TableRow key={req.id} className="hover:bg-muted/5 transition-colors border-b border-border/40 last:border-0">
+                      <TableCell className="py-4 px-6">
+                        <div className="font-bold text-sm text-foreground">{req.employeeName}</div>
+                        <div className="text-[10px] text-muted-foreground font-semibold mt-0.5 uppercase tracking-wider">{req.role}</div>
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-xs font-medium">
-                        <div className="flex flex-col">
+                      <TableCell className="py-4 px-6 text-xs font-semibold">
+                        <div className="flex flex-col gap-1">
                           <span>{req.startDate === req.endDate ? req.startDate : `${req.startDate} to ${req.endDate}`}</span>
                           {req.duration === 'HALF' && (
-                            <span className="text-[10px] text-primary font-bold uppercase tracking-tight">
-                              Half Day ({req.halfDayType === 'FIRST_HALF' ? '1st Half' : '2nd Half'})
-                            </span>
-                          )}
-                          {req.duration === 'SHORT' && (
-                            <span className="text-[10px] text-amber-600 font-bold uppercase tracking-tight">
-                              Short Leave
-                            </span>
+                            <span className="text-[9px] text-primary px-1.5 py-0.5 bg-primary/10 rounded w-fit uppercase font-bold tracking-tighter">Half Day</span>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="py-3 px-4">
-                        <Badge variant="outline" className="text-[9px] font-bold uppercase truncate max-w-[100px] border-border/60">
-                          {req.category.replace(/_/g, ' ')}
-                        </Badge>
+                      <TableCell className="py-4 px-6">
+                        <StatusBadge
+                          status="info"
+                          label={req.category.replace(/_/g, ' ')}
+                          size="sm"
+                          className="font-bold py-1 px-3"
+                        />
                       </TableCell>
-                      <TableCell className="py-3 px-4">
+                      <TableCell className="py-4 px-6">
                         {req.systemNote ? (
-                          <div className="flex items-center gap-1.5 overflow-hidden">
-                            <Badge variant="outline" className="h-5 px-1.5 text-[9px] font-bold uppercase tracking-tight shrink-0 border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-900/40">
-                              System
-                            </Badge>
-                            <span className="text-[10px] text-muted-foreground italic truncate max-w-[120px]" title={req.systemNote}>
-                              {req.systemNote}
-                            </span>
-                          </div>
+                          <Badge variant="outline" className="bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-900/30 font-bold text-[10px] px-2 py-0.5">
+                            Auto
+                          </Badge>
                         ) : (
-                          <div className="text-[10px] text-muted-foreground px-2 py-1 bg-muted/20 rounded-full w-fit flex items-center gap-1">
-                            <Check className="size-3" /> Manual
-                          </div>
+                          <Badge variant="outline" className="bg-blue-50/50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border-blue-200/50 dark:border-blue-900/30 font-bold text-[10px] px-2 py-0.5">
+                            Manual
+                          </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-right text-[10px] font-mono whitespace-nowrap">
+                      <TableCell className="py-4 px-6 text-right text-xs font-mono font-medium text-muted-foreground">
                         {new Date(req.updatedAt).toLocaleDateString()}
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-right">
+                      <TableCell className="py-4 px-6 text-right">
                         <CancelLeaveButton requestId={req.id} employeeName={req.employeeName} />
                       </TableCell>
                     </TableRow>
@@ -383,9 +370,8 @@ export default async function AdminOverviewPage() {
               </TableBody>
             </Table>
           </div>
-        </CardContent>
-      </Card>
-
-    </div >
+        </div>
+      </PageSection>
+    </PageContainer>
   );
 }

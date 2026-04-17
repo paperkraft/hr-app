@@ -5,15 +5,15 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
+  "inline-flex items-center justify-center rounded-md text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] hover:shadow-md",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
-        outline: "border border-input bg-background hover:bg-secondary hover:text-primary shadow-sm",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm active:shadow-lg",
+        outline: "border border-input bg-background hover:bg-secondary hover:text-primary shadow-sm active:bg-secondary",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm",
         ghost: "hover:bg-primary/5 hover:text-primary",
-        destructive: "bg-destructive/10 text-destructive hover:bg-destructive hover:text-white",
+        destructive: "bg-destructive/10 text-destructive hover:bg-destructive hover:text-white shadow-sm",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -21,6 +21,7 @@ const buttonVariants = cva(
         sm: "h-8 px-3 text-xs",
         lg: "h-10 px-8",
         icon: "h-9 w-9",
+        "icon-sm": "h-7 w-7",
       },
     },
     defaultVariants: {

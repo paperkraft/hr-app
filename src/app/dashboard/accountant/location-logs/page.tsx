@@ -1,11 +1,17 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { LocationLogsTable } from "@/components/features/accountant/location-logs-table";
 import { MonthYearPicker } from "@/components/features/accountant/month-year-picker";
-import { MapPin, Info } from "lucide-react";
+import { MapPin, Info, Layers, AlertTriangle } from "lucide-react";
+import { 
+  PageContainer, 
+  PageHeader, 
+  PageSection, 
+  Grid, 
+  StatCard
+} from "@/components/ui";
 
 export const dynamic = 'force-dynamic';
 
@@ -76,74 +82,65 @@ export default async function LocationLogsPage({
   const { logs, stats } = await getLocationLogs(m, y);
 
   return (
-    <div className="flex flex-col gap-8 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
+    <PageContainer maxWidth="full" className="py-8">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-             <MapPin className="size-6 text-primary" />
-             <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              Location Status Logs
-            </h1>
-          </div>
-          <div className="flex flex-col md:flex-row md:items-center gap-3 mt-1">
-            <p className="text-muted-foreground text-sm md:text-base">
-              Detailed log of user login locations and geofence status for {stats.monthName} {stats.year}.
-            </p>
-            <div className="hidden md:block h-4 w-px bg-border/60 mx-1" />
-            <MonthYearPicker currentMonth={stats.month} currentYear={stats.year} />
-          </div>
-        </div>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="shadow-sm border-border/40 bg-card">
-          <CardHeader className="pb-2 px-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              Total Punches
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm border-border/40 bg-card">
-          <CardHeader className="pb-2 px-4">
-            <CardTitle className="text-[10px] font-bold uppercase tracking-wider text-destructive">
-              Out of Office
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <div className="text-2xl font-bold text-destructive">{stats.outside}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-2 shadow-sm border-blue-500/20 bg-blue-500/5">
-          <CardContent className="p-4 flex items-start gap-3">
-            <Info className="size-5 text-blue-500 mt-0.5" />
-            <div className="text-sm text-blue-700 dark:text-blue-300">
-              <p className="font-semibold mb-1">About Geofencing</p>
-              <p>
-                Employees labeled as "Out of Office" punched in from a location outside their assigned office radius. 
-                Locations are captured at the moment of Punch In.
-              </p>
+      <PageHeader
+        title="Location & Geofencing Logs"
+        description={`Detailed record of user punch locations and geofence status for ${stats.monthName} ${stats.year}.`}
+        breadcrumb={<MonthYearPicker currentMonth={stats.month} currentYear={stats.year} />}
+        action={
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/5 border border-blue-500/20 text-blue-600 text-[10px] font-bold uppercase tracking-wider">
+              <Info className="size-3" /> Geofencing: Active
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        }
+      />
 
-      {/* Table Section */}
-      <Card className="shadow-sm border-border/40 p-0 overflow-hidden">
-        <CardHeader className="border-b border-border/40 bg-muted/10 p-4">
-          <CardTitle className="text-lg">Attendance Location Logs</CardTitle>
-          <CardDescription>Review individual punch records and their physical location status.</CardDescription>
-        </CardHeader>
-        <CardContent className="p-4">
+      {/* Summary Stats */}
+      <Grid cols={4} className="mb-8">
+        <StatCard
+          label="Total Punches"
+          value={stats.total}
+          icon={<Layers className="w-8 h-8 opacity-20" />}
+          className="animate-fade-in"
+        />
+        <StatCard
+          label="Out of Office"
+          value={stats.outside}
+          icon={<MapPin className="w-8 h-8 text-rose-500 opacity-20" />}
+          className="animate-fade-in border-rose-500/10 bg-rose-500/[0.02]"
+          change={{ value: "Policy Breach", trend: "neutral" }}
+        />
+        <div className="lg:col-span-2">
+          <PageSection className="h-full" noPadding>
+             <div className="p-5 flex items-start gap-4 h-full bg-blue-500/5">
+                <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                  <Info className="size-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-blue-900 dark:text-blue-200">About Geofencing</h4>
+                  <p className="mt-1 text-xs text-blue-700/80 dark:text-blue-300/80 leading-relaxed">
+                    Employees labeled as "Out of Office" punched in from a location outside their assigned office radius. 
+                    Locations are captured at the moment of Punch In and verified against the office coordinates.
+                  </p>
+                </div>
+             </div>
+          </PageSection>
+        </div>
+      </Grid>
+
+      {/* Main Logs Section */}
+      <PageSection
+        title="Attendance Location History"
+        description="Review physical location status for each record."
+        className="animate-fade-in-up"
+        noPadding
+      >
+        <div className="p-1">
           <LocationLogsTable data={logs} />
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </PageSection>
+    </PageContainer>
   );
 }

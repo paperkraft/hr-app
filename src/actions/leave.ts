@@ -50,21 +50,32 @@ async function getCyclePendingDays(userId: string, cycleStart: Date, cycleEnd: D
   return pendingRequests.reduce((acc, req) => acc + getDaysDifference(req.startDate, req.endDate), 0);
 }
 
+/**
+ * POLICY CONSTANTS
+ * Casual (P1): 12 days/year -> 1.0/month. 1.0 max CF. 1 short leave per month.
+ * Medical (P2): 12 days/year -> 6.0/half-year.
+ */
+const CASUAL_ACCRUAL = 1.0;
+const SICK_ACCRUAL_SEMI = 6.0;
+const MAX_CARRY_FORWARD = 1.0;
+
+function round(val: number): number {
+  return Math.round((val + Number.EPSILON) * 100) / 100;
+}
+
 export async function ensureBalance(userId: string, month: number, year: number, configStartMonth?: number): Promise<any> {
   const existing = await prisma.leaveBalance.findUnique({
     where: { userId_month_year: { userId, month, year } }
   });
-
   if (existing) return existing;
 
-  // Fetch config if not provided (for recursion root)
   let startMonth = configStartMonth;
   if (startMonth === undefined) {
     const config = await prisma.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
     startMonth = config?.semiAnnualCycleStartMonth ?? 4;
   }
 
-  // 1. Find the MOST RECENT existing balance record
+  // Find the predecessor
   const lastRecord = await prisma.leaveBalance.findFirst({
     where: {
       userId,
@@ -73,88 +84,60 @@ export async function ensureBalance(userId: string, month: number, year: number,
         { AND: [{ year: year }, { month: { lt: month } }] }
       ]
     },
-    orderBy: [
-      { year: 'desc' },
-      { month: 'desc' }
-    ]
+    orderBy: [{ year: 'desc' }, { month: 'desc' }]
   });
 
-  let carryForward = 0.0;
-  let semiAnnualRemaining = 3;
+  let carryForwardToNew = 0.0;
+  let semiAnnualToNew = SICK_ACCRUAL_SEMI;
 
   if (lastRecord) {
-    const isPreviousMonth = (lastRecord.year === year && lastRecord.month === month - 1) ||
-                            (lastRecord.year === year - 1 && lastRecord.month === 12 && month === 1);
+    const isConsecutive = (lastRecord.year === year && lastRecord.month === month - 1) ||
+                          (lastRecord.year === year - 1 && lastRecord.month === 12 && month === 1);
 
-    if (isPreviousMonth) {
-      // Policy: Only perform automatic split if it hasn't been split yet (or remains zero)
-      // This prevents overwriting manual accountant adjustments.
-      const hasExistingSplit = lastRecord.carriedForward > 0 || lastRecord.encashed > 0;
-      
-      if (!hasExistingSplit && lastRecord.remainingFull > 0) {
-        carryForward = Math.min(lastRecord.remainingFull, 1.0);
-        await prisma.leaveBalance.update({
-          where: { id: lastRecord.id },
-          data: {
-            carriedForward: carryForward,
-            encashed: Math.max(0, lastRecord.remainingFull - carryForward)
-          }
-        });
-      } else {
-        carryForward = lastRecord.carriedForward;
-      }
+    if (isConsecutive) {
+       // Roll over Casual leaves with the 1.0 CF limit
+       if (lastRecord.carriedForward === 0 && lastRecord.encashed === 0 && lastRecord.remainingFull > 0) {
+         const rem = round(lastRecord.remainingFull);
+         carryForwardToNew = Math.min(rem, MAX_CARRY_FORWARD);
+         const encash = round(rem - carryForwardToNew);
+         
+         await prisma.leaveBalance.update({
+           where: { id: lastRecord.id },
+           data: { carriedForward: carryForwardToNew, encashed: encash }
+         });
+       } else {
+         carryForwardToNew = Number(lastRecord.carriedForward);
+       }
+
+       // Roll over Medical pool if still in cycle
+       const getCycleString = (m: number, y: number, sM: number) => {
+         const rel = (m - sM + 12) % 12;
+         const h = rel < 6 ? "H1" : "H2";
+         const sy = (m < sM && (sM + 5) % 12 >= m) ? y - 1 : y;
+         return `${sy}-${h}`;
+       };
+       
+       if (getCycleString(month, year, startMonth) === getCycleString(lastRecord.month, lastRecord.year, startMonth)) {
+          semiAnnualToNew = Number(lastRecord.semiAnnualRemaining);
+       } else {
+          semiAnnualToNew = SICK_ACCRUAL_SEMI;
+       }
     } else {
-      const prevMonth = month === 1 ? 12 : month - 1;
-      const prevYear = month === 1 ? year - 1 : year;
-      
-      const createdPrev = await ensureBalance(userId, prevMonth, prevYear, startMonth);
-      
-      const hasExistingSplit = (createdPrev.carriedForward > 0 || createdPrev.encashed > 0);
-      if (!hasExistingSplit && createdPrev.remainingFull > 0) {
-        carryForward = Math.min(Number(createdPrev.remainingFull.toFixed(2)), 1.0);
-        await prisma.leaveBalance.update({
-          where: { id: createdPrev.id },
-          data: {
-            carriedForward: carryForward,
-            encashed: Number(Math.max(0, createdPrev.remainingFull - carryForward).toFixed(2))
-          }
-        });
-      } else {
-        carryForward = createdPrev.carriedForward;
-      }
-    }
-
-    // Dynamic Semi-annual cycle logic
-    const getCycleKey = (m: number, y: number, sM: number) => {
-      const rel = (m - sM + 12) % 12;
-      const isH1 = rel < 6;
-      const cycleStartMonth = isH1 ? sM : ((sM + 6) % 12 || 12);
-      const cycleStartedLastYear = m < cycleStartMonth && ((sM + 5) % 12 || 12) >= m;
-      
-      const yearPrefix = cycleStartedLastYear ? y - 1 : y;
-      return `${yearPrefix}-${isH1 ? "H1" : "H2"}`;
-    };
-
-    const targetCycle = getCycleKey(month, year, startMonth ?? 4);
-    const lastRecordCycle = getCycleKey(lastRecord.month, lastRecord.year, startMonth ?? 4);
-
-    if (targetCycle === lastRecordCycle) {
-      const freshPrev = await prisma.leaveBalance.findFirst({
-        where: { userId, month: (month === 1 ? 12 : month - 1), year: (month === 1 ? year - 1 : year) }
-      });
-      semiAnnualRemaining = freshPrev?.semiAnnualRemaining ?? lastRecord.semiAnnualRemaining;
+       // Fill the timeline gap recursively
+       const prevMonth = month === 1 ? 12 : month - 1;
+       const prevYear = month === 1 ? year - 1 : year;
+       const gapPrev = await ensureBalance(userId, prevMonth, prevYear, startMonth);
+       carryForwardToNew = Number(gapPrev.carriedForward);
     }
   }
 
   try {
     return await prisma.leaveBalance.create({
       data: {
-        userId,
-        month,
-        year,
-        remainingFull: 2.0 + carryForward,
+        userId, month, year,
+        remainingFull: round(CASUAL_ACCRUAL + carryForwardToNew),
         remainingShort: 1,
-        semiAnnualRemaining,
+        semiAnnualRemaining: semiAnnualToNew,
         carriedForward: 0.0,
         encashed: 0.0,
         fullTaken: 0.0,
@@ -169,7 +152,6 @@ export async function ensureBalance(userId: string, month: number, year: number,
     });
   }
 }
-
 function splitLeaveIntoMonths(start: Date, end: Date) {
   const parts: { month: number; year: number; days: number }[] = [];
   let current = new Date(start.getFullYear(), start.getMonth(), start.getDate());
@@ -675,51 +657,67 @@ export async function cancelApprovedLeave(requestId: string, note?: string) {
       const config = await tx.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
       const startMonthConfig = (config as any)?.semiAnnualCycleStartMonth ?? 4;
       
+      // Final Step: Cascade updates throughout the rest of the year
       let m = monthParts[0].month;
       let y = monthParts[0].year;
 
       while (true) {
-        const current = await tx.leaveBalance.findFirst({
-          where: { userId: request.userId, month: m, year: y }
+        const current = await tx.leaveBalance.findUnique({
+          where: { userId_month_year: { userId: request.userId, month: m, year: y } }
         });
         if (!current) break;
 
-        const nextM = m === 12 ? 1 : m + 1;
-        const nextY = m === 12 ? y + 1 : y;
+        let nextM = m + 1;
+        let nextY = y;
+        if (nextM > 12) {
+          nextM = 1;
+          nextY++;
+        }
 
-        const next = await tx.leaveBalance.findFirst({
-          where: { userId: request.userId, month: nextM, year: nextY }
+        const next = await tx.leaveBalance.findUnique({
+          where: { userId_month_year: { userId: request.userId, month: nextM, year: nextY } }
         });
         if (!next) break;
 
-        const newCFFromCurrent = Math.min(Number(current.remainingFull), 1.0);
-        const oldCFInNext = Number(next.carriedForward);
-        const cfDiff = newCFFromCurrent - oldCFInNext;
-        const currentEncashed = Math.max(0, Number(current.remainingFull) - newCFFromCurrent);
+        // 1. Recalculate split for CURRENT
+        const rem = round(current.remainingFull);
+        const expectedCF = Math.min(rem, MAX_CARRY_FORWARD);
+        const expectedEncash = round(rem - expectedCF);
 
-        if (current.carriedForward !== newCFFromCurrent || current.encashed !== currentEncashed) {
-           await tx.leaveBalance.update({
-            where: { id: current.id },
-            data: { carriedForward: newCFFromCurrent, encashed: currentEncashed }
-          });
+        if (current.carriedForward !== expectedCF || current.encashed !== expectedEncash) {
+            await tx.leaveBalance.update({
+                where: { id: current.id },
+                data: { carriedForward: expectedCF, encashed: expectedEncash }
+            });
         }
 
-        if (cfDiff !== 0) {
-          await tx.leaveBalance.update({
-            where: { id: next.id },
-            data: { remainingFull: { increment: cfDiff } }
-          });
-        }
+        // 2. Adjust NEXT's starting balance based on the NEW CF
+        // Rule: Start_of_Next = ACCRUAL (1.0) + CF_From_Current
+        // Since 'remainingFull' also includes 'used' leaves in that month, we adjust it relatively
+        const cfDiff = round(expectedCF - next.carriedForward);
         
-        if (getCycleKey(m, y, startMonthConfig) === getCycleKey(nextM, nextY, startMonthConfig)) {
-          await tx.leaveBalance.update({
-            where: { id: next.id },
-            data: { semiAnnualRemaining: current.semiAnnualRemaining }
-          });
+        if (cfDiff !== 0) {
+            await tx.leaveBalance.update({
+                where: { id: next.id },
+                data: { 
+                    remainingFull: { increment: cfDiff },
+                    carriedForward: expectedCF
+                }
+            });
+        }
+
+        // 3. Sync Semi-Annual Sick pool if still in the same cycle
+        const isSameCycle = getCycleKey(m, y, startMonthConfig) === getCycleKey(nextM, nextY, startMonthConfig);
+        if (isSameCycle && next.semiAnnualRemaining !== current.semiAnnualRemaining) {
+            await tx.leaveBalance.update({
+                where: { id: next.id },
+                data: { semiAnnualRemaining: current.semiAnnualRemaining }
+            });
         }
 
         m = nextM;
         y = nextY;
+        if (y > monthParts[0].year + 1) break; // Limit cascade to 1 year
       }
 
       return { success: true };

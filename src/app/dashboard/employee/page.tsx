@@ -73,15 +73,18 @@ async function getEmployeeData() {
   const casualTaken = approvedThisYear
     .filter((r) => r.leaveType === "CASUAL")
     .reduce((acc, r) => {
-      const diff = Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      return acc + diff;
+      let days = Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      if (r.duration === "HALF") days = 0.5 * days;
+      if (r.duration === "SHORT") days = 0; // Short leaves are tracked monthly, not in the main day tally
+      return acc + days;
     }, 0);
 
   const medicalTaken = approvedThisYear
     .filter((r) => r.leaveType === "MEDICAL")
     .reduce((acc, r) => {
-      const diff = Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      return acc + diff;
+      let days = Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      if (r.duration === "HALF") days = 0.5 * days;
+      return acc + days;
     }, 0);
 
   const approvalRate = leaveRequests.length > 0

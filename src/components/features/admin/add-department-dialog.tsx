@@ -34,7 +34,7 @@ export function AddDepartmentDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="flex items-center gap-2">
+        <Button className="h-10 flex items-center gap-2 px-5">
           <Plus className="w-4 h-4" />
           Add Department
         </Button>

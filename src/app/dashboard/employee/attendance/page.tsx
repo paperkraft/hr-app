@@ -30,31 +30,22 @@ export default async function EmployeeAttendanceHistory() {
   const onTimeCount = totalDays - lateCount;
 
   return (
-    <div className="flex flex-col gap-8 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto animate-in fade-in duration-500">
-      
+    <div className="flex flex-col gap-10 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
+
       {/* breadcrumbs-like navigation and Header */}
-      <div className="flex flex-col gap-4">
-        <Link 
-          href="/dashboard/employee" 
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors w-fit"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Dashboard
-        </Link>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Attendance History</h1>
-            <p className="text-muted-foreground">A comprehensive record of your work shifts and punctuality.</p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <Button variant="outline" className="h-10 border-border/60 hover:bg-muted/50">
-               <Download className="w-4 h-4 mr-2" />
-               Export Logs
-            </Button>
-            <Button className="h-10 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
-               Request Correction
-            </Button>
-          </div>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Attendance History</h1>
+          <p className="text-muted-foreground">A comprehensive record of your work shifts and punctuality.</p>
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          <Button variant="outline" className="h-10 border-border/60 hover:bg-muted/50">
+            <Download className="w-4 h-4 mr-2" />
+            Export Logs
+          </Button>
+          <Button className="h-10 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
+            Request Correction
+          </Button>
         </div>
       </div>
 
@@ -120,13 +111,13 @@ export default async function EmployeeAttendanceHistory() {
             <div className="flex items-center gap-2">
               <div className="relative group w-full sm:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                <Input 
-                   placeholder="Search by date..." 
-                   className="pl-9 h-10 border-border/60 focus:border-primary transition-all text-sm rounded-lg" 
+                <Input
+                  placeholder="Search by date..."
+                  className="pl-9 h-10 border-border/60 focus:border-primary transition-all text-sm rounded-lg"
                 />
               </div>
               <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 border-border/60">
-                 <Filter className="w-4 h-4" />
+                <Filter className="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -159,14 +150,14 @@ export default async function EmployeeAttendanceHistory() {
                   logs.map((log) => (
                     <TableRow key={log.id} className="hover:bg-muted/20 transition-colors group border-b border-border/10">
                       <TableCell className="py-4 px-6">
-                         <div className="flex flex-col">
-                            <span className="font-semibold text-foreground">
-                               {new Date(log.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                               {new Date(log.date).toLocaleDateString('en-US', { weekday: 'long' })}
-                            </span>
-                         </div>
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-foreground">
+                            {new Date(log.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(log.date).toLocaleDateString('en-US', { weekday: 'long' })}
+                          </span>
+                        </div>
                       </TableCell>
                       <TableCell className="py-4 px-6">
                         <div className="flex items-center gap-2">
@@ -179,57 +170,57 @@ export default async function EmployeeAttendanceHistory() {
                         </div>
                       </TableCell>
                       <TableCell className="py-4 px-6">
-                         {log.punchOut ? (
-                           <div className="flex items-center gap-2">
-                             <div className="p-1.5 rounded-full bg-slate-500/10">
-                               <Clock className="w-3.5 h-3.5 text-slate-600" />
-                             </div>
-                             <span className="font-mono text-sm font-medium">
-                               {new Date(log.punchOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
-                             </span>
-                           </div>
-                         ) : (
-                           <Badge variant="secondary" className="bg-primary/10 text-primary border-none text-[10px] font-bold py-0.5 px-2">
-                             IN PROGRESS
-                           </Badge>
-                         )}
+                        {log.punchOut ? (
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-full bg-slate-500/10">
+                              <Clock className="w-3.5 h-3.5 text-slate-600" />
+                            </div>
+                            <span className="font-mono text-sm font-medium">
+                              {new Date(log.punchOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                            </span>
+                          </div>
+                        ) : (
+                          <Badge variant="secondary" className="bg-primary/10 text-primary border-none text-[10px] font-bold py-0.5 px-2">
+                            IN PROGRESS
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell className="py-4 px-6">
-                         {log.isAutoPunchOut ? (
-                           <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/40">
-                             <AlertCircle className="w-3 h-3 mr-1" /> Auto-Out
-                           </Badge>
-                         ) : log.isLateSpecialCase ? (
-                           <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-900/40">
-                             <CheckCircle2 className="w-3 h-3 mr-1" /> Covered
-                           </Badge>
-                         ) : log.isLate ? (
-                           <Badge variant="outline" className="text-destructive border-destructive/20 bg-destructive/5">
-                             <AlertCircle className="w-3 h-3 mr-1" /> Late
-                           </Badge>
-                         ) : (
-                           <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-900/40">
-                             <CheckCircle2 className="w-3 h-3 mr-1" /> On Time
-                           </Badge>
-                         )}
+                        {log.isAutoPunchOut ? (
+                          <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/40">
+                            <AlertCircle className="w-3 h-3 mr-1" /> Auto-Out
+                          </Badge>
+                        ) : log.isLateSpecialCase ? (
+                          <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-900/40">
+                            <CheckCircle2 className="w-3 h-3 mr-1" /> Covered
+                          </Badge>
+                        ) : log.isLate ? (
+                          <Badge variant="outline" className="text-destructive border-destructive/20 bg-destructive/5">
+                            <AlertCircle className="w-3 h-3 mr-1" /> Late
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-900/40">
+                            <CheckCircle2 className="w-3 h-3 mr-1" /> On Time
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell className="py-4 px-6">
                         <div className="flex flex-col gap-1">
-                           <div className="flex items-center gap-1.5">
-                              <div className={`w-2 h-2 rounded-full ${log.isOutsideOffice ? 'bg-destructive' : 'bg-emerald-500'}`} />
-                              <span className="text-xs font-medium uppercase tracking-tight">
-                                {log.isOutsideOffice ? 'Off-Site Entry' : 'Verified Location'}
-                              </span>
-                           </div>
-                           <span className="text-[10px] text-muted-foreground font-mono">
-                             IP: {log.ipAddress || "Internal Gateway"}
-                           </span>
+                          <div className="flex items-center gap-1.5">
+                            <div className={`w-2 h-2 rounded-full ${log.isOutsideOffice ? 'bg-destructive' : 'bg-emerald-500'}`} />
+                            <span className="text-xs font-medium uppercase tracking-tight">
+                              {log.isOutsideOffice ? 'Off-Site Entry' : 'Verified Location'}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            IP: {log.ipAddress || "Internal Gateway"}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell className="py-4 px-6 text-right">
-                         <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
-                            <MoreHorizontal className="w-4 h-4" />
-                         </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))

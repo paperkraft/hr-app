@@ -58,7 +58,7 @@ export function AddUserDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="flex items-center gap-2">
+        <Button className="h-10 flex items-center gap-2 px-5">
           <UserPlus className="w-4 h-4" />
           Add Employee
         </Button>

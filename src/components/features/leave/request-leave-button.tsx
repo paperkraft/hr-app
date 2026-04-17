@@ -12,7 +12,7 @@ export function RequestLeaveButton() {
   return (
     <Dialog open={open} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <Button className="h-9">Request Leave</Button>
+        <Button className="h-10 px-5">Request Leave</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogTitle className="sr-only">Apply for Leave</DialogTitle>

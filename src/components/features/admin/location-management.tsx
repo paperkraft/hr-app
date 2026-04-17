@@ -74,7 +74,7 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
           </h2>
           <p className="text-sm text-muted-foreground mt-1">Define physical offices and remote hubs with specific geofences.</p>
         </div>
-        <Button onClick={() => setIsAdding(true)} disabled={isAdding}>
+        <Button className="h-10 px-5" onClick={() => setIsAdding(true)} disabled={isAdding}>
           <Plus className="w-4 h-4 mr-2" /> Add Location
         </Button>
       </div>

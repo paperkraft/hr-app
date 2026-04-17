@@ -19,7 +19,7 @@ export function AllowanceRequestDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2 border-primary/20 hover:bg-primary/5 hover:text-primary transition-all">
+        <Button variant="outline" className="h-10 flex items-center gap-2 border-primary/20 hover:bg-primary/5 hover:text-primary transition-all">
           <MapPin className="size-4" />
           Allowance Request
         </Button>

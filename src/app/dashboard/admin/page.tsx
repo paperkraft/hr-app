@@ -335,17 +335,17 @@ export default async function AdminOverviewPage() {
                       </TableCell>
                       <TableCell className="py-3 px-4 text-xs font-medium">
                         <div className="flex flex-col">
-                           <span>{req.startDate === req.endDate ? req.startDate : `${req.startDate} to ${req.endDate}`}</span>
-                           {req.duration === 'HALF' && (
-                             <span className="text-[10px] text-primary font-bold uppercase tracking-tight">
-                               Half Day ({req.halfDayType === 'FIRST_HALF' ? '1st Half' : '2nd Half'})
-                             </span>
-                           )}
-                           {req.duration === 'SHORT' && (
-                             <span className="text-[10px] text-amber-600 font-bold uppercase tracking-tight">
-                               Short Leave
-                             </span>
-                           )}
+                          <span>{req.startDate === req.endDate ? req.startDate : `${req.startDate} to ${req.endDate}`}</span>
+                          {req.duration === 'HALF' && (
+                            <span className="text-[10px] text-primary font-bold uppercase tracking-tight">
+                              Half Day ({req.halfDayType === 'FIRST_HALF' ? '1st Half' : '2nd Half'})
+                            </span>
+                          )}
+                          {req.duration === 'SHORT' && (
+                            <span className="text-[10px] text-amber-600 font-bold uppercase tracking-tight">
+                              Short Leave
+                            </span>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="py-3 px-4">
@@ -360,7 +360,7 @@ export default async function AdminOverviewPage() {
                               System
                             </Badge>
                             <span className="text-[10px] text-muted-foreground italic truncate max-w-[120px]" title={req.systemNote}>
-                               {req.systemNote}
+                              {req.systemNote}
                             </span>
                           </div>
                         ) : (

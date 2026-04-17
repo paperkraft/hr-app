@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Edit2, Loader2 } from "lucide-react"
+import { Edit2, Loader2, Save } from "lucide-react"
 import { updateUser } from "@/actions/user"
 import {
   Select,
@@ -66,9 +66,10 @@ export function EditUserDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle>Edit Employee: {user.name}</DialogTitle>
+          <DialogTitle className="text-xl font-bold tracking-tight">Update Profile</DialogTitle>
+          <p className="text-xs text-muted-foreground italic tracking-tight">Modifying credentials for {user.name}</p>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4 mt-4">
+        <form onSubmit={onSubmit} className="space-y-4 mt-2">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label className="text-xs">Name</Label>
@@ -162,8 +163,8 @@ export function EditUserDialog({
 
           {error && <p className="text-xs text-destructive font-medium bg-destructive/5 p-2 rounded border border-destructive/20">{error}</p>}
           <Button type="submit" className="w-full mt-2" disabled={loading}>
-            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-            Update Employee Profile
+            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+            Save Changes
           </Button>
         </form>
       </DialogContent>

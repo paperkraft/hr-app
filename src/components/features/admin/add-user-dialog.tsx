@@ -65,9 +65,10 @@ export function AddUserDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle>Add New Employee</DialogTitle>
+          <DialogTitle className="text-xl font-bold tracking-tight">Add New Personnel</DialogTitle>
+          <p className="text-xs text-muted-foreground italic">Provision a new account for the organization.</p>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4 mt-4">
+        <form onSubmit={onSubmit} className="space-y-4 mt-2">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label className="text-xs">Full Name</Label>
@@ -162,8 +163,8 @@ export function AddUserDialog({
 
           {error && <p className="text-xs text-destructive font-medium bg-destructive/5 p-2 rounded border border-destructive/20">{error}</p>}
           <Button type="submit" className="w-full mt-2" disabled={loading}>
-            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-            Create Account
+            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <UserPlus className="w-4 h-4 mr-2" />}
+            Create Personnel Account
           </Button>
         </form>
       </DialogContent>

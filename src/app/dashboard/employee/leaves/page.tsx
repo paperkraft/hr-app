@@ -2,13 +2,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { RequestLeaveButton } from "@/components/features/leave/request-leave-button";
-import { 
-  PageContainer, 
-  PageHeader, 
-  PageSection, 
-  Grid, 
-  StatCard, 
-  StatusBadge, 
+import {
+  PageContainer,
+  PageHeader,
+  PageSection,
+  Grid,
+  StatCard,
+  StatusBadge,
   EmptyState,
   Table,
   TableHeader,
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui";
 import { CalendarRange, History, Clock4, CheckCircle2, AlertCircle, Calendar } from "lucide-react";
 import { ensureBalance } from "@/actions/leave";
+import { cn } from "@/lib/utils";
 
 export const dynamic = 'force-dynamic';
 
@@ -99,33 +100,33 @@ export default async function EmployeeLeavesPage() {
       />
 
       {/* Stats Summary */}
-      <Grid cols={4} className="mb-8">
+      <Grid cols={4} className="mb-8 gap-6">
         <StatCard
           label="Casual Balance"
           value={data.stats.casualRemaining}
           icon={<CalendarRange className="w-8 h-8 opacity-20" />}
           change={{ value: `${data.stats.casualTaken} Taken`, trend: "neutral" }}
-          className="animate-fade-in"
+          className="animate-fade-in shadow-xl shadow-primary/5 border-primary/10"
         />
         <StatCard
           label="Sick Leave Balance"
           value={data.stats.medicalRemaining}
           icon={<AlertCircle className="w-8 h-8 text-rose-500 opacity-20" />}
           change={{ value: `${data.stats.medicalTaken} Taken`, trend: "neutral" }}
-          className="animate-fade-in"
+          className="animate-fade-in shadow-xl shadow-rose-500/5 border-rose-500/10 bg-rose-500/[0.02]"
         />
         <StatCard
           label="Pending Review"
           value={data.stats.pendingCount}
           icon={<Clock4 className="w-8 h-8 text-amber-500 opacity-20" />}
           change={{ value: "Awaiting HR", trend: "neutral" }}
-          className="animate-fade-in"
+          className="animate-fade-in shadow-xl shadow-amber-500/5 border-amber-500/10 bg-amber-500/[0.02]"
         />
         <StatCard
           label="Total History"
           value={data.stats.totalRequests}
           icon={<History className="w-8 h-8 text-blue-500 opacity-20" />}
-          className="animate-fade-in"
+          className="animate-fade-in shadow-xl shadow-blue-500/5 border-blue-500/10 bg-blue-500/[0.02]"
         />
       </Grid>
 
@@ -133,11 +134,11 @@ export default async function EmployeeLeavesPage() {
       <PageSection
         title="Request History"
         description="Full record of your leave applications."
-        className="animate-fade-in-up"
+        className="animate-fade-in-up premium-card overflow-hidden"
         noPadding
       >
         {data.leaves.length === 0 ? (
-          <div className="py-20">
+          <div className="py-24 text-center">
             <EmptyState
               title="No Requests Found"
               description="You haven't submitted any leave requests yet."
@@ -145,66 +146,82 @@ export default async function EmployeeLeavesPage() {
             />
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scrollbar-hide">
             <Table>
-              <TableHeader className="bg-muted/10">
+              <TableHeader className="bg-muted/5">
                 <TableRow className="border-b border-border/40 hover:bg-transparent">
-                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Dates</TableHead>
-                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground text-center">Duration</TableHead>
-                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Category</TableHead>
-                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Reason</TableHead>
-                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground text-right">Status</TableHead>
+                  <TableHead className="py-5 px-6 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70 w-[220px]">Timeline</TableHead>
+                  <TableHead className="py-5 px-6 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70 text-center">Duration</TableHead>
+                  <TableHead className="py-5 px-6 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70">Category & Type</TableHead>
+                  <TableHead className="py-5 px-6 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70">Reason</TableHead>
+                  <TableHead className="py-5 px-6 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70 text-right">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data.leaves.map((leave) => {
                   const start = new Date(leave.startDate);
                   const end = new Date(leave.endDate);
+                  const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
                   return (
-                    <TableRow key={leave.id} className="hover:bg-muted/5 transition-colors border-b border-border/40 last:border-0 group">
-                      <TableCell className="py-4 px-6">
-                        <div className="flex flex-col">
-                          <span className="font-bold text-sm text-foreground">
-                            {start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                          </span>
-                          {start.getTime() !== end.getTime() && (
-                            <span className="text-[10px] text-muted-foreground font-bold mt-0.5 uppercase tracking-tighter">
-                              TO {end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    <TableRow key={leave.id} className="hover:bg-primary/[0.02] transition-colors border-b border-border/40 last:border-0 group">
+                      <TableCell className="py-5 px-6">
+                        <div className="flex items-center gap-4">
+                          <div className="size-10 rounded-xl bg-muted/30 flex items-center justify-center text-muted-foreground group-hover:bg-primary/5 group-hover:text-primary transition-all duration-300 border border-border/40 group-hover:border-primary/20">
+                            <CalendarRange className="size-5" />
+                          </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-bold text-sm text-foreground">
+                              {start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </span>
+                            {start.getTime() !== end.getTime() && (
+                              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-tighter opacity-60">
+                                TO {end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-5 px-6 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="text-xs font-black bg-muted/50 px-3 py-1.5 rounded-xl border border-border/40 uppercase tracking-tighter shadow-sm">
+                            {leave.duration}
+                          </span>
+                          <span className="text-[10px] font-bold text-muted-foreground/60 uppercase">{days} {days === 1 ? 'Day' : 'Days'}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-5 px-6">
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-xs font-bold text-foreground">
+                            {leave.category === "MONTHLY_POLICY_1" ? "Monthly Policy" : leave.category === "UNPAID" ? "Unpaid Leave" : "Semi-Annual"}
+                          </span>
+                          {leave.leaveType && (
+                            <div className="flex items-center gap-1.5">
+                              <div className={cn(
+                                "size-1.5 rounded-full",
+                                leave.leaveType === "CASUAL" ? "bg-primary" : "bg-rose-500"
+                              )} />
+                              <span className="text-[9px] text-muted-foreground font-black uppercase tracking-[0.15em]">
+                                {leave.leaveType}
+                              </span>
+                            </div>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="py-4 px-6 text-center">
-                        <span className="text-xs font-black bg-muted/30 px-2 py-1 rounded-md border border-border/20 uppercase tracking-tighter">
-                          {leave.duration}
-                        </span>
-                      </TableCell>
-                      <TableCell className="py-4 px-6">
-                         <div className="flex flex-col gap-1">
-                            <span className="text-xs font-bold text-foreground">
-                              {leave.category === "MONTHLY_POLICY_1" ? "Monthly Policy" : leave.category === "UNPAID" ? "Unpaid Leave" : "Semi-Annual"}
-                            </span>
-                            {leave.leaveType && (
-                              <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">
-                                {leave.leaveType}
-                              </span>
-                            )}
-                         </div>
-                      </TableCell>
-                      <TableCell className="py-4 px-6 text-muted-foreground text-xs leading-relaxed max-w-[240px]">
-                        <p className="truncate" title={leave.reason || "N/A"}>
-                          {leave.reason || "No reason provided"}
+                      <TableCell className="py-5 px-6 text-muted-foreground text-xs leading-relaxed max-w-[280px]">
+                        <p className="line-clamp-2 italic opacity-80" title={leave.reason || "N/A"}>
+                          "{leave.reason || "Personal work"}"
                         </p>
                       </TableCell>
-                      <TableCell className="py-4 px-6 text-right">
+                      <TableCell className="py-5 px-6 text-right">
                         <div className="flex justify-end">
-                           <StatusBadge 
-                             status={getStatusVariant(leave.status)} 
-                             label={leave.status} 
-                             size="sm" 
-                             withDot={true} 
-                             className="font-black uppercase tracking-widest px-3"
-                           />
+                          <StatusBadge
+                            status={getStatusVariant(leave.status)}
+                            label={leave.status}
+                            size="sm"
+                            withDot={true}
+                            className="font-black uppercase tracking-widest px-4 h-7 shadow-sm"
+                          />
                         </div>
                       </TableCell>
                     </TableRow>

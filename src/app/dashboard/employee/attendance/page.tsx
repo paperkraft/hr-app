@@ -67,32 +67,32 @@ export default async function AttendanceHistoryPage() {
       />
 
       {/* Stats Summary */}
-      <Grid cols={4} className="mb-8">
+      <Grid cols={4} className="mb-8 gap-6">
         <StatCard
           label="Total Records"
           value={stats.totalPunches}
           icon={<History className="w-8 h-8 opacity-20" />}
-          className="animate-fade-in"
+          className="animate-fade-in shadow-xl border-border/40"
         />
         <StatCard
           label="On Time"
           value={stats.onTime}
           icon={<CheckCircle2 className="w-8 h-8 text-emerald-500 opacity-20" />}
-          className="animate-fade-in border-emerald-500/10 bg-emerald-500/[0.02]"
+          className="animate-fade-in shadow-xl shadow-emerald-500/5 border-emerald-500/10 bg-emerald-500/[0.02]"
           change={{ value: "Policy Regular", trend: "up" }}
         />
         <StatCard
           label="Late Marks"
           value={stats.late}
           icon={<Clock className="w-8 h-8 text-amber-500 opacity-20" />}
-          className="animate-fade-in border-amber-500/10 bg-amber-500/[0.02]"
+          className="animate-fade-in shadow-xl shadow-amber-500/5 border-amber-500/10 bg-amber-500/2"
           change={{ value: "Strict Policy", trend: "down" }}
         />
         <StatCard
           label="Auto Punches"
           value={stats.autoPunchOuts}
           icon={<AlertCircle className="w-8 h-8 text-rose-500 opacity-20" />}
-          className="animate-fade-in border-rose-500/10 bg-rose-500/[0.02]"
+          className="animate-fade-in shadow-xl shadow-rose-500/5 border-rose-500/10 bg-rose-500/2"
           change={{ value: "Forgotten", trend: "neutral" }}
         />
       </Grid>
@@ -101,7 +101,7 @@ export default async function AttendanceHistoryPage() {
       <PageSection
         title="Recent Activity"
         description="Detailed shift history for the last 50 entries"
-        className="animate-fade-in-up"
+        className="animate-fade-in-up premium-card overflow-hidden"
         noPadding
       >
         <div className="p-1">

@@ -44,10 +44,10 @@ export function NotificationCenter({ className }: { className?: string }) {
     <PageSection
       title="Notifications"
       description="Stay updated with your latest HR and attendance alerts."
-      className={cn("animate-fade-in-up h-full", className)}
+      className={cn("animate-fade-in-up h-full shadow-xl border-border/40", className)}
       noPadding
     >
-      <div className="flex flex-col flex-1 h-full">
+      <div className="flex flex-col flex-1 h-full bg-gradient-to-br from-background to-muted/20">
         <div className="divide-y divide-border/40 flex-1">
           {mockNotifications.map((notif) => (
             <div 

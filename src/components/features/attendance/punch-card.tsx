@@ -66,10 +66,10 @@ export function PunchCard({ initialStatus, autoPunchOutCount = 0, warningThresho
     <PageSection
       title="Daily Attendance"
       description="Track your daily shift entry and exit."
-      className="h-full animate-fade-in flex flex-col"
+      className="h-full animate-fade-in flex flex-col shadow-xl border-border/40"
       noPadding
     >
-      <div className="flex-1 p-6 flex flex-col items-center justify-center gap-6 relative overflow-hidden">
+      <div className="flex-1 p-6 flex flex-col items-center justify-center gap-6 relative overflow-hidden bg-gradient-to-br from-background to-muted/20">
         {/* Background Accent */}
         <div className="absolute top-0 right-0 p-4 opacity-5 select-none pointer-events-none">
           <Clock className="size-32 rotate-12" />
@@ -79,14 +79,14 @@ export function PunchCard({ initialStatus, autoPunchOutCount = 0, warningThresho
           <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-1">
             Current Server Time
           </div>
-          <div className="text-5xl font-black tabular-nums tracking-tighter text-foreground drop-shadow-sm">
+          <div className="text-5xl font-black tabular-nums tracking-tighter text-foreground drop-shadow-md">
             {currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "--:--"}
           </div>
         </div>
 
         {status === "PUNCHED_OUT" ? (
           <div className="flex flex-col items-center justify-center gap-3 mt-2 animate-scale-in">
-            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-6 py-3 rounded-2xl border border-emerald-500/20 shadow-sm">
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-8 py-4 rounded-2xl border border-emerald-500/20 shadow-lg shadow-emerald-500/10">
               <CheckCircle2 className="size-5" />
               SHIFT COMPLETED
             </div>
@@ -97,10 +97,10 @@ export function PunchCard({ initialStatus, autoPunchOutCount = 0, warningThresho
             <Button
               size="lg"
               className={cn(
-                "w-full h-16 text-xs font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-500 shadow-xl active:scale-95 group overflow-hidden",
+                "w-full h-16 text-xs font-black uppercase tracking-[0.2em] rounded-2xl transition-all duration-500 shadow-2xl active:scale-95 group overflow-hidden border border-white/10",
                 status === "PUNCHED_IN"
-                  ? "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
-                  : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20"
+                  ? "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/30"
+                  : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/30"
               )}
               disabled={isPending}
               onClick={handlePunch}
@@ -127,14 +127,10 @@ export function PunchCard({ initialStatus, autoPunchOutCount = 0, warningThresho
 
         {status === "PUNCHED_IN" && !isPending && (
           <div className="animate-fade-in">
-            <StatusBadge
-              status="success"
-              label="Currently Clocked In"
-              size="sm"
-              withDot={true}
-              animated
-              className="font-black uppercase tracking-widest text-[9px] px-4"
-            />
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-sm">
+               <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+               <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none">Clocked In</span>
+            </div>
           </div>
         )}
 

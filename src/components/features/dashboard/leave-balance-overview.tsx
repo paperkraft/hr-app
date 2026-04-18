@@ -14,7 +14,7 @@ export function LeaveBalanceOverview({ casual, sick }: LeaveBalanceOverviewProps
     <PageSection 
       title="Entitlements" 
       description="Your remaining leave balance for this year"
-      className="animate-fade-in-up h-full"
+      className="animate-fade-in-up h-full shadow-xl border-border/40"
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
         {/* Casual Leave Progress */}

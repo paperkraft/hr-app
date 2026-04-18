@@ -20,10 +20,10 @@ export function TeamOnLeave({ members }: TeamOnLeaveProps) {
     <PageSection
       title="Team Visibility"
       description="Who is currently or soon to be out"
-      className="h-full animate-fade-in"
+      className="h-full animate-fade-in shadow-xl border-border/40"
       noPadding
     >
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full bg-gradient-to-br from-background to-muted/20">
         <div className="divide-y divide-border/40 flex-1">
           {members.length === 0 ? (
             <div className="p-12 text-center text-muted-foreground italic text-xs flex flex-col items-center justify-center gap-3 opacity-60">

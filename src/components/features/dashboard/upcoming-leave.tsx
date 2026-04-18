@@ -23,10 +23,10 @@ export function UpcomingLeave({ requests }: UpcomingLeaveProps) {
     <PageSection
       title="Upcoming Leave"
       description="Your scheduled time off and pending requests"
-      className="h-full animate-fade-in"
+      className="h-full animate-fade-in shadow-xl border-border/40"
       noPadding
     >
-      <div className="flex flex-col h-full max-h-[400px]">
+      <div className="flex flex-col h-full max-h-[400px] bg-gradient-to-br from-background to-muted/20">
         <div className="divide-y divide-border/40 overflow-y-auto flex-1 scrollbar-hide">
           {requests.length === 0 ? (
             <div className="p-12 text-center text-muted-foreground italic text-xs flex flex-col items-center justify-center gap-3 opacity-60">

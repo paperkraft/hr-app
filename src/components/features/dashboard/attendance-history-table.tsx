@@ -112,36 +112,42 @@ export function AttendanceHistoryTable({ logs }: AttendanceHistoryTableProps) {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="py-5 px-6">
-                    <div className="font-mono text-sm font-black text-foreground bg-muted/20 w-fit px-3 py-1.5 rounded-xl border border-border/40 shadow-sm group-hover:border-primary/20 transition-colors">
-                      {log.punchIn ? new Date(log.punchIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : "---"}
+                  <TableCell className="py-2.5 px-6">
+                    <div className="flex items-center gap-1.5 min-w-[70px]">
+                      <Clock className="size-3 text-emerald-500/70" />
+                      <span className="font-mono text-[11px] font-bold text-foreground">
+                        {log.punchIn ? new Date(log.punchIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : "---"}
+                      </span>
                     </div>
                   </TableCell>
-                  <TableCell className="py-5 px-6">
-                    <div className="font-mono text-sm font-black text-foreground bg-muted/20 w-fit px-3 py-1.5 rounded-xl border border-border/40 shadow-sm group-hover:border-primary/20 transition-colors">
-                      {log.punchOut ? new Date(log.punchOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : "---"}
+                  <TableCell className="py-2.5 px-6">
+                    <div className="flex items-center gap-1.5 min-w-[70px]">
+                      <Clock className="size-3 text-amber-500/70" />
+                      <span className="font-mono text-[11px] font-bold text-foreground">
+                        {log.punchOut ? new Date(log.punchOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : "---"}
+                      </span>
                     </div>
                   </TableCell>
-                  <TableCell className="py-5 px-6">
+                  <TableCell className="py-2.5 px-6">
                     {log.isOutsideOffice ? (
-                      <div className="flex items-center gap-2 text-[9px] font-black text-rose-500 uppercase tracking-[0.15em] bg-rose-500/5 px-2.5 py-1.5 rounded-lg border border-rose-500/10 w-fit shadow-sm">
+                      <div className="flex items-center gap-2 text-[10px] font-black text-rose-500 uppercase tracking-widest transition-opacity group-hover:opacity-100 opacity-70">
                         <MapPin className="size-3" /> External
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 text-[9px] font-black text-emerald-500 uppercase tracking-[0.15em] bg-emerald-500/5 px-2.5 py-1.5 rounded-lg border border-emerald-500/10 w-fit shadow-sm">
+                      <div className="flex items-center gap-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest transition-opacity group-hover:opacity-100 opacity-70">
                         <MapPin className="size-3" /> Office
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="py-5 px-6 text-right">
+                  <TableCell className="py-2.5 px-6 text-right">
                     <div className="flex justify-end items-center gap-2.5">
                       {log.isAutoPunchOut && (
-                        <StatusBadge status="error" label="Auto" size="sm" withDot={false} animated className="font-black px-2.5 text-[9px] h-6" />
+                        <StatusBadge status="error" label="Auto" size="sm" withDot={false} animated className="font-black px-2 text-[8px] h-5" />
                       )}
                       {log.isLate ? (
-                        <StatusBadge status="warning" label="Late" size="sm" withDot={true} className="font-black px-3.5 text-[9px] h-6 shadow-sm border border-amber-500/10" />
+                        <StatusBadge status="warning" label="Late" size="sm" withDot={true} className="font-black px-2.5 text-[8px] h-5 shadow-sm border border-amber-500/10" />
                       ) : (
-                        <StatusBadge status="success" label="On Time" size="sm" withDot={true} className="font-black px-3.5 text-[9px] h-6 shadow-sm border border-emerald-500/10" />
+                        <StatusBadge status="success" label="On Time" size="sm" withDot={true} className="font-black px-2.5 text-[8px] h-5 shadow-sm border border-emerald-500/10" />
                       )}
                     </div>
                   </TableCell>

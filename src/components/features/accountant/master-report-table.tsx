@@ -60,153 +60,142 @@ export function MasterReportTable({
 
   return (
     <div className="space-y-4">
-      {/* Search Bar */}
-      <div className="flex items-center gap-4 bg-muted/20 p-4 rounded-xl border border-border/40">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+      {/* Search Bar & Controls */}
+      <div className="px-6 py-5 flex items-center justify-between gap-4 bg-muted/5 border-b border-border/40">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/40" />
           <Input
-            placeholder="Search staff..."
+            placeholder="Search staff members..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-10 bg-background/50 border-border/40 focus:bg-background"
+            className="pl-11 h-11 bg-background/40 border-border/40 focus:bg-background focus:ring-primary/20 transition-all rounded-xl text-sm"
           />
           {searchTerm && (
             <button
               onClick={() => setSearchTerm("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
             >
-              <X className="h-3 w-3 text-muted-foreground" />
+              <X className="size-3 text-muted-foreground" />
             </button>
           )}
         </div>
-        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-3 py-1 bg-background/50 rounded-full border border-border/40">
-          {filteredData.length} Records
+        <div className="hidden lg:flex items-center gap-3">
+          <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em] bg-muted/20 px-4 py-2 rounded-full border border-border/20 shadow-sm">
+            {filteredData.length} Staff Records
+          </span>
         </div>
       </div>
 
-      <div className="relative w-full overflow-auto border rounded-xl shadow-sm bg-card/30">
-        <Table className="border-collapse">
+      <div className="overflow-x-auto scrollbar-hide">
+        <Table className="border-collapse min-w-[1200px]">
           <TableHeader>
-            {/* Tier 1: Spanning Group Headers */}
+            {/* Header Tier 1: Categories */}
             <TableRow className="bg-muted/10 hover:bg-muted/10 border-b border-border/60">
-              <TableHead className="h-10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-r border-border/40">Staff</TableHead>
-              <TableHead colSpan={3} className="h-10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center border-r border-border/40 bg-blue-500/5">Attendance</TableHead>
-              <TableHead className="h-10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center border-r border-border/40 bg-amber-500/5">Leave Usage</TableHead>
-              <TableHead colSpan={2} className="h-10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center border-r border-border/40 bg-emerald-500/5 font-mono">Monthly P1</TableHead>
-              <TableHead className="h-10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center border-r border-border/40 bg-indigo-500/5 font-mono">P2</TableHead>
-              <TableHead colSpan={2} className="h-10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center border-r border-border/40 bg-rose-500/5">Payroll Impact</TableHead>
-              <TableHead className="h-10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-right pr-6">Action</TableHead>
+              <TableHead className="py-4 px-6 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/70 border-r border-border/40">Individual</TableHead>
+              <TableHead colSpan={3} className="py-4 px-6 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/70 text-center border-r border-border/40 bg-blue-500/10">Attendance Activity</TableHead>
+              <TableHead className="py-4 px-6 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/70 text-center border-r border-border/40 bg-amber-500/10">Usage</TableHead>
+              <TableHead colSpan={2} className="py-4 px-6 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/70 text-center border-r border-border/40 bg-emerald-500/10">Policy 1 (Monthly)</TableHead>
+              <TableHead className="py-4 px-6 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/70 text-center border-r border-border/40 bg-indigo-500/10">Policy 2</TableHead>
+              <TableHead colSpan={2} className="py-4 px-6 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/70 text-center border-r border-border/40 bg-rose-500/10">Payroll impact</TableHead>
+              <TableHead className="py-4 px-6 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/70 text-right">Adjust</TableHead>
             </TableRow>
 
-            {/* Tier 2: Specific Column Headers */}
+            {/* Header Tier 2: Specific Fields */}
             <TableRow className="bg-muted/5 border-b border-border/40">
-              <TableHead className="h-12 font-bold text-foreground border-r border-border/30">Employee Name</TableHead>
+              <TableHead className="py-3 px-4 font-bold text-foreground border-r border-border/30">Staff Name</TableHead>
 
-              {/* Attendance Group */}
-              <TableHead className="h-12 font-bold text-foreground text-center bg-blue-500/2">Present</TableHead>
-              <TableHead className="h-12 font-bold text-foreground text-center bg-blue-500/2">Lates</TableHead>
-              <TableHead className="h-12 font-bold text-blue-700 text-center border-r border-border/30 bg-blue-500/2">Allowance</TableHead>
+              <TableHead className="py-3 px-4 font-bold text-foreground text-center bg-blue-500/2">Present</TableHead>
+              <TableHead className="py-3 px-4 font-bold text-foreground text-center bg-blue-500/2">Lates</TableHead>
+              <TableHead className="py-3 px-4 font-bold text-primary text-center border-r border-border/30 bg-blue-500/2">Allowance</TableHead>
 
-              {/* Consumption Group */}
-              <TableHead className="h-12 font-bold text-foreground text-center border-r border-border/30 bg-amber-500/[0.02]">Taken</TableHead>
+              <TableHead className="py-3 px-4 font-bold text-foreground text-center border-r border-border/30 bg-amber-500/2">Taken</TableHead>
 
-              {/* P1 Group */}
-              <TableHead className="h-12 font-bold text-foreground text-center bg-emerald-500/2">Monthly</TableHead>
-              <TableHead className="h-12 font-bold text-foreground text-center border-r border-border/30 bg-emerald-500/[0.02]">Short</TableHead>
+              <TableHead className="py-3 px-4 font-bold text-foreground text-center bg-emerald-500/2">Full</TableHead>
+              <TableHead className="py-3 px-4 font-bold text-foreground text-center border-r border-border/30 bg-emerald-500/2">Short</TableHead>
 
-              {/* P2 Group */}
-              <TableHead className="h-12 font-bold text-foreground text-center border-r border-border/30 bg-indigo-500/[0.02]">Semi-Ann.</TableHead>
+              <TableHead className="py-3 px-4 font-bold text-foreground text-center border-r border-border/30 bg-indigo-500/2">Semi-Ann.</TableHead>
 
-              {/* Payroll Group */}
-              <TableHead className="h-12 font-bold text-destructive text-center bg-rose-500/[0.02]">Unpaid (LWP)</TableHead>
-              <TableHead className="h-12 font-bold text-emerald-700 text-center border-r border-border/30 bg-rose-500/[0.02]">Encash (+)</TableHead>
+              <TableHead className="py-3 px-4 font-bold text-rose-600 text-center bg-rose-500/2">Unpaid</TableHead>
+              <TableHead className="py-3 px-4 font-bold text-emerald-600 text-center border-r border-border/30 bg-rose-500/2">Encash</TableHead>
 
-              <TableHead className="h-12 font-bold text-foreground text-right pr-6">---</TableHead>
+              <TableHead className="py-3 px-4"></TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="divide-y divide-border/40">
+          <TableBody>
             {filteredData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={11} className="h-40 text-center">
-                  <div className="flex flex-col items-center justify-center gap-2 opacity-50">
-                    <Search className="size-8 text-muted-foreground/30 mb-2" />
-                    <p className="text-sm font-bold text-muted-foreground">No matching staff found</p>
-                    <p className="text-[10px] uppercase tracking-widest font-bold">Try a different search term</p>
+                <TableCell colSpan={11} className="py-16 text-center">
+                  <div className="flex flex-col items-center justify-center gap-2 opacity-30">
+                    <Search className="size-12 mb-2 text-muted-foreground" />
+                    <p className="text-sm font-black uppercase tracking-[0.2em]">No Matches Found</p>
                   </div>
                 </TableCell>
               </TableRow>
             ) : (
               filteredData.map((row) => (
                 <React.Fragment key={row.id}>
-                  <TableRow className="hover:bg-muted/10 transition-colors group">
-                    <TableCell className="font-medium border-r border-border/30 px-6">
+                  <TableRow className="hover:bg-primary/2 transition-colors border-b border-border/40 last:border-0 group">
+                    <TableCell className="py-2.5 px-4 border-r border-border/30">
                       <div className="flex items-center gap-3">
-                        <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase shadow-sm">
-                          {row.name.substring(0, 2)}
+                        <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-black text-[10px] shadow-sm group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                          {row.name.substring(0, 2).toUpperCase()}
                         </div>
                         <div className="flex flex-col">
-                          <span className="truncate max-w-[120px] font-bold text-sm text-foreground" title={row.name}>{row.name}</span>
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mt-0.5">{row.role}</span>
+                          <span className="font-bold text-xs text-foreground truncate max-w-[120px]" title={row.name}>{row.name}</span>
+                          <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest opacity-60 leading-tight">{row.role}</span>
                         </div>
                         {row.offSiteCount > 0 && (
-                          <Link href={`/dashboard/accountant/location-logs?m=${month}&y=${year}`} title="View location logs">
-                            <StatusBadge status="error" label={row.offSiteCount.toString()} size="sm" withDot={false} className="h-4 px-1 cursor-pointer hover:bg-destructive shadow-sm" />
+                          <Link href={`/dashboard/accountant/location-logs?m=${month}&y=${year}`} title={`${row.offSiteCount} Out-of-Office Punches`}>
+                            <StatusBadge status="error" label={row.offSiteCount.toString()} size="sm" withDot={false} className="h-4 px-1 font-black hover:bg-rose-600 shadow-sm cursor-pointer" />
                           </Link>
                         )}
                       </div>
                     </TableCell>
 
-                    {/* Attendance */}
-                    <TableCell className="text-center font-bold text-foreground bg-blue-500/[0.01]">
+                    <TableCell className="py-2.5 px-4 text-center font-black text-xs text-foreground bg-blue-500/2">
                       {row.totalPresent}
                     </TableCell>
-                    <TableCell className="text-center bg-blue-500/[0.01]">
-                      <div className="flex flex-col items-center gap-1">
-                        {row.punishableLate > 0 ? (
-                          <StatusBadge status="warning" label={row.punishableLate.toString()} size="sm" withDot={false} className="font-bold border-amber-200/50 bg-amber-500/10 text-amber-700 shadow-sm" />
-                        ) : (
-                          <span className="text-muted-foreground/30 text-[10px] font-bold">---</span>
-                        )}
-                      </div>
+                    <TableCell className="py-2.5 px-4 text-center bg-blue-500/2">
+                      {row.punishableLate > 0 ? (
+                        <StatusBadge status="warning" label={row.punishableLate.toString()} size="sm" withDot={false} className="font-black px-2 h-5 text-[10px] shadow-sm shadow-amber-500/10" />
+                      ) : (
+                        <span className="text-muted-foreground/30 text-[9px] font-black italic">---</span>
+                      )}
                     </TableCell>
-                    <TableCell className="text-center font-black text-blue-700 border-r border-border/30 bg-blue-500/[0.01] text-xs">
+                    <TableCell className="py-2.5 px-4 text-center font-black text-primary border-r border-border/30 bg-blue-500/2 text-[10px]">
                       {row.allowanceDays > 0 ? `${row.allowanceDays}d` : "---"}
                     </TableCell>
 
-                    {/* Leave Usage */}
-                    <TableCell className="text-center font-bold text-foreground border-r border-border/30 bg-amber-500/[0.01]">
+                    <TableCell className="py-2.5 px-4 text-center font-black text-xs text-foreground border-r border-border/30 bg-amber-500/2">
                       {row.leavesTaken}
                     </TableCell>
 
-                    {/* P1 Balances */}
-                    <TableCell className="text-center font-mono font-bold text-emerald-600 bg-emerald-500/[0.01]">
+                    <TableCell className="py-2.5 px-4 text-center font-mono font-black text-xs text-emerald-600 bg-emerald-500/2">
                       {row.balances.full}
                     </TableCell>
-                    <TableCell className="text-center font-mono border-r border-border/30 bg-emerald-500/[0.01] text-muted-foreground font-bold">
+                    <TableCell className="py-2.5 px-4 text-center font-mono font-black text-xs text-muted-foreground/70 border-r border-border/30 bg-emerald-500/2">
                       {row.balances.short}
                     </TableCell>
 
-                    {/* P2 Balance */}
-                    <TableCell className="text-center font-mono border-r border-border/30 bg-indigo-500/[0.01] text-muted-foreground font-bold">
+                    <TableCell className="py-2.5 px-4 text-center font-mono font-black text-xs text-indigo-600 border-r border-border/30 bg-indigo-500/2">
                       {row.balances.semiAnnual}
                     </TableCell>
 
-                    {/* Payroll Impact */}
-                    <TableCell className="text-center font-black text-destructive bg-rose-500/[0.01]">
+                    <TableCell className="py-2.5 px-4 text-center font-black text-xs text-rose-500 bg-rose-500/2">
                       {row.lwpDays > 0 ? row.lwpDays : "0"}
                     </TableCell>
-                    <TableCell className="text-center font-mono font-black text-emerald-600 border-r border-border/30 bg-rose-500/[0.01]">
+                    <TableCell className="py-2.5 px-4 text-center font-mono font-black text-xs text-emerald-600 border-r border-border/30 bg-rose-500/2">
                       {row.encashableDays > 0 ? `+${row.encashableDays}` : "0"}
                     </TableCell>
 
-                    <TableCell className="text-right pr-6">
+                    <TableCell className="py-2.5 px-4 text-right">
                       <Button
                         variant={activeSplitId === row.id ? "default" : "outline"}
                         size="sm"
-                        className="h-8 text-[10px] font-black uppercase tracking-widest shadow-sm hover-lift"
+                        className="h-7 px-3 text-[9px] font-black uppercase tracking-widest shadow-sm rounded-lg transition-all active:scale-95"
                         onClick={() => setActiveSplitId(activeSplitId === row.id ? null : row.id)}
                       >
-                        {activeSplitId === row.id ? "Cancel" : "Adjust"}
+                        {activeSplitId === row.id ? "Cancel" : "Refine"}
                       </Button>
                     </TableCell>
                   </TableRow>

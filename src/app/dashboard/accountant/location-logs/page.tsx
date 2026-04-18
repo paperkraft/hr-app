@@ -4,12 +4,12 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { LocationLogsTable } from "@/components/features/accountant/location-logs-table";
 import { MonthYearPicker } from "@/components/features/accountant/month-year-picker";
-import { MapPin, Info, Layers, AlertTriangle } from "lucide-react";
-import { 
-  PageContainer, 
-  PageHeader, 
-  PageSection, 
-  Grid, 
+import { MapPin, Info, Layers } from "lucide-react";
+import {
+  PageContainer,
+  PageHeader,
+  PageSection,
+  Grid,
   StatCard
 } from "@/components/ui";
 
@@ -98,34 +98,34 @@ export default async function LocationLogsPage({
       />
 
       {/* Summary Stats */}
-      <Grid cols={4} className="mb-8">
+      <Grid cols={4} className="mb-8 gap-6">
         <StatCard
           label="Total Punches"
           value={stats.total}
           icon={<Layers className="w-8 h-8 opacity-20" />}
-          className="animate-fade-in"
+          className="animate-fade-in shadow-xl border-border/40"
         />
         <StatCard
           label="Out of Office"
           value={stats.outside}
           icon={<MapPin className="w-8 h-8 text-rose-500 opacity-20" />}
-          className="animate-fade-in border-rose-500/10 bg-rose-500/[0.02]"
-          change={{ value: "Policy Breach", trend: "neutral" }}
+          className="animate-fade-in shadow-xl shadow-rose-500/5 border-rose-500/10 bg-rose-500/[0.02]"
+          change={{ value: "Outside Fence", trend: "neutral" }}
         />
         <div className="lg:col-span-2">
-          <PageSection className="h-full" noPadding>
-             <div className="p-5 flex items-start gap-4 h-full bg-blue-500/5">
-                <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                  <Info className="size-5 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-blue-900 dark:text-blue-200">About Geofencing</h4>
-                  <p className="mt-1 text-xs text-blue-700/80 dark:text-blue-300/80 leading-relaxed">
-                    Employees labeled as "Out of Office" punched in from a location outside their assigned office radius. 
-                    Locations are captured at the moment of Punch In and verified against the office coordinates.
-                  </p>
-                </div>
-             </div>
+          <PageSection className="h-full premium-card bg-primary/[0.02] border-primary/10 shadow-xl" noPadding={false}>
+            <div className="flex items-start gap-5">
+              <div className="size-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20">
+                <Info className="size-6" />
+              </div>
+              <div>
+                <h4 className="text-base font-bold text-foreground">Intelligent Geofencing</h4>
+                <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed font-medium">
+                  "Out of Office" labels indicate punches captured outside the authorized office radius.
+                  coordinates are verified in real-time against individual workstation parameters.
+                </p>
+              </div>
+            </div>
           </PageSection>
         </div>
       </Grid>
@@ -134,7 +134,7 @@ export default async function LocationLogsPage({
       <PageSection
         title="Attendance Location History"
         description="Review physical location status for each record."
-        className="animate-fade-in-up"
+        className="animate-fade-in-up premium-card overflow-hidden"
         noPadding
       >
         <div className="p-1">

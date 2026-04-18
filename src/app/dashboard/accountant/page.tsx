@@ -1,7 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from "@/components/ui/table";
-import { CheckCircle2, Check, Users, Clock, FileText, IndianRupee, MapPin } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, Users, Clock, FileText, IndianRupee, MapPin } from "lucide-react";
 import { CancelLeaveButton } from "@/components/features/leave/cancel-leave-button";
 
 import prisma from "@/lib/prisma";
@@ -14,15 +12,15 @@ import { MonthYearPicker } from "@/components/features/accountant/month-year-pic
 import { ensureBalance } from "@/actions/leave";
 import { MaintenanceButton } from "@/components/features/accountant/maintenance-button";
 import Link from "next/link";
-import { 
-  PageContainer, 
-  PageHeader, 
-  PageSection, 
-  Grid, 
-  StatCard, 
-  Divider,
+import {
+  PageContainer,
+  PageHeader,
+  PageSection,
+  Grid,
+  StatCard,
   StatusBadge
 } from "@/components/ui";
+import { AccountantTabs } from "@/components/features/accountant/accountant-tabs";
 
 export const dynamic = 'force-dynamic';
 
@@ -171,7 +169,7 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
 
   // Fetch recent APPROVED requests (last 20) for cancellation capability
   const recentApprovals = await prisma.leaveRequest.findMany({
-    where: { 
+    where: {
       status: "APPROVED",
       updatedAt: { gte: startOfMonth } // Only show approvals relevant to this cycle or recent
     },
@@ -211,18 +209,19 @@ async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
 export default async function AccountantDashboard({
   searchParams
 }: {
-  searchParams: Promise<{ m?: string; y?: string }>
+  searchParams: Promise<{ m?: string; y?: string; tab?: string }>
 }) {
   const params = await searchParams;
   const m = params.m ? parseInt(params.m) : undefined;
   const y = params.y ? parseInt(params.y) : undefined;
+  const tab = params.tab || "report";
 
   const { reportData, stats, recentApprovals } = await getPayrollReportData(m, y);
 
   return (
     <PageContainer maxWidth="full" className="py-8">
       {/* Header Section */}
-      <PageHeader 
+      <PageHeader
         title="Payroll & Processing"
         description={`Comprehensive attendance and leave report for ${stats.currentMonthName} ${stats.currentYear}.`}
         breadcrumb={<MonthYearPicker currentMonth={stats.currentMonth} currentYear={stats.currentYear} />}
@@ -235,160 +234,176 @@ export default async function AccountantDashboard({
       />
 
       {/* Quick Stats Grid */}
-      <Grid cols={6} className="mb-8">
-        <StatCard 
-          title="Staff" 
-          label="Total Staff" 
-          value={stats.totalStaff} 
+      <Grid cols={6} className="mb-8 gap-6">
+        <StatCard
+          title="Staff"
+          label="Total Staff"
+          value={stats.totalStaff}
           icon={<Users className="w-8 h-8 opacity-20" />}
-          className="animate-fade-in"
+          className="animate-fade-in shadow-xl border-border/40"
         />
-        <StatCard 
-          title="Encash" 
-          label="Encashments" 
-          value={stats.totalEncashments} 
+        <StatCard
+          title="Encash"
+          label="Encashments"
+          value={stats.totalEncashments}
           icon={<IndianRupee className="w-8 h-8 text-emerald-500 opacity-20" />}
-          className="animate-fade-in"
+          className="animate-fade-in shadow-xl shadow-emerald-500/5 border-emerald-500/10 bg-emerald-500/2"
           change={{ value: "Days", trend: "up" }}
         />
-        <StatCard 
-          title="Lates" 
-          label="Total Late" 
-          value={stats.totalLates} 
+        <StatCard
+          title="Lates"
+          label="Total Late"
+          value={stats.totalLates}
           icon={<Clock className="w-8 h-8 text-amber-500 opacity-20" />}
-          className="animate-fade-in"
+          className="animate-fade-in shadow-xl shadow-amber-500/5 border-amber-500/10 bg-amber-500/2"
           change={{ value: "Punches", trend: "down" }}
         />
-        <StatCard 
-          title="LWP" 
-          label="Total LWP" 
-          value={stats.totalLwp} 
+        <StatCard
+          title="LWP"
+          label="Total LWP"
+          value={stats.totalLwp}
           icon={<FileText className="w-8 h-8 text-rose-500 opacity-20" />}
-          className="animate-fade-in"
+          className="animate-fade-in shadow-xl shadow-rose-500/5 border-rose-500/10 bg-rose-500/2"
           change={{ value: "Days", trend: "neutral" }}
         />
-        <StatCard 
-          title="Allowance" 
-          label="Allowance" 
-          value={stats.totalAllowances} 
+        <StatCard
+          title="Allowance"
+          label="Allowance"
+          value={stats.totalAllowances}
           icon={<MapPin className="w-8 h-8 text-blue-500 opacity-20" />}
-          className="animate-fade-in"
+          className="animate-fade-in shadow-xl shadow-blue-500/5 border-blue-500/10 bg-blue-500/2"
           change={{ value: "Days", trend: "up" }}
         />
         <Link href={`/dashboard/accountant/location-logs?m=${stats.currentMonth}&y=${stats.currentYear}`} className="block h-full group">
-          <StatCard 
-            title="Out-Office" 
-            label="Out-Office" 
-            value={reportData.reduce((acc, curr) => acc + curr.offSiteCount, 0)} 
+          <StatCard
+            title="Out-Office"
+            label="Out-Office"
+            value={reportData.reduce((acc, curr) => acc + curr.offSiteCount, 0)}
             icon={<MapPin className="w-8 h-8 text-rose-500 opacity-20 group-hover:opacity-40 transition-opacity" />}
-            className="animate-fade-in border-rose-500/20 bg-rose-500/5 hover-lift"
+            className="animate-fade-in shadow-xl shadow-rose-500/5 border-rose-500/20 bg-rose-500/5 hover-lift h-full"
             change={{ value: "Punches", trend: "neutral" }}
           />
         </Link>
       </Grid>
 
-      {/* Main Report Section */}
-      <PageSection
-        title="Master Attendance & Leave Report"
-        description="Consolidated data required for end-of-month salary calculations."
-        className="mb-8 animate-fade-in-up"
-        noPadding
-      >
-        <div className="p-4">
-          <MasterReportTable
-            data={reportData}
-            month={stats.currentMonth}
-            year={stats.currentYear}
-          />
-        </div>
-      </PageSection>
+      <AccountantTabs />
 
-      {/* Approvals & Maintenance Section */}
-      <PageSection
-        title="Recent Approvals & History"
-        description="Review and manage recently approved leaves to prevent double-counting in payroll."
-        className="animate-fade-in-up"
-        noPadding
-      >
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader className="bg-muted/10">
-              <TableRow className="border-b border-border/40 hover:bg-transparent">
-                <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Employee</TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Duration</TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Allowance Category</TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Processing Detail</TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground text-right">Processed On</TableHead>
-                <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground text-right w-10">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentApprovals.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="py-20 text-center">
-                    <div className="flex flex-col items-center gap-2 opacity-30">
-                      <FileText className="size-10 mb-2" />
-                      <p className="text-sm font-bold uppercase tracking-widest">No Recent Approvals</p>
-                    </div>
-                  </TableCell>
+      {tab === "report" ? (
+        /* Main Report Section */
+        <PageSection
+          title="Master Attendance & Leave Report"
+          description="Consolidated data required for end-of-month salary calculations."
+          className="animate-fade-in-up premium-card overflow-hidden"
+          noPadding
+        >
+          <div className="p-4">
+            <MasterReportTable
+              data={reportData}
+              month={stats.currentMonth}
+              year={stats.currentYear}
+            />
+          </div>
+        </PageSection>
+      ) : (
+        /* Approvals & Maintenance Section */
+        <PageSection
+          title="Recent Approvals & History"
+          description="Review and manage recently approved leaves to prevent double-counting in payroll."
+          className="animate-fade-in-up premium-card overflow-hidden"
+          noPadding
+        >
+          <div className="overflow-x-auto scrollbar-hide">
+            <Table>
+              <TableHeader className="bg-muted/5">
+                <TableRow className="border-b border-border/40 hover:bg-transparent">
+                  <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70">Employee</TableHead>
+                  <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70">Timeline & Duration</TableHead>
+                  <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70">Category</TableHead>
+                  <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70">Processing Detail</TableHead>
+                  <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70 text-right">Processed On</TableHead>
+                  <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70 text-right w-10">Action</TableHead>
                 </TableRow>
-              ) : (
-                recentApprovals.map((req: any) => (
-                  <TableRow key={req.id} className="hover:bg-muted/5 transition-colors border-b border-border/40 last:border-0">
-                    <TableCell className="py-4 px-6">
-                      <div className="font-bold text-sm text-foreground">{req.employeeName}</div>
-                      <div className="text-[10px] text-muted-foreground font-black mt-0.5 uppercase tracking-tighter">{req.role}</div>
-                    </TableCell>
-                    <TableCell className="py-4 px-6">
-                      <div className="flex flex-col gap-1.5">
-                        <span className="text-xs font-bold text-foreground">
-                          {req.startDate === req.endDate ? req.startDate : `${req.startDate} to ${req.endDate}`}
-                        </span>
-                        <div className="flex gap-1">
-                          {req.duration === 'HALF' && (
-                            <StatusBadge status="info" label={`HALF (${req.halfDayType === 'FIRST_HALF' ? '1st' : '2nd'})`} size="sm" withDot={false} className="font-bold" />
-                          )}
-                          {req.duration === 'SHORT' && (
-                            <StatusBadge status="warning" label="SHORT LEAVE" size="sm" withDot={false} className="font-bold" />
-                          )}
-                          {req.duration === 'FULL' && (
-                            <StatusBadge status="success" label="FULL DAY" size="sm" withDot={false} className="font-bold" />
-                          )}
-                        </div>
+              </TableHeader>
+              <TableBody>
+                {recentApprovals.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-16 text-center">
+                      <div className="flex flex-col items-center gap-2 opacity-30">
+                        <FileText className="size-12 mb-2 text-muted-foreground" />
+                        <p className="text-sm font-black uppercase tracking-[0.2em]">No Recent Approvals</p>
                       </div>
                     </TableCell>
-                    <TableCell className="py-4 px-6">
-                      <Badge variant="outline" className="font-black text-[10px] px-2 py-0.5 border-border/60 bg-muted/5 uppercase tracking-tight">
-                        {req.category.replace(/_/g, ' ')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="py-4 px-6">
-                      {req.systemNote ? (
-                        <div className="flex items-center gap-2">
-                          <StatusBadge status="success" label="Auto" size="sm" withDot={false} className="h-4 px-1" />
-                          <span className="text-[11px] text-muted-foreground font-medium italic truncate max-w-[140px]" title={req.systemNote}>
-                            {req.systemNote}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="text-[11px] font-bold text-muted-foreground/60 flex items-center gap-1.5">
-                          <CheckCircle2 className="size-3 text-emerald-500" /> Manual Approval
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="py-4 px-6 text-right text-xs font-mono font-bold text-muted-foreground/70">
-                      {new Date(req.updatedAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="py-4 px-6 text-right">
-                      <CancelLeaveButton requestId={req.id} employeeName={req.employeeName} />
-                    </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </PageSection>
+                ) : (
+                  recentApprovals.map((req: any) => (
+                    <TableRow key={req.id} className="hover:bg-primary/2 transition-colors border-b border-border/40 last:border-0 group">
+                      <TableCell className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-[10px]">
+                            {req.employeeName.charAt(0)}
+                          </div>
+                          <div className="flex flex-col">
+                            <div className="font-bold text-xs text-foreground">{req.employeeName}</div>
+                            <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest opacity-60 leading-tight">{req.role}</div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3 px-4">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs font-bold text-foreground">
+                            {req.startDate === req.endDate ? req.startDate : `${req.startDate} to ${req.endDate}`}
+                          </span>
+                          <div className="flex gap-1.5">
+                            {req.duration === 'HALF' && (
+                              <StatusBadge status="info" label={`HALF (${req.halfDayType === 'FIRST_HALF' ? '1st' : '2nd'})`} size="sm" withDot={false} className="font-black text-[8px] px-1.5 h-4" />
+                            )}
+                            {req.duration === 'SHORT' && (
+                              <StatusBadge status="warning" label="SHORT LEAVE" size="sm" withDot={false} className="font-black text-[8px] px-1.5 h-4" />
+                            )}
+                            {req.duration === 'FULL' && (
+                              <StatusBadge status="success" label="FULL DAY" size="sm" withDot={false} className="font-black text-[8px] px-1.5 h-4" />
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3 px-4">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-xs font-bold text-foreground uppercase tracking-tight">
+                            {req.category.replace(/_/g, ' ')}
+                          </span>
+                          {req.leaveType && (
+                            <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest opacity-60 leading-tight">{req.leaveType}</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3 px-4">
+                        {req.systemNote ? (
+                          <div className="flex items-center gap-2">
+                            <StatusBadge status="success" label="Auto" size="sm" withDot={false} className="h-4 px-1.5 font-black text-[8px]" />
+                            <span className="text-[10px] text-muted-foreground font-medium italic truncate max-w-[140px] opacity-70" title={req.systemNote}>
+                              "{req.systemNote}"
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="text-[10px] font-bold text-muted-foreground/60 flex items-center gap-1.5">
+                            <CheckCircle2 className="size-3 text-emerald-500" /> Manual Approval
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right text-[10px] font-mono font-black text-muted-foreground/60">
+                        {new Date(req.updatedAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-right">
+                        <CancelLeaveButton requestId={req.id} employeeName={req.employeeName} />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </PageSection>
+      )}
     </PageContainer>
   );
-}
+}

@@ -1,9 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Users, User as UserIcon, Trash2, Loader2 } from "lucide-react"
+import { Users, Building2, Loader2 } from "lucide-react"
 import { updateDepartmentLeader, deleteDepartment } from "@/actions/department"
 import {
   Select,
@@ -13,8 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-
 import { toast } from "sonner"
+import { cn } from "@/lib/utils"
 
 export function DepartmentList({
   departments,
@@ -29,17 +27,15 @@ export function DepartmentList({
     setLoading(deptId)
     const res = await updateDepartmentLeader(deptId, leaderId === "none" ? null : leaderId)
     setLoading(null)
-
     if (!res.success) {
       toast.error(res.error)
     } else {
-      toast.success("Team leader updated successfully")
+      toast.success("Team leader updated")
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this department?")) return
-
+    if (!confirm("Delete this department?")) return
     const res = await deleteDepartment(id)
     if (!res.success) {
       toast.error(res.error)
@@ -49,75 +45,84 @@ export function DepartmentList({
   }
 
   return (
-    <div className="premium-card shadow-xl border-border/40 overflow-hidden animate-fade-in">
+    <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden animate-fade-in">
       <div className="overflow-x-auto scrollbar-hide">
         <table className="w-full border-collapse">
           <thead className="bg-muted/5 border-b border-border/40">
             <tr>
-              <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Department Name</th>
-              <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Team Leadership</th>
-              <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Operational Pulse</th>
-              <th className="py-4 px-6 text-right font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Actions</th>
+              <th className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/40">Department</th>
+              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/40">Team Leader</th>
+              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/40">Members</th>
+              <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/40">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/20">
             {departments.map((dept) => (
-              <tr key={dept.id} className="hover:bg-primary/[0.02] transition-colors group">
-                <td className="py-3 px-6">
-                  <div className="flex flex-col">
-                    <span className="font-bold text-sm text-foreground leading-none mb-1">{dept.name}</span>
-                    <span className="text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest">Functional Unit</span>
+              <tr key={dept.id} className="hover:bg-muted/5 transition-colors group">
+                {/* Department Name */}
+                <td className="py-3 px-5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="size-7 rounded-sm bg-primary/5 text-primary flex items-center justify-center border border-primary/10 font-bold text-[9px]">
+                      {dept.name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold text-foreground leading-none">{dept.name}</p>
+                      <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-tight mt-0.5">
+                        {dept._count?.members || 0} {dept._count?.members === 1 ? "member" : "members"}
+                      </p>
+                    </div>
                   </div>
                 </td>
-                <td className="py-3 px-6">
-                  <div className="flex items-center gap-3">
+
+                {/* Team Leader Select */}
+                <td className="py-3 px-4">
+                  <div className="flex items-center gap-2">
                     <Select
                       defaultValue={dept.teamLeaderId || "none"}
                       onValueChange={(val) => handleLeaderChange(dept.id, val)}
                       disabled={loading === dept.id}
                     >
-                      <SelectTrigger className="w-[260px] h-10 bg-muted/10 border-border/40 focus:ring-primary/20 rounded-xl text-xs font-bold transition-all shadow-none">
-                        <SelectValue placeholder="Select Deployment Leader" />
+                      <SelectTrigger className="w-[220px] h-8 bg-muted/5 border-border/60 rounded-sm text-xs font-bold shadow-none focus:ring-primary/10">
+                        <SelectValue placeholder="Assign leader" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl shadow-2xl">
-                        <SelectItem value="none" className="text-xs font-medium">None Assigned</SelectItem>
+                      <SelectContent className="rounded-sm shadow-lg border-border/60">
+                        <SelectItem value="none" className="text-xs">None assigned</SelectItem>
                         {users.map(u => (
-                          <SelectItem key={u.id} value={u.id} className="text-xs font-medium">{u.name || u.email}</SelectItem>
+                          <SelectItem key={u.id} value={u.id} className="text-xs">{u.name || u.email}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {loading === dept.id && <Loader2 className="size-4 animate-spin text-primary" />}
+                    {loading === dept.id && <Loader2 className="size-3.5 animate-spin text-primary/50" />}
                   </div>
                 </td>
-                <td className="py-3 px-6">
-                  <div className="flex items-center gap-2.5">
-                    <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-                       <Users className="size-4" />
-                    </div>
-                    <div className="flex flex-col">
-                       <span className="text-sm font-bold text-foreground leading-none">{dept._count?.members || 0}</span>
-                       <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none mt-1">Identities</span>
-                    </div>
+
+                {/* Member Count */}
+                <td className="py-3 px-4">
+                  <div className="flex items-center gap-1.5">
+                    <Users className="size-3 text-muted-foreground/30" />
+                    <span className="text-[11px] font-bold text-foreground/70 tabular-nums">{dept._count?.members || 0}</span>
                   </div>
                 </td>
-                <td className="py-3 px-6 text-right">
+
+                {/* Delete Action */}
+                <td className="py-3 px-5 text-right">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-muted-foreground/40 hover:text-rose-600 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
+                    className="h-7 w-7 p-0 text-muted-foreground/30 hover:text-rose-500 hover:bg-rose-500/5 rounded-sm transition-all opacity-0 group-hover:opacity-100"
                     onClick={() => handleDelete(dept.id)}
                   >
-                    <Trash2 className="size-4" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                   </Button>
                 </td>
               </tr>
             ))}
             {departments.length === 0 && (
               <tr>
-                <td colSpan={4} className="py-20 text-center">
-                  <div className="flex flex-col items-center gap-2 opacity-30">
-                     <Building2 className="size-12 mb-2 text-muted-foreground" />
-                     <p className="text-[10px] font-black uppercase tracking-[0.2em] italic">No clusters found</p>
+                <td colSpan={4} className="py-16 text-center">
+                  <div className="flex flex-col items-center gap-2 opacity-20">
+                    <Building2 className="size-7" />
+                    <p className="text-[10px] font-black uppercase tracking-widest">No departments found</p>
                   </div>
                 </td>
               </tr>

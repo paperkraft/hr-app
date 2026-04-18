@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,6 +13,7 @@ import {
 } from "lucide-react"
 import { updateSystemConfig } from "@/actions/settings"
 import { LocationManagement } from "./location-management"
+import { cn } from "@/lib/utils"
 
 interface SettingsFormProps {
     initialData: {
@@ -35,11 +35,69 @@ interface SettingsFormProps {
     initialLocations: any[];
 }
 
+function SectionCard({ title, description, icon: Icon, iconColor = "text-primary", iconBg = "bg-primary/5", children }: {
+    title: string;
+    description: string;
+    icon: React.ElementType;
+    iconColor?: string;
+    iconBg?: string;
+    children: React.ReactNode;
+}) {
+    return (
+        <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-border/40 flex items-center gap-3">
+                <div className={cn("size-8 rounded-sm flex items-center justify-center border", iconBg, iconColor, "border-border/40")}>
+                    <Icon className="size-4" />
+                </div>
+                <div>
+                    <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">{title}</h3>
+                    <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em]">{description}</p>
+                </div>
+            </div>
+            <div className="p-5 space-y-5">
+                {children}
+            </div>
+        </div>
+    )
+}
+
+function FieldRow({ label, children, disabled }: { label: string; children: React.ReactNode; disabled?: boolean }) {
+    return (
+        <div className={cn("space-y-1.5", disabled && "opacity-40 pointer-events-none")}>
+            <Label className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">{label}</Label>
+            {children}
+        </div>
+    )
+}
+
+function ToggleRow({ label, description, checked, onCheckedChange, disabled, color = "bg-primary" }: {
+    label: string;
+    description: string;
+    checked: boolean;
+    onCheckedChange: (v: boolean) => void;
+    disabled?: boolean;
+    color?: string;
+}) {
+    return (
+        <div className={cn("flex items-center justify-between py-3 px-4 rounded-sm border border-border/40 bg-muted/5", disabled && "opacity-40")}>
+            <div>
+                <p className="text-xs font-bold text-foreground">{label}</p>
+                <p className="text-[10px] text-muted-foreground/50 font-medium mt-0.5">{description}</p>
+            </div>
+            <Switch
+                checked={checked}
+                onCheckedChange={onCheckedChange}
+                disabled={disabled}
+                className={`data-[state=checked]:${color}`}
+            />
+        </div>
+    )
+}
+
 export function SettingsForm({ initialData, initialLocations }: SettingsFormProps) {
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
     const [error, setError] = useState<string | null>(null)
-
     const [formData, setFormData] = useState(initialData)
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -47,355 +105,265 @@ export function SettingsForm({ initialData, initialLocations }: SettingsFormProp
         setLoading(true)
         setError(null)
         setSuccess(false)
-
         const result = await updateSystemConfig(formData)
-
         if (result?.error) {
             setError(result.error)
         } else {
             setSuccess(true)
             setTimeout(() => setSuccess(false), 3000)
         }
-
         setLoading(false)
     }
 
+    const inputClass = "h-9 bg-muted/5 border-border/60 focus:ring-primary/10 rounded-sm font-mono text-xs"
+
     return (
-    <div className="space-y-8 animate-fade-in">
-        <Tabs defaultValue="general" className="w-full">
-            <div className="relative mb-10 overflow-x-auto scrollbar-hide">
-                <TabsList className="flex w-fit min-w-full justify-start gap-1 p-1.5 bg-muted/20 border border-border/40 rounded-2xl h-14">
-                    <TabsTrigger value="general" className="flex items-center gap-2 px-6 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-background data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 rounded-xl border border-transparent data-[state=active]:border-border/40">
-                        <Clock className="size-4" /> Global Defaults
+        <div className="space-y-6 animate-fade-in">
+            <Tabs defaultValue="general" className="w-full">
+                {/* Tab Bar — TabsList with overriding classes to match design */}
+                <TabsList className="flex items-center gap-1 p-1 bg-muted/30 border border-border/60 rounded-sm w-fit mb-6 h-auto overflow-x-auto scrollbar-hide">
+                    <TabsTrigger value="general" className="flex items-center gap-1.5 px-4 py-2 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border/80 data-[state=active]:shadow-sm text-muted-foreground/60 hover:text-foreground hover:bg-white/50">
+                        <Clock className="size-3.5" /> Global Defaults
                     </TabsTrigger>
-                    <TabsTrigger value="locations" className="flex items-center gap-2 px-6 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-background data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 rounded-xl border border-transparent data-[state=active]:border-border/40">
-                        <Globe className="size-4" /> Locations & Geofencing
+                    <TabsTrigger value="locations" className="flex items-center gap-1.5 px-4 py-2 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border/80 data-[state=active]:shadow-sm text-muted-foreground/60 hover:text-foreground hover:bg-white/50">
+                        <Globe className="size-3.5" /> Locations
                     </TabsTrigger>
-                    <TabsTrigger value="attendance" className="flex items-center gap-2 px-6 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-background data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 rounded-xl border border-transparent data-[state=active]:border-border/40">
-                        <ShieldAlert className="size-4" /> Operation Policies
+                    <TabsTrigger value="attendance" className="flex items-center gap-1.5 px-4 py-2 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border/80 data-[state=active]:shadow-sm text-muted-foreground/60 hover:text-foreground hover:bg-white/50">
+                        <ShieldAlert className="size-3.5" /> Attendance Policies
                     </TabsTrigger>
-                    <TabsTrigger value="leave" className="flex items-center gap-2 px-6 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all data-[state=active]:bg-background data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 rounded-xl border border-transparent data-[state=active]:border-border/40">
-                        <CalendarRange className="size-4" /> Leave Frameworks
+                    <TabsTrigger value="leave" className="flex items-center gap-1.5 px-4 py-2 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border/80 data-[state=active]:shadow-sm text-muted-foreground/60 hover:text-foreground hover:bg-white/50">
+                        <CalendarRange className="size-3.5" /> Leave Frameworks
                     </TabsTrigger>
                 </TabsList>
-            </div>
 
-            {/* --- GENERAL DEFAULTS TAB --- */}
-            <TabsContent value="general" className="space-y-8 outline-none">
-                <form onSubmit={handleSubmit} className="space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <Card className="premium-card shadow-xl border-border/40 overflow-hidden">
-                            <CardHeader className="p-6 bg-primary/2 border-b border-border/40">
-                                <div className="flex items-center gap-3">
-                                   <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                                      <Clock className="size-5" />
-                                   </div>
-                                   <div>
-                                      <CardTitle className="text-sm font-black uppercase tracking-widest">Global Defaults</CardTitle>
-                                      <CardDescription className="text-[11px] font-medium mt-1">Foundational logistics for operations.</CardDescription>
-                                   </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="space-y-6 p-6">
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div className="space-y-2.5">
-                                        <Label className="text-[10px] uppercase font-black text-muted-foreground/70 tracking-widest px-1">Shift Start</Label>
+                {/* ─── GLOBAL DEFAULTS ─── */}
+                <TabsContent value="general" className="outline-none">
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <SectionCard title="Global Defaults" description="Foundational shift logistics" icon={Clock}>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FieldRow label="Shift Start">
                                         <Input
                                             type="time"
                                             value={formData.defaultOfficeStartTime}
                                             onChange={(e) => setFormData(prev => ({ ...prev, defaultOfficeStartTime: e.target.value }))}
-                                            className="h-11 bg-muted/10 border-border/40 focus:ring-primary/20 rounded-xl font-mono text-sm"
+                                            className={inputClass}
                                             required
                                         />
-                                    </div>
-                                    <div className="space-y-2.5">
-                                        <Label className="text-[10px] uppercase font-black text-muted-foreground/70 tracking-widest px-1">Shift End</Label>
+                                    </FieldRow>
+                                    <FieldRow label="Shift End">
                                         <Input
                                             type="time"
                                             value={formData.defaultOfficeEndTime}
                                             onChange={(e) => setFormData(prev => ({ ...prev, defaultOfficeEndTime: e.target.value }))}
-                                            className="h-11 bg-muted/10 border-border/40 focus:ring-primary/20 rounded-xl font-mono text-sm"
+                                            className={inputClass}
                                             required
                                         />
-                                    </div>
+                                    </FieldRow>
                                 </div>
-                                <div className="space-y-2.5">
-                                    <Label className="text-[10px] uppercase font-black text-muted-foreground/70 tracking-widest px-1 flex items-center gap-2">
-                                        <Timer className="size-3.5" /> Grace Window (Minutes)
-                                    </Label>
+                                <FieldRow label="Grace Window (Minutes)">
                                     <Input
                                         type="number"
                                         min="0"
                                         value={formData.defaultGraceTimeMinutes}
                                         onChange={(e) => setFormData(prev => ({ ...prev, defaultGraceTimeMinutes: parseInt(e.target.value) || 0 }))}
-                                        className="h-11 bg-muted/10 border-border/40 focus:ring-primary/20 rounded-xl font-bold"
+                                        className={inputClass}
                                         required
                                     />
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </FieldRow>
+                            </SectionCard>
 
-                        <div className="premium-card shadow-xl border-dashed border-2 border-primary/20 bg-primary/2 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-4">
-                            <div className="size-16 rounded-3xl bg-primary/10 flex items-center justify-center shadow-inner">
-                               <Globe className="size-8 text-primary shadow-sm" />
-                            </div>
-                            <div>
-                                <h3 className="text-base font-black uppercase tracking-widest text-foreground">Cloud-First Geofencing</h3>
-                                <p className="mt-2 text-xs text-muted-foreground leading-relaxed max-w-[280px] font-medium">
-                                    Our geofencing engine verifies every punch against workstation parameters. Set per-location radius in the next tab.
+                            <SectionCard title="Cloud-First Geofencing" description="Location-based attendance verification" icon={Globe} iconColor="text-sky-600" iconBg="bg-sky-500/5">
+                                <p className="text-xs text-muted-foreground/60 leading-relaxed">
+                                    Our geofencing engine verifies every check-in against workstation parameters.
+                                    Configure per-location radius under the <strong>Locations</strong> tab.
                                 </p>
-                            </div>
+                                <div className="p-4 bg-sky-500/[0.02] border border-sky-500/10 rounded-sm">
+                                    <p className="text-[10px] font-black text-sky-600/60 uppercase tracking-widest mb-1">Current Mode</p>
+                                    <p className="text-xs font-bold text-foreground/70">Distributed Geofence · Per-location radius</p>
+                                </div>
+                            </SectionCard>
                         </div>
-                    </div>
 
-                    <div className="sticky bottom-6 flex items-center justify-between p-6 bg-background/80 backdrop-blur-xl border border-border/40 rounded-3xl shadow-2xl z-10">
-                        <div className="flex-1">
-                            {success && (
-                                <div className="flex items-center gap-3 text-emerald-600 font-black text-[10px] uppercase tracking-widest bg-emerald-500/10 px-6 py-2.5 rounded-full w-fit animate-in fade-in slide-in-from-left-4 duration-500">
-                                    <CheckCircle className="size-4" /> Configuration Applied
-                                </div>
-                            )}
-                            {error && (
-                                <div className="flex items-center gap-3 text-rose-600 font-black text-[10px] uppercase tracking-widest bg-rose-500/10 px-6 py-2.5 rounded-full w-fit animate-in shake duration-500">
-                                    <AlertCircle className="size-4" /> {error}
-                                </div>
-                            )}
-                        </div>
-                        <Button type="submit" disabled={loading} size="lg" className="h-12 px-8 bg-primary hover:bg-primary/90 rounded-xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20 transition-all active:scale-95">
-                            {loading ? <Loader2 className="size-4 animate-spin" /> : <><Save className="size-4 mr-2" /> Commit Changes</>}
-                        </Button>
-                    </div>
-                </form>
-            </TabsContent>
+                        <SaveBar loading={loading} success={success} error={error} label="Save Defaults" />
+                    </form>
+                </TabsContent>
 
-            {/* --- LOCATIONS TAB --- */}
-            <TabsContent value="locations" className="outline-none">
-                <LocationManagement initialLocations={initialLocations} />
-            </TabsContent>
+                {/* ─── LOCATIONS ─── */}
+                <TabsContent value="locations" className="outline-none">
+                    <LocationManagement initialLocations={initialLocations} />
+                </TabsContent>
 
-            {/* --- ATTENDANCE POLICIES TAB --- */}
-            <TabsContent value="attendance" className="space-y-8 outline-none text-xs">
-                <form onSubmit={handleSubmit} className="space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <Card className="premium-card shadow-xl border-border/40">
-                            <CardHeader className="p-6 bg-primary/2 border-b border-border/40">
-                                <div className="flex items-center gap-3">
-                                   <div className="size-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
-                                      <ShieldAlert className="size-5" />
-                                   </div>
-                                   <div>
-                                      <CardTitle className="text-sm font-black uppercase tracking-widest">Late Marking Engine</CardTitle>
-                                      <CardDescription className="text-[11px] font-medium mt-1">Configure threshold-based penalties.</CardDescription>
-                                   </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="space-y-6 p-6">
-                                <div className="flex items-center justify-between p-4 bg-muted/10 rounded-2xl border border-border/20">
-                                    <div className="space-y-1">
-                                        <Label className="text-sm font-bold text-foreground">Global Enforcement</Label>
-                                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight opacity-70">Monitor workforce arrivals.</p>
-                                    </div>
-                                    <Switch
-                                        checked={formData.lateMarkEnabled}
-                                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, lateMarkEnabled: checked }))}
-                                        className="data-[state=checked]:bg-primary"
-                                    />
-                                </div>
+                {/* ─── ATTENDANCE POLICIES ─── */}
+                <TabsContent value="attendance" className="outline-none">
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
-                                <div className="space-y-2.5">
-                                    <Label className="text-[10px] uppercase font-black text-muted-foreground/70 tracking-widest px-1">Monthly Violation Threshold</Label>
+                            {/* Card 1: Late Mark Toggle + Threshold */}
+                            <SectionCard title="Late Mark Enforcement" description="Threshold-based arrival penalties" icon={ShieldAlert} iconColor="text-amber-600" iconBg="bg-amber-500/5">
+                                <ToggleRow
+                                    label="Enable Late Marking"
+                                    description="Monitor and flag late arrivals system-wide."
+                                    checked={formData.lateMarkEnabled}
+                                    onCheckedChange={(v) => setFormData(prev => ({ ...prev, lateMarkEnabled: v }))}
+                                />
+                                <FieldRow label="Monthly Violation Limit" disabled={!formData.lateMarkEnabled}>
                                     <Input
                                         type="number"
                                         value={formData.lateMarkAllowedCount}
                                         onChange={(e) => setFormData(prev => ({ ...prev, lateMarkAllowedCount: parseInt(e.target.value) || 0 }))}
-                                        className="h-11 bg-muted/10 border-border/40 rounded-xl font-bold"
+                                        className={inputClass}
                                         disabled={!formData.lateMarkEnabled}
                                     />
-                                </div>
+                                </FieldRow>
+                            </SectionCard>
 
-                                <div className="pt-6 border-t border-border/40 space-y-6">
-                                    <div className="flex items-center justify-between p-4 bg-primary/3 rounded-2xl border border-primary/10">
-                                        <div className="space-y-1">
-                                            <Label className="text-sm font-bold text-foreground">Intelligent Waiver</Label>
-                                            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight opacity-70">Waive late if total hours hit target.</p>
-                                        </div>
-                                        <Switch
-                                            checked={formData.specialCaseEnabled}
-                                            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, specialCaseEnabled: checked }))}
-                                            disabled={!formData.lateMarkEnabled}
-                                            className="data-[state=checked]:bg-emerald-500"
-                                        />
-                                    </div>
-                                    <div className="space-y-2.5">
-                                        <Label className="text-[10px] uppercase font-black text-muted-foreground/70 tracking-widest px-1">Bonus Minutes Delta</Label>
-                                        <Input
-                                            type="number"
-                                            value={formData.specialCaseExtraMinutes}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, specialCaseExtraMinutes: parseInt(e.target.value) || 0 }))}
-                                            className="h-11 bg-muted/10 border-border/40 rounded-xl font-bold"
-                                            placeholder="e.g. 0 min"
-                                            disabled={!formData.lateMarkEnabled || !formData.specialCaseEnabled}
-                                        />
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="premium-card shadow-xl border-border/40">
-                            <CardHeader className="p-6 bg-primary/2 border-b border-border/40">
-                                <div className="flex items-center gap-3">
-                                   <div className="size-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
-                                      <Timer className="size-5" />
-                                   </div>
-                                   <div>
-                                      <CardTitle className="text-sm font-black uppercase tracking-widest">System Orchestration</CardTitle>
-                                      <CardDescription className="text-[11px] font-medium mt-1">Autonomous lifecycle management.</CardDescription>
-                                   </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="space-y-6 p-6">
-                                <div className="flex items-center justify-between p-4 bg-muted/10 rounded-2xl border border-border/20">
-                                    <div className="space-y-1">
-                                        <Label className="text-sm font-bold text-foreground">Auto-Exit Sequence</Label>
-                                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight opacity-70">Terminate stale sessions daily.</p>
-                                    </div>
-                                    <Switch
-                                        checked={formData.autoPunchOutEnabled}
-                                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, autoPunchOutEnabled: checked }))}
-                                        className="data-[state=checked]:bg-primary"
+                            {/* Card 2: Intelligent Waiver */}
+                            <SectionCard title="Intelligent Waiver" description="Waive late mark on full-hour completion" icon={Timer} iconColor="text-emerald-600" iconBg="bg-emerald-500/5">
+                                <ToggleRow
+                                    label="Enable Waiver Rule"
+                                    description="Waive late mark if total work hours meet target."
+                                    checked={formData.specialCaseEnabled}
+                                    onCheckedChange={(v) => setFormData(prev => ({ ...prev, specialCaseEnabled: v }))}
+                                    disabled={!formData.lateMarkEnabled}
+                                />
+                                <FieldRow label="Extra Minutes Allowed" disabled={!formData.lateMarkEnabled || !formData.specialCaseEnabled}>
+                                    <Input
+                                        type="number"
+                                        value={formData.specialCaseExtraMinutes}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, specialCaseExtraMinutes: parseInt(e.target.value) || 0 }))}
+                                        className={inputClass}
+                                        placeholder="e.g. 0"
+                                        disabled={!formData.lateMarkEnabled || !formData.specialCaseEnabled}
                                     />
-                                </div>
+                                </FieldRow>
+                            </SectionCard>
 
-                                <div className="space-y-6 pt-6 border-t border-border/40">
-                                    <div className="space-y-2.5">
-                                        <Label className="text-[10px] uppercase font-black text-muted-foreground/70 tracking-widest px-1">Grace Delta (Post-Shift Hours)</Label>
-                                        <Input
-                                            type="number"
-                                            value={formData.autoPunchOutDelayHours}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, autoPunchOutDelayHours: parseInt(e.target.value) || 0 }))}
-                                            className="h-11 bg-muted/10 border-border/40 rounded-xl font-bold"
-                                            disabled={!formData.autoPunchOutEnabled}
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2.5">
-                                        <Label className="text-[10px] uppercase font-black text-muted-foreground/70 tracking-widest px-1">Intelligence Threshold (Alerts)</Label>
-                                        <Input
-                                            type="number"
-                                            value={formData.autoPunchOutWarningThreshold}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, autoPunchOutWarningThreshold: parseInt(e.target.value) || 0 }))}
-                                            className="h-11 bg-muted/10 border-border/40 rounded-xl font-bold"
-                                            disabled={!formData.autoPunchOutEnabled}
-                                        />
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                    
-                    <div className="flex justify-end p-6 bg-background rounded-3xl border border-border/40 shadow-xl">
-                        <Button type="submit" disabled={loading} size="lg" className="h-12 px-8 bg-primary hover:bg-primary/90 rounded-xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20 transition-all active:scale-95">
-                            {loading ? <Loader2 className="size-4 animate-spin" /> : <><Save className="size-4 mr-2" /> Synchonize Policies</>}
-                        </Button>
-                    </div>
-                </form>
-            </TabsContent>
-
-            {/* --- LEAVE POLICIES TAB --- */}
-            <TabsContent value="leave" className="space-y-8 outline-none">
-                <form onSubmit={handleSubmit} className="space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <Card className="premium-card shadow-xl border-border/40">
-                            <CardHeader className="p-6 bg-primary/2 border-b border-border/40">
-                                <div className="flex items-center gap-3">
-                                   <div className="size-9 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
-                                      <CalendarRange className="size-5" />
-                                   </div>
-                                   <div>
-                                      <CardTitle className="text-sm font-black uppercase tracking-widest">Cyclical Frameworks</CardTitle>
-                                      <CardDescription className="text-[11px] font-medium mt-1">Multi-cycle balance resets.</CardDescription>
-                                   </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="space-y-8 p-6">
-                                <div className="flex items-center justify-between p-4 bg-muted/10 rounded-2xl border border-border/20">
-                                    <div className="space-y-1">
-                                        <Label className="text-sm font-bold text-foreground">Semi-Annual Enforcement</Label>
-                                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight opacity-70">Enforce H1/H2 isolation rules.</p>
-                                    </div>
-                                    <Switch
-                                        checked={formData.semiAnnualPolicyEnabled}
-                                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, semiAnnualPolicyEnabled: checked }))}
-                                        className="data-[state=checked]:bg-purple-600"
+                            {/* Card 3: Auto Check-Out */}
+                            <SectionCard title="Auto Check-Out" description="Autonomous session lifecycle management" icon={ShieldAlert} iconColor="text-sky-600" iconBg="bg-sky-500/5">
+                                <ToggleRow
+                                    label="Enable Auto Check-Out"
+                                    description="Terminate stale sessions at end of day."
+                                    checked={formData.autoPunchOutEnabled}
+                                    onCheckedChange={(v) => setFormData(prev => ({ ...prev, autoPunchOutEnabled: v }))}
+                                />
+                                <FieldRow label="Post-Shift Grace (hrs)" disabled={!formData.autoPunchOutEnabled}>
+                                    <Input
+                                        type="number"
+                                        value={formData.autoPunchOutDelayHours}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, autoPunchOutDelayHours: parseInt(e.target.value) || 0 }))}
+                                        className={inputClass}
+                                        disabled={!formData.autoPunchOutEnabled}
                                     />
-                                </div>
+                                </FieldRow>
+                                <FieldRow label="Warning Threshold" disabled={!formData.autoPunchOutEnabled}>
+                                    <Input
+                                        type="number"
+                                        value={formData.autoPunchOutWarningThreshold}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, autoPunchOutWarningThreshold: parseInt(e.target.value) || 0 }))}
+                                        className={inputClass}
+                                        disabled={!formData.autoPunchOutEnabled}
+                                    />
+                                </FieldRow>
+                            </SectionCard>
+                        </div>
 
-                                <div className="space-y-2.5">
-                                    <Label className="text-[10px] uppercase font-black text-muted-foreground/70 tracking-widest px-1">Infrastructure Cycle Start</Label>
+                        <SaveBar loading={loading} success={success} error={error} label="Save Attendance Policies" />
+                    </form>
+                </TabsContent>
+
+                {/* ─── LEAVE FRAMEWORKS ─── */}
+                <TabsContent value="leave" className="outline-none">
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+                            {/* Card 1: Semi-Annual Toggle */}
+                            <SectionCard title="Semi-Annual Policy" description="H1/H2 leave cycle enforcement" icon={CalendarRange} iconColor="text-purple-600" iconBg="bg-purple-500/5">
+                                <ToggleRow
+                                    label="Enable Semi-Annual Rule"
+                                    description="Enforce H1/H2 isolation and consecutive-only yearly leave."
+                                    checked={formData.semiAnnualPolicyEnabled}
+                                    onCheckedChange={(v) => setFormData(prev => ({ ...prev, semiAnnualPolicyEnabled: v }))}
+                                />
+                            </SectionCard>
+
+                            {/* Card 2: Cycle Start Month */}
+                            <SectionCard title="Cycle Start Month" description="Fiscal year cycle anchor" icon={CalendarRange} iconColor="text-sky-600" iconBg="bg-sky-500/5">
+                                <FieldRow label="Cycle Start Month" disabled={!formData.semiAnnualPolicyEnabled}>
                                     <Select
                                         value={(formData.semiAnnualCycleStartMonth ?? 4).toString()}
                                         onValueChange={(val) => setFormData(prev => ({ ...prev, semiAnnualCycleStartMonth: parseInt(val) }))}
                                         disabled={!formData.semiAnnualPolicyEnabled}
                                     >
-                                        <SelectTrigger className="h-11 bg-muted/10 border-border/40 rounded-xl font-bold shadow-none">
-                                            <SelectValue placeholder="Select Deployment Month" />
+                                        <SelectTrigger className="h-9 bg-muted/5 border-border/60 rounded-sm text-xs font-bold shadow-none">
+                                            <SelectValue placeholder="Select start month" />
                                         </SelectTrigger>
-                                        <SelectContent className="rounded-xl shadow-2xl">
-                                            <SelectItem value="1" className="text-sm font-medium">January (Global Standard)</SelectItem>
-                                            <SelectItem value="4" className="text-sm font-medium">April (Fiscal Strategy)</SelectItem>
-                                            <SelectItem value="7" className="text-sm font-medium">July (Operational Mid-Point)</SelectItem>
-                                            <SelectItem value="10" className="text-sm font-medium">October (Quarterly Focus)</SelectItem>
+                                        <SelectContent className="rounded-sm shadow-lg border-border/60">
+                                            <SelectItem value="1" className="text-xs">January</SelectItem>
+                                            <SelectItem value="4" className="text-xs">April (Fiscal Year)</SelectItem>
+                                            <SelectItem value="7" className="text-xs">July (Mid-Year)</SelectItem>
+                                            <SelectItem value="10" className="text-xs">October (Q4)</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </FieldRow>
+                                <p className="text-[10px] text-muted-foreground/40 font-medium leading-snug">
+                                    Defines when the first half of the leave cycle begins for all employees.
+                                </p>
+                            </SectionCard>
 
-                        <Card className="premium-card shadow-xl border-border/40">
-                            <CardHeader className="p-6 bg-primary/2 border-b border-border/40">
-                                <div className="flex items-center gap-3">
-                                   <div className="size-9 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center">
-                                      <ListOrdered className="size-5" />
-                                   </div>
-                                   <div>
-                                      <CardTitle className="text-sm font-black uppercase tracking-widest">Half-Day Boundaries</CardTitle>
-                                      <CardDescription className="text-[11px] font-medium mt-1">Define operational session splits.</CardDescription>
-                                   </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="space-y-8 p-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2.5">
-                                        <Label className="text-[10px] uppercase font-black text-emerald-600/70 tracking-widest px-1">Session A Termination</Label>
-                                        <Input
-                                            type="time"
-                                            value={formData.firstHalfEndTime}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, firstHalfEndTime: e.target.value }))}
-                                            className="h-11 bg-emerald-500/3 border-emerald-500/20 focus:ring-emerald-500/20 rounded-xl font-mono text-sm font-bold"
-                                        />
-                                    </div>
-                                    <div className="space-y-2.5">
-                                        <Label className="text-[10px] uppercase font-black text-amber-600/70 tracking-widest px-1">Session B Initiation</Label>
-                                        <Input
-                                            type="time"
-                                            value={formData.secondHalfStartTime}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, secondHalfStartTime: e.target.value }))}
-                                            className="h-11 bg-amber-500/3 border-amber-500/20 focus:ring-amber-500/20 rounded-xl font-mono text-sm font-bold"
-                                        />
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                            {/* Card 3: Half-Day Boundaries */}
+                            <SectionCard title="Half-Day Boundaries" description="Session split configuration" icon={ListOrdered} iconColor="text-orange-600" iconBg="bg-orange-500/5">
+                                <FieldRow label="First Half Ends At">
+                                    <Input
+                                        type="time"
+                                        value={formData.firstHalfEndTime}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, firstHalfEndTime: e.target.value }))}
+                                        className={inputClass}
+                                    />
+                                </FieldRow>
+                                <FieldRow label="Second Half Starts At">
+                                    <Input
+                                        type="time"
+                                        value={formData.secondHalfStartTime}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, secondHalfStartTime: e.target.value }))}
+                                        className={inputClass}
+                                    />
+                                </FieldRow>
+                            </SectionCard>
+                        </div>
+
+                        <SaveBar loading={loading} success={success} error={error} label="Save Leave Frameworks" />
+                    </form>
+                </TabsContent>
+            </Tabs>
+        </div>
+    )
+}
+
+function SaveBar({ loading, success, error, label }: { loading: boolean; success: boolean; error: string | null; label: string }) {
+    return (
+        <div className="flex items-center justify-between p-4 bg-white border border-border/60 rounded-sm shadow-sm">
+            <div className="flex-1">
+                {success && (
+                    <div className="flex items-center gap-2 text-emerald-600 text-[10px] font-black uppercase tracking-widest">
+                        <CheckCircle className="size-3.5" />
+                        Configuration saved successfully
                     </div>
-                    
-                    <div className="flex justify-end p-6 bg-background rounded-3xl border border-border/40 shadow-xl">
-                        <Button type="submit" disabled={loading} size="lg" className="h-12 px-8 bg-primary hover:bg-primary/90 rounded-xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20 transition-all active:scale-95">
-                            {loading ? <Loader2 className="size-4 animate-spin" /> : <><Save className="size-4 mr-2" /> Authenticate Changes</>}
-                        </Button>
+                )}
+                {error && (
+                    <div className="flex items-center gap-2 text-rose-600 text-[10px] font-black uppercase tracking-widest">
+                        <AlertCircle className="size-3.5" />
+                        {error}
                     </div>
-                </form>
-            </TabsContent>
-        </Tabs>
-    </div>
+                )}
+            </div>
+            <Button
+                type="submit"
+                disabled={loading}
+                className="h-9 px-5 bg-primary hover:bg-primary/90 rounded-sm font-bold text-[11px] uppercase tracking-widest shadow-sm transition-all"
+            >
+                {loading ? <Loader2 className="size-3.5 animate-spin" /> : <><Save className="size-3.5 mr-1.5" />{label}</>}
+            </Button>
+        </div>
     )
 }

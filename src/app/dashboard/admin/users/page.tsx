@@ -45,8 +45,8 @@ export default async function AdminUsersPage() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-foreground tracking-tight">People</h1>
-          <p className="text-xs text-muted-foreground font-medium mt-0.5">Manage and collaborate within your organization's teams</p>
+          <h1 className="text-xl font-bold text-foreground tracking-tight">Employees</h1>
+          <p className="text-xs text-muted-foreground font-medium mt-0.5">Manage and collaborate within your organization's workforce</p>
         </div>
         <AddUserDialog
           managers={validManagers}

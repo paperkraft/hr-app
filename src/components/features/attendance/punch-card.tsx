@@ -34,32 +34,80 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
       let coords = undefined;
 
       try {
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 0
-          });
+        if (!navigator.geolocation) {
+          toast.error("Geolocation is not supported by your browser.");
+          return;
+        }
+
+        toast.info("Refining location accuracy...", {
+          description: "Acquiring a high-precision GPS lock. This may take a few seconds.",
+          duration: 4000
         });
+
+        // Helper to get location with multiple attempts for better accuracy
+        const getHighAccuracyPos = async (maxAttempts = 3): Promise<GeolocationPosition> => {
+          let lastResult: GeolocationPosition | null = null;
+          
+          for (let i = 0; i < maxAttempts; i++) {
+            try {
+              const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                  enableHighAccuracy: true,
+                  timeout: 10000,
+                  maximumAge: 0
+                });
+              });
+              
+              lastResult = pos;
+              // If accuracy is better than 80 meters, it's likely a solid native GPS/Wi-Fi lock
+              if (pos.coords.accuracy <= 80) return pos;
+              
+              // If not precise enough, wait a bit for hardware to warm up and try again
+              await new Promise(r => setTimeout(r, 1000));
+            } catch (err) {
+              if (i === maxAttempts - 1 && !lastResult) throw err;
+            }
+          }
+          return lastResult!; // Return the best we got if we didn't hit threshold
+        };
+
+        const position = await getHighAccuracyPos();
+        
+        // Log accuracy for monitoring
+        console.log(`[GEO] Captured location with accuracy: ${position.coords.accuracy}m`);
 
         coords = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
-      } catch (err) {
-        console.warn("Location access denied or unavailable:", err);
+      } catch (err: any) {
+        let errorMsg = "Please enable location services to continue.";
+        
+        if (err.code === 1) { // PERMISSION_DENIED
+          errorMsg = "Location access denied. Please enable it in browser settings.";
+        } else if (err.code === 3) { // TIMEOUT
+          errorMsg = "Location request timed out. Please ensure GPS is active and try again.";
+        }
+        
+        toast.error(errorMsg, {
+          description: "Required for attendance verification.",
+          duration: 5000
+        });
+        return;
       }
 
       const result = await punchInOutAction(coords);
       if (result.success) {
         setStatus(targetStatus);
         toast.success(`Session ${targetStatus === "PUNCHED_IN" ? "started" : "ended"} successfully`);
-        window.location.reload(); 
+        window.location.reload();
       } else {
         toast.error("Process failed: " + result.error);
       }
     });
   };
+
+
 
   return (
     <div className="bg-white border border-border/60 rounded-sm overflow-hidden h-full flex flex-col animate-fade-in shadow-sm group">
@@ -123,12 +171,12 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
             <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Active Session</span>
           </div>
         )}
-        
+
         <div className="flex-1 min-h-[20px]" />
 
         {/* High-Density Warning */}
         {autoPunchOutCount >= warningThreshold && (
-          <div className="w-full bg-rose-500/[0.02] border border-rose-500/10 rounded-sm p-3.5 flex gap-3 animate-fade-in">
+          <div className="w-full bg-rose-500/2 border border-rose-500/10 rounded-sm p-3.5 flex gap-3 animate-fade-in">
             <AlertCircle className="size-4 text-rose-500 shrink-0 mt-0.5" />
             <div className="space-y-0.5">
               <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">System Warning</p>

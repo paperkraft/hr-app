@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { PageSection, StatCard, Grid, ProgressRing } from "@/components/ui";
-import { CalendarRange, AlertCircle, Heart } from "lucide-react";
+import { StatCard, Grid } from "@/components/ui";
+import { CalendarRange, Heart, ShieldCheck, Zap } from "lucide-react";
 
 interface LeaveBalanceOverviewProps {
   casual: { taken: number; remaining: number; total: number };
@@ -11,64 +11,52 @@ interface LeaveBalanceOverviewProps {
 
 export function LeaveBalanceOverview({ casual, sick }: LeaveBalanceOverviewProps) {
   return (
-    <PageSection 
-      title="Entitlements" 
-      description="Your remaining leave balance for this year"
-      className="animate-fade-in-up h-full shadow-xl border-border/40"
-    >
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
-        {/* Casual Leave Progress */}
-        <div className="p-4 lg:p-6 rounded-2xl bg-muted/20 border border-border/40 flex items-center gap-4 lg:gap-6 group hover:border-primary/20 hover:bg-muted/30 transition-all duration-300">
-          <div className="relative size-14 lg:size-16 shrink-0">
-             <ProgressRing 
-               value={(casual.taken / casual.total) * 100} 
-               size={64} 
-               strokeWidth={6} 
-               strokeColor="text-primary"
-             />
-             <div className="absolute inset-0 flex items-center justify-center">
-                <CalendarRange className="size-4 lg:size-5 text-primary opacity-60" />
-             </div>
-          </div>
-          <div className="flex-1 min-w-0">
-             <div className="flex flex-col mb-1">
-                <h4 className="text-sm font-bold text-foreground truncate">Casual Leave</h4>
-                <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-none mt-1">
-                  {casual.remaining} DAYS LEFT
-                </span>
-             </div>
-             <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold opacity-60">
-               {casual.taken} / {casual.total} Used
-             </p>
-          </div>
-        </div>
-
-        {/* Sick Leave Progress */}
-        <div className="p-4 lg:p-6 rounded-2xl bg-muted/20 border border-border/40 flex items-center gap-4 lg:gap-6 group hover:border-rose-500/20 hover:bg-muted/30 transition-all duration-300">
-          <div className="relative size-14 lg:size-16 shrink-0">
-             <ProgressRing 
-               value={(sick.taken / sick.total) * 100} 
-               size={64} 
-               strokeWidth={6} 
-               strokeColor="text-rose-500"
-             />
-             <div className="absolute inset-0 flex items-center justify-center">
-                <Heart className="size-4 lg:size-5 text-rose-500 opacity-60" />
-             </div>
-          </div>
-          <div className="flex-1 min-w-0">
-             <div className="flex flex-col mb-1">
-                <h4 className="text-sm font-bold text-foreground truncate">Sick Leave</h4>
-                <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest leading-none mt-1">
-                  {sick.remaining} DAYS LEFT
-                </span>
-             </div>
-             <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold opacity-60">
-               {sick.taken} / {sick.total} Used
-             </p>
-          </div>
+    <div className="space-y-6 h-full flex flex-col">
+      <div className="flex items-center justify-between px-2">
+        <div>
+          <h2 className="text-xl font-black text-foreground tracking-tight leading-none mb-1">Entitlements</h2>
+          <p className="text-[11px] text-muted-foreground/60 font-black uppercase tracking-[0.2em]">Balance Framework</p>
         </div>
       </div>
-    </PageSection>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+        <StatCard
+          label="Casual Leave"
+          value={`${casual.remaining} Days`}
+          subValue={`${casual.remaining} remaining this cycle`}
+          icon={<CalendarRange className="size-5" />}
+          progress={(casual.taken / casual.total) * 100}
+          progressColor="bg-primary"
+          className="h-full"
+        />
+        <StatCard
+          label="Sick Leave"
+          value={`${sick.remaining} Days`}
+          subValue={`${sick.remaining} remaining this cycle`}
+          icon={<Heart className="size-5" />}
+          progress={(sick.taken / sick.total) * 100}
+          progressColor="bg-rose-500"
+          className="h-full"
+        />
+        <StatCard
+          label="Annual Balance"
+          value="24 Days"
+          subValue="Projected for year-end"
+          icon={<ShieldCheck className="size-5" />}
+          progress={45}
+          progressColor="bg-emerald-500"
+          className="h-full hidden xl:flex"
+        />
+        <StatCard
+          label="Performance Hub"
+          value="98%"
+          subValue="High engagement score"
+          icon={<Zap className="size-5" />}
+          progress={98}
+          progressColor="bg-amber-500"
+          className="h-full hidden xl:flex"
+        />
+      </div>
+    </div>
   );
 }

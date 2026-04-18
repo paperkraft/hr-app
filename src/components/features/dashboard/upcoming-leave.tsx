@@ -1,5 +1,4 @@
-import { Plane, AlertCircle, CalendarDays } from "lucide-react";
-import { PageSection, StatusBadge } from "@/components/ui";
+import { Plane, CalendarDays, Hourglass, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LeaveRequest {
@@ -16,60 +15,69 @@ interface UpcomingLeaveProps {
 }
 
 export function UpcomingLeave({ requests }: UpcomingLeaveProps) {
-  const upcoming = requests.find(r => r.status === "APPROVED" && new Date(r.startDate) > new Date());
-  const pending = requests.find(r => r.status === "PENDING");
+  const activeRequests = requests.filter(r => r.status !== "CANCELLED").slice(0, 3);
 
   return (
-    <PageSection
-      title="Upcoming Leave"
-      description="Your scheduled time off and pending requests"
-      className="h-full animate-fade-in shadow-xl border-border/40"
-      noPadding
-    >
-      <div className="flex flex-col h-full max-h-[400px] bg-gradient-to-br from-background to-muted/20">
-        <div className="divide-y divide-border/40 overflow-y-auto flex-1 scrollbar-hide">
-          {requests.length === 0 ? (
-            <div className="p-12 text-center text-muted-foreground italic text-xs flex flex-col items-center justify-center gap-3 opacity-60">
-               <Plane className="size-6 opacity-20" />
-               <p className="font-bold text-[10px] uppercase tracking-widest">No upcoming leave requests found.</p>
-            </div>
-          ) : (
-            requests.map((request) => (
-              <div key={request.id} className="p-5 flex items-start justify-between hover:bg-muted/10 transition-colors group">
-                <div className="flex flex-col gap-1.5 min-w-0 flex-1 pr-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-foreground truncate">{request.category}</span>
-                    <StatusBadge 
-                      status={request.status === "APPROVED" ? "success" : request.status === "PENDING" ? "warning" : "error"} 
-                      label={request.status} 
-                      size="sm" 
-                      withDot={false} 
-                      className="font-black text-[8px] px-1.5 py-0 h-4 uppercase tracking-tighter" 
-                    />
-                  </div>
-                  <div className="flex items-center gap-3 text-muted-foreground">
-                    <div className="flex items-center gap-1.5">
-                      <CalendarDays className="size-3 opacity-60" />
-                      <span className="text-[10px] font-medium truncate">
-                        {new Date(request.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(request.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </span>
-                    </div>
-                    <div className="size-1 rounded-full bg-border/60" />
-                    <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-none">
-                      {request.days} {request.days === 1 ? 'Day' : 'Days'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="shrink-0 group-hover:translate-x-1 transition-transform opacity-30 group-hover:opacity-100">
-                   <Plane className="size-4 text-primary" />
-                </div>
-              </div>
-            ))
-          )}
+    <div className="bg-white border border-border/60 rounded-sm p-6 space-y-5 h-full animate-fade-in shadow-sm">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Upcoming Leave</h3>
+          <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em]">Activity Pipeline</p>
+        </div>
+        <div className="size-8 rounded-sm bg-primary/[0.05] text-primary flex items-center justify-center border border-primary/10">
+           <Plane className="size-4" />
         </div>
       </div>
-    </PageSection>
+
+      <div className="space-y-2 max-h-[300px] overflow-y-auto scrollbar-hide">
+        {activeRequests.length === 0 ? (
+          <div className="py-8 text-center flex flex-col items-center gap-2 opacity-20">
+             <CalendarDays className="size-6" />
+             <p className="text-[10px] font-black uppercase tracking-widest">No scheduled departures</p>
+          </div>
+        ) : (
+          activeRequests.map((request) => (
+            <div 
+              key={request.id} 
+              className={cn(
+                "p-3 rounded-sm border transition-all duration-200 flex items-start gap-3",
+                request.status === "PENDING" 
+                  ? "bg-amber-500/[0.02] border-amber-500/10" 
+                  : "bg-emerald-500/[0.02] border-emerald-500/10"
+              )}
+            >
+              <div className={cn(
+                "size-8 rounded-sm flex items-center justify-center shrink-0 border",
+                request.status === "PENDING" ? "bg-amber-500/10 text-amber-600 border-amber-500/10" : "bg-emerald-500/10 text-emerald-600 border-emerald-500/10"
+              )}>
+                {request.status === "PENDING" ? <Hourglass className="size-4" /> : <CheckCircle2 className="size-4" />}
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-1.5 mb-0.5">
+                  <span className="font-bold text-[12px] text-foreground truncate">{request.category}</span>
+                  <span className={cn(
+                    "text-[9px] font-black uppercase tracking-tighter",
+                    request.status === "PENDING" ? "text-amber-600" : "text-emerald-600"
+                  )}>
+                    {request.status === "PENDING" ? "Pending" : "Confirmed"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                   <p className="text-[10px] font-bold text-muted-foreground/50 leading-none">
+                     {new Date(request.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - {new Date(request.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                   </p>
+                   <div className="size-0.5 rounded-full bg-border/40" />
+                   <span className="text-[9px] font-black text-primary uppercase tracking-widest">
+                     {request.days} {request.days === 1 ? 'Day' : 'Days'}
+                   </span>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
   );
 }
 

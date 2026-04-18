@@ -43,115 +43,101 @@ export function AttendanceHistoryTable({ logs }: AttendanceHistoryTableProps) {
   }, [logs, searchTerm]);
 
   return (
-    <div className="space-y-4">
+    <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden animate-fade-in">
       {/* Table Controls */}
-      <div className="px-6 py-5 flex items-center justify-between gap-4 bg-muted/5 border-b border-border/40">
-         <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/40" />
-            <Input 
-              placeholder="Search history..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-11 h-11 bg-background/40 border-border/40 focus:bg-background focus:ring-primary/20 transition-all rounded-xl text-sm"
-            />
-            {searchTerm && (
-              <button 
-                onClick={() => setSearchTerm("")}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
-              >
-                <X className="size-3 text-muted-foreground" />
-              </button>
-            )}
-         </div>
-         <div className="hidden md:block">
-            <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.2em] bg-muted/20 px-3 py-1.5 rounded-full border border-border/20">
-              {filteredLogs.length} Records Found
-            </span>
-         </div>
+      <div className="px-5 py-4 flex items-center justify-between gap-4 border-b border-border/40">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/30" />
+          <Input
+            placeholder="Search session log..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 h-9 border-border/60 focus:ring-primary/10 transition-all rounded-sm text-xs bg-muted/5 focus:bg-white"
+          />
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest px-2 py-1 rounded-sm border border-border/40">
+            {filteredLogs.length} Records
+          </span>
+        </div>
       </div>
 
       {filteredLogs.length === 0 ? (
-        <div className="py-24 animate-fade-in text-center">
-          <EmptyState
-            title="No records found"
-            description="We couldn't find any attendance logs matching your search."
-            icon={Search}
-          />
+        <div className="py-20 text-center flex flex-col items-center gap-2 opacity-20">
+          <Search className="size-8" />
+          <p className="text-[10px] font-black uppercase tracking-widest">No matching history</p>
         </div>
       ) : (
         <div className="overflow-x-auto scrollbar-hide">
           <Table>
             <TableHeader className="bg-muted/5">
-              <TableRow className="border-b border-border/40 hover:bg-transparent">
-                <TableHead className="py-5 px-6 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70 w-[200px]">Work Date</TableHead>
-                <TableHead className="py-5 px-6 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70">Punch In</TableHead>
-                <TableHead className="py-5 px-6 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70">Punch Out</TableHead>
-                <TableHead className="py-5 px-6 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70">Location</TableHead>
-                <TableHead className="py-5 px-6 font-black text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70 text-right">Status</TableHead>
+              <TableRow className="border-b border-border/60 hover:bg-transparent">
+                <TableHead className="py-4 px-6 font-black text-[10px] uppercase tracking-[0.1em] text-muted-foreground/40 w-[180px]">Date Identity</TableHead>
+                <TableHead className="py-4 px-4 font-black text-[10px] uppercase tracking-[0.1em] text-muted-foreground/40">Check In</TableHead>
+                <TableHead className="py-4 px-4 font-black text-[10px] uppercase tracking-[0.1em] text-muted-foreground/40">Check Out</TableHead>
+                <TableHead className="py-4 px-4 font-black text-[10px] uppercase tracking-[0.1em] text-muted-foreground/40">Location Hub</TableHead>
+                <TableHead className="py-4 px-6 font-black text-[10px] uppercase tracking-[0.1em] text-muted-foreground/40 text-right">Protocol Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredLogs.map((log) => (
-                <TableRow key={log.id} className="hover:bg-primary/2 transition-colors border-b border-border/40 last:border-0 group">
-                  <TableCell className="py-5 px-6">
-                    <div className="flex items-center gap-4">
-                      <div className="size-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary/10 transition-all duration-300 border border-primary/10">
-                        <Calendar className="size-5" />
+                <tr key={log.id} className="hover:bg-muted/5 transition-colors border-b border-border/20 last:border-0 group">
+                  <td className="py-3 px-6">
+                    <div className="flex items-center gap-3">
+                      <div className="size-8 rounded-sm bg-muted/20 text-muted-foreground/40 flex items-center justify-center border border-border/40 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
+                        <Calendar className="size-3.5" />
                       </div>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-bold text-sm text-foreground">
-                          {new Date(log.date).toLocaleDateString('en-US', {
+                      <div className="flex flex-col">
+                        <span className="font-bold text-[11px] text-foreground/70">
+                          {new Date(log.date).toLocaleDateString('en-GB', {
                             weekday: 'short',
-                            month: 'short',
-                            day: 'numeric'
+                            day: 'numeric',
+                            month: 'short'
                           })}
                         </span>
-                        <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest opacity-60">
-                          {new Date(log.date).getFullYear()}
-                        </span>
                       </div>
                     </div>
-                  </TableCell>
-                  <TableCell className="py-2.5 px-6">
+                  </td>
+                  <td className="py-3 px-4">
                     <div className="flex items-center gap-1.5 min-w-[70px]">
-                      <Clock className="size-3 text-emerald-500/70" />
-                      <span className="font-mono text-[11px] font-bold text-foreground">
-                        {log.punchIn ? new Date(log.punchIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : "---"}
+                      <Clock className="size-3 text-muted-foreground/20" />
+                      <span className="text-[11px] font-bold text-foreground/60 tabular-nums">
+                        {log.punchIn ? new Date(log.punchIn).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : "---"}
                       </span>
                     </div>
-                  </TableCell>
-                  <TableCell className="py-2.5 px-6">
+                  </td>
+                  <td className="py-3 px-4">
                     <div className="flex items-center gap-1.5 min-w-[70px]">
-                      <Clock className="size-3 text-amber-500/70" />
-                      <span className="font-mono text-[11px] font-bold text-foreground">
-                        {log.punchOut ? new Date(log.punchOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : "---"}
+                      <Clock className="size-3 text-muted-foreground/20" />
+                      <span className="text-[11px] font-bold text-foreground/60 tabular-nums">
+                        {log.punchOut ? new Date(log.punchOut).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : "---"}
                       </span>
                     </div>
-                  </TableCell>
-                  <TableCell className="py-2.5 px-6">
+                  </td>
+                  <td className="py-3 px-4">
                     {log.isOutsideOffice ? (
-                      <div className="flex items-center gap-2 text-[10px] font-black text-rose-500 uppercase tracking-widest transition-opacity group-hover:opacity-100 opacity-70">
-                        <MapPin className="size-3" /> External
-                      </div>
+                      <span className="text-[9px] font-black text-rose-500/60 uppercase tracking-widest flex items-center gap-1.5">
+                        <MapPin className="size-2.5" /> External
+                      </span>
                     ) : (
-                      <div className="flex items-center gap-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest transition-opacity group-hover:opacity-100 opacity-70">
-                        <MapPin className="size-3" /> Office
-                      </div>
+                      <span className="text-[9px] font-black text-emerald-500/60 uppercase tracking-widest flex items-center gap-1.5">
+                        <MapPin className="size-2.5" /> Site Office
+                      </span>
                     )}
-                  </TableCell>
-                  <TableCell className="py-2.5 px-6 text-right">
-                    <div className="flex justify-end items-center gap-2.5">
+                  </td>
+                  <td className="py-3 px-6 text-right">
+                    <div className="flex justify-end items-center gap-2">
                       {log.isAutoPunchOut && (
-                        <StatusBadge status="error" label="Auto" size="sm" withDot={false} animated className="font-black px-2 text-[8px] h-5" />
+                        <div className="px-1.5 py-0.5 rounded-sm bg-rose-500/10 text-rose-600 text-[8px] font-bold uppercase border border-rose-500/10">Auto</div>
                       )}
                       {log.isLate ? (
-                        <StatusBadge status="warning" label="Late" size="sm" withDot={true} className="font-black px-2.5 text-[8px] h-5 shadow-sm border border-amber-500/10" />
+                        <div className="px-1.5 py-0.5 rounded-sm bg-amber-500/10 text-amber-600 text-[8px] font-bold uppercase border border-amber-500/10">Delayed</div>
                       ) : (
-                        <StatusBadge status="success" label="On Time" size="sm" withDot={true} className="font-black px-2.5 text-[8px] h-5 shadow-sm border border-emerald-500/10" />
+                        <div className="px-1.5 py-0.5 rounded-sm bg-emerald-500/10 text-emerald-600 text-[8px] font-bold uppercase border border-emerald-500/10">Session Match</div>
                       )}
                     </div>
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
               ))}
             </TableBody>
           </Table>

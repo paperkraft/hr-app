@@ -1,9 +1,8 @@
 "use client";
 
 import React from "react";
-import { Bell, CheckCircle2, AlertCircle, Info, Clock, ArrowRight } from "lucide-react";
+import { Bell, CheckCircle2, AlertCircle, Info, Clock, ArrowRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PageSection } from "@/components/ui";
 import Link from "next/link";
 
 interface Notification {
@@ -18,22 +17,22 @@ interface Notification {
 const mockNotifications: Notification[] = [
   {
     id: "1",
-    title: "Leave Request Approved",
-    description: "Your request for March 25-26 has been approved by HR.",
+    title: "Leave Status Updated",
+    description: "Your session for Q3 has been approved by the planning committee.",
     time: "2 HOURS AGO",
     type: "success",
   },
   {
     id: "2",
-    title: "Attendance Reminder",
-    description: "Please remember to clock out at the end of your shift today.",
+    title: "Protocol Reminder",
+    description: "Please ensure manual check-out is performed by 18:00 today.",
     time: "5 HOURS AGO",
     type: "warning",
   },
   {
     id: "3",
-    title: "New Policy Update",
-    description: "The revised remote work policy is now available in the employee handbook.",
+    title: "New Policy Cluster",
+    description: "The revised remote framework is now active in the central repository.",
     time: "1 DAY AGO",
     type: "info",
   }
@@ -41,63 +40,71 @@ const mockNotifications: Notification[] = [
 
 export function NotificationCenter({ className }: { className?: string }) {
   return (
-    <PageSection
-      title="Notifications"
-      description="Stay updated with your latest HR and attendance alerts."
-      className={cn("animate-fade-in-up h-full shadow-xl border-border/40", className)}
-      noPadding
-    >
-      <div className="flex flex-col flex-1 h-full bg-gradient-to-br from-background to-muted/20">
-        <div className="divide-y divide-border/40 flex-1">
-          {mockNotifications.map((notif) => (
-            <div 
-              key={notif.id} 
-              className={cn(
-                "p-4 flex items-start gap-4 hover:bg-muted/10 transition-colors group cursor-pointer",
-                !notif.isRead && "bg-primary/[0.01]"
-              )}
-            >
-              <div className={cn(
-                "p-2 rounded-xl mt-0.5 shrink-0 transition-transform group-hover:scale-110",
-                notif.type === "success" && "bg-emerald-100/50 text-emerald-600 dark:bg-emerald-950/30",
-                notif.type === "warning" && "bg-amber-100/50 text-amber-600 dark:bg-amber-950/30",
-                notif.type === "info" && "bg-blue-100/50 text-blue-600 dark:bg-blue-950/30",
-                notif.type === "error" && "bg-rose-100/50 text-rose-600 dark:bg-rose-950/30",
-              )}>
-                {notif.type === "success" && <CheckCircle2 className="size-4" />}
-                {notif.type === "warning" && <AlertCircle className="size-4" />}
-                {notif.type === "info" && <Info className="size-4" />}
-                {notif.type === "error" && <AlertCircle className="size-4" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <p className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
-                    {notif.title}
-                  </p>
-                  {!notif.isRead && <div className="size-1.5 rounded-full bg-primary shrink-0" />}
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                  {notif.description}
+    <div className={cn("bg-white border border-border/60 rounded-sm flex flex-col h-full animate-fade-in shadow-sm overflow-hidden", className)}>
+      {/* Widget Header */}
+      <div className="p-6 pb-2 flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Notifications</h3>
+          <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em]">Contextual Feed</p>
+        </div>
+        <div className="size-8 rounded-sm bg-primary/[0.05] text-primary flex items-center justify-center border border-primary/10 relative">
+           <Bell className="size-4" />
+           <div className="absolute -top-0.5 -right-0.5 size-2 bg-rose-500 rounded-full border border-white" />
+        </div>
+      </div>
+
+      <div className="flex-1 px-3 py-2 space-y-0.5">
+        {mockNotifications.map((notif) => (
+          <div 
+            key={notif.id} 
+            className={cn(
+              "p-3 flex items-start gap-3 hover:bg-muted/5 transition-all duration-200 rounded-sm cursor-pointer group/item",
+              !notif.isRead && "bg-primary/[0.01]"
+            )}
+          >
+            <div className={cn(
+              "p-2 rounded-sm shrink-0 border transition-colors",
+              notif.type === "success" && "bg-emerald-500/5 text-emerald-600 border-emerald-500/10",
+              notif.type === "warning" && "bg-amber-500/5 text-amber-600 border-amber-500/10",
+              notif.type === "info" && "bg-sky-500/5 text-sky-600 border-sky-500/10",
+              notif.type === "error" && "bg-rose-500/5 text-rose-600 border-rose-500/10",
+            )}>
+              {notif.type === "success" && <CheckCircle2 className="size-3.5" />}
+              {notif.type === "warning" && <AlertCircle className="size-3.5" />}
+              {notif.type === "info" && <Sparkles className="size-3.5" />}
+              {notif.type === "error" && <AlertCircle className="size-3.5" />}
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-1.5 mb-0.5">
+                <p className="text-[12px] font-bold text-foreground truncate group-hover/item:text-primary transition-colors">
+                  {notif.title}
                 </p>
-                <div className="flex items-center gap-2 mt-2">
-                   <Clock className="size-3 text-muted-foreground/50" />
-                   <span className="text-[9px] text-muted-foreground/60 font-black uppercase tracking-widest">
-                    {notif.time}
-                  </span>
-                </div>
+                {!notif.isRead && <div className="size-1 rounded-full bg-primary" />}
+              </div>
+              <p className="text-[10px] text-muted-foreground leading-snug line-clamp-1 pr-2">
+                {notif.description}
+              </p>
+              <div className="flex items-center gap-1.5 mt-1.5 opacity-40">
+                 <Clock className="size-2.5 text-muted-foreground" />
+                 <span className="text-[9px] text-muted-foreground font-black uppercase tracking-tight">
+                  {notif.time}
+                </span>
               </div>
             </div>
-          ))}
-        </div>
-        
+          </div>
+        ))}
+      </div>
+      
+      <div className="p-4 pt-1">
         <Link 
           href="#" 
-          className="p-4 flex items-center justify-center gap-2 text-[10px] font-black text-primary hover:bg-primary/5 transition-colors border-t border-border/40 uppercase tracking-[0.2em]"
+          className="w-full py-2.5 rounded-sm flex items-center justify-center gap-2 text-[10px] font-black text-primary bg-primary/[0.02] border border-primary/5 hover:bg-primary/[0.05] transition-all duration-200 uppercase tracking-widest"
         >
-          View All Notifications
+          Audit Timeline
           <ArrowRight className="size-3" />
         </Link>
       </div>
-    </PageSection>
+    </div>
   );
 }

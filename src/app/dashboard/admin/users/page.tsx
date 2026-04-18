@@ -1,9 +1,10 @@
-import { MapPin, Globe, Laptop, Users } from "lucide-react";
+import { MapPin, Globe, Laptop, Users, Search, Filter, ArrowUpDown, Plus, MoreVertical } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { AddUserDialog } from "@/components/features/admin/add-user-dialog";
 import { EditUserDialog } from "@/components/features/admin/edit-user-dialog";
 import { DeleteUserButton } from "@/components/features/admin/delete-user-button";
-import { PageContainer, PageHeader, StatusBadge } from "@/components/ui";
+import { PageContainer, PageHeader, StatusBadge, Input, Button } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 export const dynamic = 'force-dynamic';
 
@@ -39,47 +40,14 @@ export default async function AdminUsersPage() {
     orderBy: { name: 'asc' }
   });
 
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case "ADMIN":
-        return <StatusBadge status="warning" label="Admin" size="sm" className="font-black uppercase tracking-widest px-2.5 h-6 text-[9px] shadow-sm" />;
-      case "ACCOUNTANT":
-        return <StatusBadge status="info" label="Accountant" size="sm" className="font-black uppercase tracking-widest px-2.5 h-6 text-[9px] shadow-sm" />;
-      default:
-        return <StatusBadge status="success" label="Employee" size="sm" className="font-black uppercase tracking-widest px-2.5 h-6 text-[9px] shadow-sm" />;
-    }
-  };
-
-  const getWorkModeBadge = (mode: string) => {
-    switch (mode) {
-      case "REMOTE":
-        return (
-          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-500/5 text-blue-600 border border-blue-500/10 text-[9px] font-black uppercase tracking-widest">
-            <Laptop className="size-3" /> Remote
-          </div>
-        );
-      case "HYBRID":
-        return (
-          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-500/5 text-emerald-600 border border-emerald-500/10 text-[9px] font-black uppercase tracking-widest">
-            <Globe className="size-3" /> Hybrid
-          </div>
-        );
-      default:
-        return (
-          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-500/5 text-slate-600 border border-slate-500/10 text-[9px] font-black uppercase tracking-widest">
-            <MapPin className="size-3" /> On-Site
-          </div>
-        );
-    }
-  };
-
   return (
-    <PageContainer maxWidth="full" className="py-8 animate-fade-in">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-        <PageHeader
-          title="Workforce Directory"
-          description="Provision and manage centralized personnel records for distributed clusters."
-        />
+    <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold text-foreground tracking-tight">People</h1>
+          <p className="text-xs text-muted-foreground font-medium mt-0.5">Manage and collaborate within your organization's teams</p>
+        </div>
         <AddUserDialog
           managers={validManagers}
           departments={departments}
@@ -87,65 +55,87 @@ export default async function AdminUsersPage() {
         />
       </div>
 
-      <div className="premium-card shadow-xl border-border/40 overflow-hidden">
-        <div className="px-6 py-5 bg-primary/2 border-b border-border/40 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <Users className="size-5" />
-            </div>
-            <div className="flex flex-col">
-              <h3 className="text-sm font-black uppercase tracking-widest text-foreground leading-none mb-1">Personnel Records</h3>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight opacity-70">Interactive staff catalog</p>
-            </div>
-          </div>
-          <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-[0.2em] bg-muted/20 px-3 py-1.5 rounded-full border border-border/20">
-            {users.length} Identities Verified
-          </span>
+      {/* Control Bar: Tabs & Search */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        {/* MarcoHR Tabs Style */}
+        <div className="flex items-center gap-1 p-1 bg-muted/30 border border-border/60 rounded-md">
+          {["Active", "Onboarding", "Off-boarding", "Dismissed"].map((tab, i) => (
+            <button
+              key={tab}
+              className={cn(
+                "px-5 py-2 text-[12px] font-bold rounded-sm transition-all duration-200",
+                i === 0 
+                  ? "bg-white text-primary border border-border/80 shadow-sm" 
+                  : "text-muted-foreground/60 hover:text-foreground hover:bg-white/50"
+              )}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
 
+        {/* High-Density Search & Actions */}
+        <div className="flex items-center gap-2">
+          <div className="relative min-w-[280px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/40" />
+            <Input 
+              placeholder="Search people..." 
+              className="h-10 pl-9 bg-white border-border/80 focus:ring-primary/10 rounded-sm text-xs"
+            />
+          </div>
+          <Button variant="outline" className="h-10 px-4 border-border/80 rounded-sm font-bold text-[11px] gap-2 text-muted-foreground/70 hover:text-foreground">
+            <Filter className="size-3.5" /> Filters
+          </Button>
+          <Button variant="outline" className="h-10 px-4 border-border/80 rounded-sm font-bold text-[11px] gap-2 text-muted-foreground/70 hover:text-foreground">
+            <ArrowUpDown className="size-3.5" /> Sort by
+          </Button>
+        </div>
+      </div>
+
+      {/* People Table - Ultra Density */}
+      <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden">
         <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full border-collapse">
-            <thead className="bg-muted/5 border-b border-border/40">
+            <thead className="bg-muted/5 border-b border-border/60">
               <tr>
-                <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Employee Profile</th>
-                <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Framework Role</th>
-                <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Operational Mode</th>
-                <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Primary Location</th>
-                <th className="py-4 px-6 text-right font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Infrastructure</th>
+                <th className="py-4 px-6 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50 w-[300px]">Name</th>
+                <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">Date</th>
+                <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">Job title</th>
+                <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">Employment type</th>
+                <th className="py-4 px-6 text-right text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/20">
               {users.map((user) => (
-                <tr key={user.id} className="hover:bg-primary/2 transition-colors group border-b border-border/10 last:border-0">
-                  <td className="py-2.5 px-6">
-                    <div className="flex items-center gap-4">
-                      <div className="h-9 w-9 rounded-xl bg-primary/5 text-primary flex items-center justify-center font-black uppercase text-[11px] border border-primary/10 shadow-sm group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                        {user.name ? user.name.slice(0, 2) : user.email.slice(0, 2)}
+                <tr key={user.id} className="hover:bg-muted/5 transition-colors group">
+                  <td className="py-3 px-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-muted text-foreground/40 flex items-center justify-center font-bold text-[10px] border border-border/40 overflow-hidden group-hover:bg-primary/5 group-hover:text-primary transition-colors">
+                        {user.name ? user.name.slice(0, 2).toUpperCase() : user.email.slice(0, 2).toUpperCase()}
                       </div>
                       <div className="flex flex-col">
-                        <span className="font-bold text-sm text-foreground leading-tight">{user.name}</span>
-                        <span className="text-[10px] text-muted-foreground font-medium tracking-tight">{user.email}</span>
+                        <span className="font-bold text-xs text-foreground leading-snug group-hover:text-primary transition-colors">{user.name}</span>
+                        <span className="text-[10px] text-muted-foreground font-medium leading-none">{user.email}</span>
                       </div>
                     </div>
                   </td>
-                  <td className="py-2.5 px-6">
-                    {getRoleBadge(user.role)}
+                  <td className="py-3 px-4">
+                    <span className="text-[11px] font-bold text-foreground/70">
+                      {new Date(user.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
                   </td>
-                  <td className="py-2.5 px-6">
-                    {getWorkModeBadge(user.workMode)}
+                  <td className="py-3 px-4">
+                    <span className="text-[11px] font-bold text-foreground/70 tracking-tight">
+                      {user.department?.name || "Unassigned"}
+                    </span>
                   </td>
-                  <td className="py-2.5 px-6">
-                    {user.location ? (
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-xs font-bold text-foreground leading-none">{user.location.name}</span>
-                        {user.location.isRemote && <span className="text-[9px] text-primary/70 font-black uppercase tracking-[0.15em] leading-none mt-1">Remote hub</span>}
-                      </div>
-                    ) : (
-                      <span className="text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest">Global Default</span>
-                    )}
+                  <td className="py-3 px-4">
+                    <span className="text-[11px] font-bold text-foreground/70 tracking-tight">
+                      {user.role === "ADMIN" ? "Corporate Management" : user.role === "ACCOUNTANT" ? "Financial Ops" : "Full-time"}
+                    </span>
                   </td>
-                  <td className="py-2.5 px-6 text-right">
-                    <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <td className="py-3 px-6 text-right">
+                    <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <EditUserDialog
                         user={user}
                         managers={validManagers}
@@ -153,6 +143,9 @@ export default async function AdminUsersPage() {
                         locations={locations}
                       />
                       <DeleteUserButton id={user.id} />
+                      <Button variant="ghost" size="icon" className="size-8 rounded-sm text-muted-foreground/40 hover:text-foreground">
+                        <MoreVertical className="size-4" />
+                      </Button>
                     </div>
                   </td>
                 </tr>

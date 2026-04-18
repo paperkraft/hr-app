@@ -4,8 +4,10 @@ import { ReactNode } from "react";
 interface StatCardProps {
     icon?: ReactNode;
     label: string;
-    title?: string;
     value: string | number;
+    subValue?: string;
+    progress?: number; // 0 to 100
+    progressColor?: string;
     change?: {
         value: number | string;
         trend: "up" | "down" | "neutral";
@@ -17,52 +19,66 @@ interface StatCardProps {
 export function StatCard({
     icon,
     label,
-    title,
     value,
+    subValue,
+    progress,
+    progressColor = "bg-primary",
     change,
     className,
     onClick,
 }: StatCardProps) {
-    const displayTitle = title || label;
-
     return (
         <div
             onClick={onClick}
             className={cn(
-                "premium-card p-6 rounded-lg",
-                onClick && "cursor-pointer hover-lift",
+                "bg-white border border-border/60 rounded-sm shadow-sm p-5 relative overflow-hidden group",
+                onClick && "cursor-pointer hover:bg-muted/5 transition-colors",
                 className
             )}
         >
-            <div className="flex items-start justify-between">
-                <div className="flex-1">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{displayTitle}</p>
-                    <p className="text-3xl font-bold text-foreground mt-2">{value}</p>
-
-                    {change && (
-                        <div className="mt-3 flex items-center gap-1">
-                            <span
-                                className={cn(
-                                    "text-xs font-semibold",
-                                    change.trend === "up"
-                                        ? "text-green-600 dark:text-green-400"
-                                        : change.trend === "down"
-                                            ? "text-red-600 dark:text-red-400"
-                                            : "text-muted-foreground"
-                                )}
-                            >
-                                {change.trend === "up" && "↑"}
-                                {change.trend === "down" && "↓"}
-                                {change.value}
-                            </span>
-                            <span className="text-xs text-muted-foreground">from last period</span>
+            <div className="flex flex-col h-full justify-between gap-3">
+                <div className="flex items-start justify-between w-full">
+                    <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.1em]">{label}</p>
+                    {icon && (
+                        <div className="text-muted-foreground/20 size-6 flex items-center justify-center -mt-0.5 -mr-0.5 transition-colors group-hover:text-primary/30">
+                            {icon}
                         </div>
                     )}
                 </div>
 
-                {icon && (
-                    <div className="text-primary/20 text-4xl flex-shrink-0 ml-4">
-                        {icon}
+                <div className="space-y-0.5">
+                    <p className="text-2xl font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">{value}</p>
+                    {subValue && (
+                        <p className="text-[10px] font-bold text-muted-foreground/60 tracking-tight lowercase first-letter:uppercase">{subValue}</p>
+                    )}
+                </div>
+
+                {change && (
+                    <div className="flex items-center gap-1.5">
+                        <span
+                            className={cn(
+                                "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border",
+                                change.trend === "up"
+                                    ? "text-emerald-600 bg-emerald-500/5 border-emerald-500/10"
+                                    : change.trend === "down"
+                                        ? "text-rose-600 bg-rose-500/5 border-rose-500/10"
+                                        : "text-muted-foreground bg-muted/5 border-border/40"
+                            )}
+                        >
+                            {change.trend === "up" && "↑ "}
+                            {change.trend === "down" && "↓ "}
+                            {change.value}
+                        </span>
+                        <span className="text-[9px] text-muted-foreground/50 font-black uppercase tracking-widest">Variation</span>
+                    </div>
+                )}
+
+                {progress !== undefined && (
+                    <div className="w-full h-1.5 bg-muted/20 rounded-full overflow-hidden mt-2">
+                        <div 
+                            className={cn("h-full transition-all duration-1000 ease-out rounded-full", progressColor)}
+                            style={{ width: `${progress}%` }}
+                        />
                     </div>
                 )}
             </div>

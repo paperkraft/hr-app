@@ -1,4 +1,4 @@
-import { PunchCard } from "@/components/features/attendance/punch-card";
+import { AttendanceCard } from "@/components/features/attendance/punch-card";
 import { RequestLeaveButton } from "@/components/features/leave/request-leave-button";
 import { AllowanceRequestDialog } from "@/components/features/leave/allowance-request-dialog";
 import { DashboardTabs } from "@/components/features/dashboard/dashboard-tabs";
@@ -43,9 +43,9 @@ async function getEmployeeData() {
     where: { userId: session.user.id, date: { gte: start, lte: end } }
   });
 
-  let attendanceStatus: "PENDING" | "PUNCHED_IN" | "PUNCHED_OUT" = "PENDING";
+  let sessionStatus: "PENDING" | "PUNCHED_IN" | "PUNCHED_OUT" = "PENDING";
   if (todaysLog) {
-    attendanceStatus = todaysLog.punchOut ? "PUNCHED_OUT" : "PUNCHED_IN";
+    sessionStatus = todaysLog.punchOut ? "PUNCHED_OUT" : "PUNCHED_IN";
   }
 
   const leaveRequests = await prisma.leaveRequest.findMany({
@@ -114,7 +114,7 @@ async function getEmployeeData() {
 
   return {
     userName: user?.name || "Employee",
-    attendanceStatus,
+    sessionStatus,
     autoPunchOutCount: user?.autoPunchOutCount ?? 0,
     balances: {
       casualTaken,
@@ -139,15 +139,15 @@ export default async function EmployeeDashboard() {
   const greeting = currentHour < 12 ? "Good morning" : currentHour < 18 ? "Good afternoon" : "Good evening";
 
   return (
-    <PageContainer maxWidth="full" className="py-8">
+    <PageContainer maxWidth="full" className="py-8 animate-fade-in">
       {/* Header Section */}
-      <div className="space-y-6 mb-8">
+      <div className="space-y-4 mb-8">
         <PageHeader
           title={`${greeting}, ${data.userName.split(' ')[0]} 👋`}
-          description="Manage your attendance and leave requests from one place."
-          breadcrumb={<span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">Dashboard / Home</span>}
+          description="Manage your work sessions and leave strategies from a centralized viewport."
+          breadcrumb={<span className="text-[10px] font-black text-primary/60 uppercase tracking-[0.1em]">Dashboard / Framework</span>}
           action={
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <AllowanceRequestDialog />
               <RequestLeaveButton />
             </div>
@@ -159,8 +159,8 @@ export default async function EmployeeDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Top Priority: Attendance & Leave Status */}
         <div className="lg:col-span-5 xl:col-span-4 h-full">
-          <PunchCard
-            initialStatus={data.attendanceStatus}
+          <AttendanceCard
+            initialStatus={data.sessionStatus}
             autoPunchOutCount={data.autoPunchOutCount}
             warningThreshold={3}
           />
@@ -177,17 +177,15 @@ export default async function EmployeeDashboard() {
         <div className="lg:col-span-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
              <UpcomingLeave requests={data.leaveRequests.map(r => ({
-              id: r.id,
-              category: r.category === "MONTHLY_POLICY_1" ? (r.leaveType === "CASUAL" ? "Casual" : "Sick") : "Paid",
-              startDate: r.startDate,
-              endDate: r.endDate,
-              status: r.status,
-              days: Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
-            }))} />
+               id: r.id,
+               category: r.category === "MONTHLY_POLICY_1" ? (r.leaveType === "CASUAL" ? "Casual" : "Sick") : "Paid",
+               startDate: r.startDate,
+               endDate: r.endDate,
+               status: r.status,
+               days: Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
+             }))} />
             <TeamOnLeave members={data.teamOnLeave} />
           </div>
-          
-          {/* Recent History or other metrics could go here */}
         </div>
 
         {/* Sidebar: Notifications & Information */}

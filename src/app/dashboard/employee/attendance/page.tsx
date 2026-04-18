@@ -4,7 +4,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Download,
-  Activity,
+  CalendarDays,
 } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
@@ -13,9 +13,6 @@ import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   PageContainer,
-  PageHeader,
-  PageSection,
-  Grid,
   StatCard,
 } from "@/components/ui";
 import { AttendanceHistoryTable } from "@/components/features/dashboard/attendance-history-table";
@@ -48,74 +45,72 @@ export default async function AttendanceHistoryPage() {
   const { logs, stats } = await getAttendanceHistory();
 
   return (
-    <PageContainer maxWidth="full" className="py-8 animate-fade-in">
+    <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">
       {/* Header */}
-      <PageHeader
-        title="Session Metrics"
-        description="Comprehensive audit log of infrastructure synchronization and punctuality."
-        breadcrumb={<span className="text-[10px] font-black text-primary/60 uppercase tracking-[0.2em]">Framework / Attendance</span>}
-        action={
-          <div className="flex items-center gap-3">
-            <Button variant="outline" className="premium-card h-11 border-border/40 hover:bg-muted/50 text-[10px] font-black uppercase tracking-widest px-6 rounded-xl shadow-sm transition-all active:scale-95">
-              <Download className="size-4 mr-2" />
-              Infrastructure Export
-            </Button>
-            <Button className="h-11 bg-primary hover:bg-primary/90 text-[10px] font-black uppercase tracking-widest px-6 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95">
-              Request Alignment
-            </Button>
-          </div>
-        }
-      />
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-foreground tracking-tight">Attendance History</h1>
+          <p className="text-xs text-muted-foreground font-medium mt-0.5">Audit log of your daily check-in and checkout sessions</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" className="h-9 px-4 border-border/60 hover:bg-muted/5 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all">
+            <Download className="size-3.5 mr-1.5 text-muted-foreground/60" /> Export CSV
+          </Button>
+          <Button className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all">
+            Alignment Request
+          </Button>
+        </div>
+      </div>
 
       {/* Stats Summary */}
-      <Grid cols={4} className="mb-10">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Verified Pulses"
+          label="Total Logs"
           value={stats.totalPunches}
-          icon={<History className="size-8" />}
-          className="premium-card shadow-xl"
+          subValue="All tracked sessions"
+          icon={<History className="size-4" />}
+          progress={100}
+          progressColor="bg-primary"
         />
         <StatCard
-          label="Compliant Sessions"
+          label="On-Time"
           value={stats.onTime}
-          icon={<CheckCircle2 className="size-8 text-emerald-500" />}
-          className="premium-card shadow-xl border-emerald-500/10"
-          change={{ value: "Regularity: High", trend: "up" }}
+          subValue="Compliant arrivals"
+          icon={<CheckCircle2 className="size-4" />}
+          progress={stats.totalPunches > 0 ? (stats.onTime / stats.totalPunches) * 100 : 0}
+          progressColor="bg-emerald-500"
         />
         <StatCard
-          label="Temporal Anomalies"
+          label="Late Arrivals"
           value={stats.late}
-          icon={<Clock className="size-8 text-amber-500" />}
-          className="premium-card shadow-xl border-amber-500/10"
-          change={{ value: "Threshold: Minor", trend: "down" }}
+          subValue="Delayed check-ins"
+          icon={<Clock className="size-4" />}
+          progress={stats.totalPunches > 0 ? (stats.late / stats.totalPunches) * 100 : 0}
+          progressColor="bg-amber-500"
         />
         <StatCard
-          label="Autonomous Closures"
+          label="Auto Checkout"
           value={stats.autoPunchOuts}
-          icon={<AlertCircle className="size-8 text-rose-500" />}
-          className="premium-card shadow-xl border-rose-500/10"
-          change={{ value: "Policy Target", trend: "neutral" }}
+          subValue="System closures"
+          icon={<AlertCircle className="size-4" />}
+          progress={stats.totalPunches > 0 ? (stats.autoPunchOuts / stats.totalPunches) * 100 : 0}
+          progressColor="bg-rose-500"
         />
-      </Grid>
+      </div>
 
-      {/* Main Logs Section */}
-      <div className="premium-card shadow-xl border-border/40 overflow-hidden">
-        <div className="px-6 py-5 bg-primary/2 border-b border-border/40 flex items-center justify-between">
-           <div className="flex items-center gap-3">
-              <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                 <Activity className="size-5" />
-              </div>
-              <div className="flex flex-col">
-                 <h3 className="text-sm font-black uppercase tracking-widest text-foreground leading-none mb-1">Operational Activity</h3>
-                 <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight opacity-70">Filtered Registry (Last 50)</p>
-              </div>
-           </div>
+      {/* Main Table Section */}
+      <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden animate-fade-in">
+        <div className="px-5 py-4 border-b border-border/40 bg-muted/5 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">Session Logs</h3>
+            <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Recent operational activity registry</p>
+          </div>
+          <CalendarDays className="size-4 text-muted-foreground/20" />
         </div>
-        <div className="p-1">
+        <div className="p-0">
           <AttendanceHistoryTable logs={logs} />
         </div>
       </div>
     </PageContainer>
   );
 }
-

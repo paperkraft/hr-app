@@ -3,44 +3,38 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { FileText, CheckCircle2, Settings } from "lucide-react";
+import { FileText, CheckCircle2 } from "lucide-react";
 
 export function AccountantTabs() {
   const searchParams = useSearchParams();
   const currentTab = searchParams.get("tab") || "report";
 
   const tabs = [
-    {
-      id: "report",
-      name: "Master Report",
-      icon: FileText,
-      href: "?tab=report",
-    },
-    {
-      id: "approvals",
-      name: "Recent Approvals",
-      icon: CheckCircle2,
-      href: "?tab=approvals",
-    },
+    { id: "report", name: "Master Report", icon: FileText, href: "?tab=report" },
+    { id: "approvals", name: "History & Approvals", icon: CheckCircle2, href: "?tab=approvals" },
   ];
 
   return (
-    <div className="w-full overflow-x-auto scrollbar-hide mb-8">
-      <div className="flex items-center gap-1 bg-muted/30 p-1 rounded-xl w-fit border border-border/40 min-w-max">
+    <div className="w-full overflow-x-auto scrollbar-hide mb-6">
+      <div className="flex items-center gap-1 bg-muted/10 p-1 rounded-sm w-fit border border-border/60 min-w-max">
         {tabs.map((tab) => {
           const isActive = currentTab === tab.id;
+          const href = tab.href +
+            (searchParams.get("m") ? `&m=${searchParams.get("m")}` : "") +
+            (searchParams.get("y") ? `&y=${searchParams.get("y")}` : "");
+
           return (
             <Link
               key={tab.id}
-              href={tab.href}
+              href={href}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap",
+                "flex items-center gap-2 h-8 px-4 rounded-sm text-[11px] font-bold uppercase tracking-widest transition-all duration-200 whitespace-nowrap",
                 isActive
-                  ? "bg-background text-primary shadow-sm ring-1 ring-border/20"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  ? "bg-white text-primary shadow-sm border border-border/60"
+                  : "text-muted-foreground/60 hover:text-foreground hover:bg-white/50"
               )}
             >
-              <tab.icon className={cn("size-4", isActive ? "text-primary" : "text-muted-foreground")} />
+              <tab.icon className={cn("size-3.5", isActive ? "text-primary" : "text-muted-foreground/30")} />
               {tab.name}
             </Link>
           );

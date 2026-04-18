@@ -4,7 +4,6 @@ import { punchInOutAction } from "@/actions/attendance";
 import { Button } from "@/components/ui/button";
 import { Clock, CheckCircle2, Loader2, AlertCircle, LogIn, LogOut } from "lucide-react";
 import { toast } from "sonner";
-import { StatusBadge, Divider } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 interface AttendanceCardProps {
@@ -55,7 +54,7 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
       if (result.success) {
         setStatus(targetStatus);
         toast.success(`Session ${targetStatus === "PUNCHED_IN" ? "started" : "ended"} successfully`);
-        window.location.reload(); // Refresh to update policy state
+        window.location.reload(); 
       } else {
         toast.error("Process failed: " + result.error);
       }
@@ -70,28 +69,28 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
           <Clock className="size-32" />
         </div>
 
-        <div className="flex flex-col items-center gap-1.5 pt-4">
-          <div className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.1em]">
-            Operational Time
+        <div className="flex flex-col items-center gap-1 mt-2">
+          <div className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.2em]">
+            Digital Time
           </div>
-          <div className="text-5xl font-bold tabular-nums tracking-tight text-foreground">
-            {currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "--:--"}
+          <div className="text-5xl font-bold tabular-nums tracking-tighter text-foreground">
+            {currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--"}
           </div>
         </div>
 
         {status === "PUNCHED_OUT" ? (
           <div className="flex flex-col items-center justify-center gap-3 animate-scale-in">
-            <div className="flex items-center gap-2.5 text-emerald-600 bg-emerald-500/5 px-6 py-3 rounded-sm border border-emerald-500/10">
-              <CheckCircle2 className="size-4" />
-              <span className="font-bold text-[11px] uppercase tracking-wide">Shift Finalized</span>
+            <div className="flex items-center gap-2 text-emerald-600 bg-emerald-500/5 px-6 py-2.5 rounded-sm border border-emerald-500/10">
+              <CheckCircle2 className="size-3.5" />
+              <span className="font-black text-[10px] uppercase tracking-widest leading-none">Shift Finalized</span>
             </div>
           </div>
         ) : (
-          <div className="w-full max-w-[220px]">
+          <div className="w-full max-w-[200px]">
             <Button
               size="lg"
               className={cn(
-                "w-full h-14 text-[12px] font-bold uppercase tracking-widest rounded-sm transition-all duration-300 shadow-sm relative overflow-hidden border",
+                "w-full h-12 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-all duration-300 shadow-sm relative overflow-hidden border",
                 status === "PUNCHED_IN"
                   ? "bg-white text-amber-600 border-amber-500/20 hover:bg-amber-500/5"
                   : "bg-primary text-primary-foreground border-transparent hover:bg-primary/95"
@@ -99,9 +98,9 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
               disabled={isPending}
               onClick={handleCheck}
             >
-              <div className="relative flex items-center justify-center gap-3">
+              <div className="relative flex items-center justify-center gap-2.5">
                 {isPending ? (
-                  <Loader2 className="size-5 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" />
                 ) : status === "PENDING" ? (
                   <>
                     <LogIn className="size-4" />
@@ -119,21 +118,22 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
         )}
 
         {status === "PUNCHED_IN" && !isPending && (
-          <div className="animate-fade-in flex items-center gap-2 px-3 py-1.5 rounded-sm bg-emerald-500/5 border border-emerald-500/10">
+          <div className="animate-fade-in flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-emerald-500/5 border border-emerald-500/10">
             <div className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Active Session</span>
+            <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Active Session</span>
           </div>
         )}
-        <div className="h-7" />
+        
+        <div className="flex-1 min-h-[20px]" />
 
         {/* High-Density Warning */}
         {autoPunchOutCount >= warningThreshold && (
-          <div className="w-full bg-rose-500/[0.02] border border-rose-500/10 rounded-sm p-4 flex gap-3 animate-fade-in">
+          <div className="w-full bg-rose-500/[0.02] border border-rose-500/10 rounded-sm p-3.5 flex gap-3 animate-fade-in">
             <AlertCircle className="size-4 text-rose-500 shrink-0 mt-0.5" />
             <div className="space-y-0.5">
-              <p className="text-[10px] font-bold text-rose-600 uppercase tracking-tight">Audit Integrity</p>
-              <p className="text-[10px] text-muted-foreground leading-snug font-medium">
-                Detected <span className="font-bold text-foreground">{autoPunchOutCount}</span> auto-closures. Please ensure manual check-out.
+              <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">System Warning</p>
+              <p className="text-[10px] text-muted-foreground/60 leading-snug font-medium">
+                Detected {autoPunchOutCount} auto-closures. Ensure manual check-out.
               </p>
             </div>
           </div>

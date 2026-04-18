@@ -11,7 +11,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { AlertCircle, CalendarRange, Clock, Sun, Moon } from "lucide-react";
+import { AlertCircle, Clock, Sun, Moon, Send } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const labelClass = "text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50";
+const inputClass = "h-9 bg-muted/5 border-border/60 rounded-sm text-xs font-medium focus:ring-primary/10";
 
 export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,7 +46,6 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
     getSystemConfig().then(setConfig);
   }, []);
 
-  // Sync End Date with Start Date for HALF and SHORT durations
   useEffect(() => {
     if ((selectedDuration === "HALF" || selectedDuration === "SHORT") && startDate) {
       setValue("endDate", startDate);
@@ -59,9 +62,8 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
         toast.error(result.error);
         return;
       }
-
-      toast.success("Leave application submitted successfully!");
-      reset(); // Reset form on success
+      toast.success("Leave application submitted!");
+      reset();
       if (onSuccess) onSuccess();
     } catch (error: any) {
       const msg = error.message || "Failed to submit leave request.";
@@ -72,177 +74,170 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
     }
   };
 
-  const onInvalid = () => {
-    toast.error("Please fill all required fields and provide a valid reason.");
-  };
-
   const semiAnnualEnabled = config?.semiAnnualPolicyEnabled ?? true;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-4 md:space-y-6">
-      {/* Policy Category Selection */}
-      <div className="space-y-3">
-        <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Leave Category</Label>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <label className={`relative flex cursor-pointer rounded-lg border bg-background p-2.5 md:p-3 shadow-sm transition-all ${selectedCategory === "MONTHLY_POLICY_1" ? "border-primary ring-1 ring-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}>
-            <input type="radio" value="MONTHLY_POLICY_1" className="sr-only" {...register("category")} />
-            <div className="flex flex-col">
-              <span className="block text-sm font-semibold">Monthly</span>
-              <span className="mt-0.5 flex items-center text-[10px] text-muted-foreground">Standard 2 + 1 quota.</span>
-            </div>
-          </label>
-
-          {semiAnnualEnabled && (
-            <label className={`relative flex cursor-pointer rounded-lg border bg-background p-2.5 md:p-3 shadow-sm transition-all animate-in fade-in zoom-in duration-300 ${selectedCategory === "SEMI_ANNUAL_POLICY_2" ? "border-amber-500 ring-1 ring-amber-500 bg-amber-500/5" : "border-border hover:bg-muted/50"}`}>
-              <input type="radio" value="SEMI_ANNUAL_POLICY_2" className="sr-only" {...register("category")} />
-              <div className="flex flex-col">
-                <span className="block text-sm font-semibold">Semi-Annual</span>
-                <span className="mt-0.5 flex items-center text-[10px] text-muted-foreground">Cycle based (H1/H2).</span>
-              </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 animate-fade-in">
+      {/* Category Selection */}
+      <div className="space-y-2">
+        <Label className={labelClass}>Leave Category</Label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          {[
+            { id: "MONTHLY_POLICY_1", label: "Monthly", sub: "Standard quota", color: "primary" },
+            ...(semiAnnualEnabled ? [{ id: "SEMI_ANNUAL_POLICY_2", label: "Semi-Annual", sub: "Cycle based", color: "amber-500" }] : []),
+            { id: "UNPAID", label: "Unpaid", sub: "No balance", color: "rose-500" }
+          ].map((cat) => (
+            <label
+              key={cat.id}
+              className={cn(
+                "relative flex flex-col p-2.5 cursor-pointer rounded-sm border transition-all",
+                selectedCategory === cat.id 
+                  ? `border-${cat.color} bg-${cat.color}/5 ring-1 ring-${cat.color}/20` 
+                  : "border-border/60 bg-white hover:bg-muted/5"
+              )}
+            >
+              <input type="radio" value={cat.id} className="sr-only" {...register("category")} />
+              <span className={cn("text-[11px] font-bold", selectedCategory === cat.id ? `text-${cat.color}` : "text-foreground")}>
+                {cat.label}
+              </span>
+              <span className="text-[9px] text-muted-foreground/50 font-medium uppercase tracking-tight">{cat.sub}</span>
             </label>
-          )}
-
-          <label className={`relative flex cursor-pointer rounded-lg border bg-background p-2.5 md:p-3 shadow-sm transition-all ${selectedCategory === "UNPAID" ? "border-rose-500 ring-1 ring-rose-500 bg-rose-500/5" : "border-border hover:bg-muted/50"}`}>
-            <input type="radio" value="UNPAID" className="sr-only" {...register("category")} />
-            <div className="flex flex-col">
-              <span className="block text-sm font-semibold text-rose-600 dark:text-rose-400">Unpaid</span>
-              <span className="mt-0.5 flex items-center text-[10px] text-muted-foreground">No balance required.</span>
-            </div>
-          </label>
+          ))}
         </div>
-        {errors.category && <p className="text-[11px] text-destructive font-medium">{errors.category.message}</p>}
       </div>
 
-      {/* Monthly Leave Type Selection (Sub-category) */}
+      {/* Monthly Sub-category */}
       {selectedCategory === "MONTHLY_POLICY_1" && (
-        <div className="space-y-3 p-4 bg-primary/5 border border-primary/10 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
-          <Label className="text-xs font-bold text-primary flex items-center gap-1.5 uppercase tracking-wider">
-            Monthly Leave Type
-          </Label>
-          <div className="grid grid-cols-2 gap-3">
-            <label className={`relative flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-all ${watch("leaveType") === "CASUAL" ? "border-primary ring-1 ring-primary bg-primary/10 shadow-sm" : "border-border/40 bg-background/50"}`}>
-              <input type="radio" value="CASUAL" className="sr-only" {...register("leaveType")} />
-              <div className="flex flex-col">
-                <span className="text-xs font-bold">Casual Leave</span>
-                <span className="text-[10px] text-muted-foreground font-medium">Standard leave (Unpaid if backdated).</span>
-              </div>
-            </label>
-            <label className={`relative flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-all ${watch("leaveType") === "MEDICAL" ? "border-blue-500 ring-1 ring-blue-500 bg-blue-500/10 shadow-sm" : "border-border/40 bg-background/50"}`}>
-              <input type="radio" value="MEDICAL" className="sr-only" {...register("leaveType")} />
-              <div className="flex flex-col">
-                <span className="text-xs font-bold">Medical Leave</span>
-                <span className="text-[10px] text-muted-foreground">Auto-approved if backdated.</span>
-              </div>
-            </label>
+        <div className="p-3 bg-primary/5 border border-primary/10 rounded-sm space-y-2 animate-in fade-in slide-in-from-top-2">
+          <Label className="text-[9px] font-black text-primary uppercase tracking-widest">Type of Selection</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { id: "CASUAL", label: "Casual", sub: "Regular" },
+              { id: "MEDICAL", label: "Medical", sub: "Sick/Health" }
+            ].map((type) => (
+              <label
+                key={type.id}
+                className={cn(
+                  "relative flex flex-col p-2 cursor-pointer rounded-sm border transition-all",
+                  watch("leaveType") === type.id 
+                    ? "border-primary bg-primary/10" 
+                    : "border-border/40 bg-white/50"
+                )}
+              >
+                <input type="radio" value={type.id} className="sr-only" {...register("leaveType")} />
+                <span className="text-[10px] font-bold">{type.label}</span>
+                <span className="text-[8px] text-muted-foreground/50 uppercase font-bold">{type.sub}</span>
+              </label>
+            ))}
           </div>
-          {errors.leaveType && <p className="text-[11px] text-destructive font-medium">{errors.leaveType.message}</p>}
         </div>
       )}
 
       {/* Duration Selection */}
-      <div className="space-y-3 pt-1 border-t border-border/50">
-        <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Duration</Label>
-        <div className="grid grid-cols-3 gap-3">
+      <div className="space-y-2 pt-1 border-t border-border/20">
+        <Label className={labelClass}>Duration</Label>
+        <div className="grid grid-cols-3 gap-2">
           {["FULL", "HALF", "SHORT"].map((type) => {
             const isDisabled = selectedCategory === "SEMI_ANNUAL_POLICY_2" && type !== "FULL";
             return (
-              <label key={type} className={`relative flex justify-center cursor-pointer rounded-md border py-2.5 px-3 shadow-sm transition-all 
-                ${selectedDuration === type ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-background border-border hover:bg-muted/50"}
-                ${isDisabled ? "opacity-30 cursor-not-allowed bg-secondary" : ""}
-              `}>
+              <label 
+                key={type} 
+                className={cn(
+                  "flex justify-center p-2 cursor-pointer rounded-sm border transition-all text-[10px] font-bold uppercase tracking-widest",
+                  selectedDuration === type ? "bg-primary text-white border-primary" : "bg-white border-border/60 hover:bg-muted/5",
+                  isDisabled && "opacity-30 cursor-not-allowed bg-muted/20"
+                )}
+              >
                 <input type="radio" value={type} disabled={isDisabled} className="sr-only" {...register("duration")} />
-                <span className="text-xs font-bold tracking-tight">{type === "SHORT" ? "Short (2hr)" : type.charAt(0) + type.slice(1).toLowerCase()}</span>
+                {type === "SHORT" ? "Short" : type.toLowerCase()}
               </label>
             );
           })}
         </div>
-        {errors.duration && <p className="text-[11px] text-destructive font-medium">{errors.duration.message}</p>}
       </div>
 
-      {/* HALF Leave Boundary Selection */}
+      {/* Half Session Selection */}
       {selectedDuration === "HALF" && (
-        <div className="space-y-3 p-4 bg-muted/20 border border-border/40 rounded-xl animate-in slide-in-from-top-4 duration-500">
-          <Label className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 uppercase">
-            Which Session?
-          </Label>
-          <div className="grid grid-cols-2 gap-3">
-            <label className={`relative flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-all ${selectedHalf === "FIRST_HALF" ? "border-emerald-500 ring-1 ring-emerald-500 bg-emerald-500/10 shadow-sm" : "border-border/40 bg-background/50"}`}>
-              <input type="radio" value="FIRST_HALF" className="sr-only" {...register("halfDayType")} />
-              <Sun className={`size-4 ${selectedHalf === "FIRST_HALF" ? "text-emerald-500" : "text-muted-foreground"}`} />
-              <div className="flex flex-col">
-                <span className="text-xs font-bold">First Half</span>
-                {config && <span className="text-[9px] text-muted-foreground tabular-nums">Ends at {config.firstHalfEndTime}</span>}
-              </div>
-            </label>
-            <label className={`relative flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-all ${selectedHalf === "SECOND_HALF" ? "border-amber-500 ring-1 ring-amber-500 bg-amber-500/10 shadow-sm" : "border-border/40 bg-background/50"}`}>
-              <input type="radio" value="SECOND_HALF" className="sr-only" {...register("halfDayType")} />
-              <Moon className={`size-4 ${selectedHalf === "SECOND_HALF" ? "text-amber-500" : "text-muted-foreground"}`} />
-              <div className="flex flex-col">
-                <span className="text-xs font-bold">Second Half</span>
-                {config && <span className="text-[9px] text-muted-foreground tabular-nums">Starts at {config.secondHalfStartTime}</span>}
-              </div>
-            </label>
+        <div className="p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-sm space-y-2 animate-in slide-in-from-top-2">
+          <Label className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Select Session</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { id: "FIRST_HALF", label: "First Half", icon: Sun, color: "emerald-500" },
+              { id: "SECOND_HALF", label: "Second Half", icon: Moon, color: "amber-500" }
+            ].map((session) => (
+              <label
+                key={session.id}
+                className={cn(
+                  "flex items-center gap-2 p-2 cursor-pointer rounded-sm border transition-all",
+                  selectedHalf === session.id ? `border-${session.color} bg-${session.color}/10` : "border-border/40 bg-white/50"
+                )}
+              >
+                <input type="radio" value={session.id} className="sr-only" {...register("halfDayType")} />
+                <session.icon className={cn("size-3", selectedHalf === session.id ? `text-${session.color}` : "text-muted-foreground/30")} />
+                <span className="text-[10px] font-bold">{session.label}</span>
+              </label>
+            ))}
           </div>
-          {errors.halfDayType && <p className="text-[11px] text-destructive font-medium">{errors.halfDayType.message}</p>}
         </div>
       )}
 
-      {/* Date Range Selection */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="startDate" className="text-xs font-bold text-muted-foreground uppercase">From</Label>
-          <Input id="startDate" type="date" {...register("startDate")} className="h-10 bg-muted/5 border-border/60" />
-          {errors.startDate && <p className="text-sm text-destructive">{errors.startDate.message}</p>}
+      {/* Date Range */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label className={labelClass}>Starting Date</Label>
+          <Input type="date" {...register("startDate")} className={inputClass} />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="endDate" className="text-xs font-bold text-muted-foreground uppercase">To</Label>
-          <Input id="endDate" type="date" {...register("endDate")} disabled={selectedDuration === "HALF" || selectedDuration === "SHORT"} className="h-10 bg-muted/5 border-border/60" />
-          {errors.endDate && <p className="text-sm text-destructive">{errors.endDate.message}</p>}
+        <div className="space-y-1.5">
+          <Label className={labelClass}>Ending Date</Label>
+          <Input 
+            type="date" 
+            {...register("endDate")} 
+            disabled={selectedDuration === "HALF" || selectedDuration === "SHORT"} 
+            className={cn(inputClass, (selectedDuration === "HALF" || selectedDuration === "SHORT") && "opacity-50")} 
+          />
         </div>
       </div>
 
-      {/* Short Leave Time Windows (Conditional) */}
+      {/* Short Time Windows */}
       {selectedDuration === "SHORT" && (
-        <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300 bg-primary/5 p-4 rounded-xl border border-primary/10">
-          <div className="space-y-2">
-            <Label htmlFor="startTime" className="text-[10px] font-bold text-primary flex items-center gap-1 uppercase"><Clock className="size-3" /> From</Label>
-            <Input id="startTime" type="time" {...register("startTime")} className="h-9 bg-background/50" />
-            {errors.startTime && <p className="text-sm text-destructive text-[10px]">{errors.startTime.message}</p>}
+        <div className="grid grid-cols-2 gap-3 p-3 bg-primary/5 border border-primary/10 rounded-sm animate-in fade-in slide-in-from-top-2">
+          <div className="space-y-1.5">
+            <Label className="text-[9px] font-black text-primary uppercase flex items-center gap-1"><Clock className="size-3" /> Time From</Label>
+            <Input type="time" {...register("startTime")} className="h-8 text-xs bg-white/50" />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="endTime" className="text-[10px] font-bold text-primary flex items-center gap-1 uppercase"><Clock className="size-3" /> To</Label>
-            <Input id="endTime" type="time" {...register("endTime")} className="h-9 bg-background/50" />
-            {errors.endTime && <p className="text-sm text-destructive text-[10px]">{errors.endTime.message}</p>}
+          <div className="space-y-1.5">
+            <Label className="text-[9px] font-black text-primary uppercase flex items-center gap-1"><Clock className="size-3" /> Time To</Label>
+            <Input type="time" {...register("endTime")} className="h-8 text-xs bg-white/50" />
           </div>
         </div>
       )}
 
-      {/* Reason Textarea */}
-      <div className="space-y-2 pt-1 border-t border-border/20">
-        <Label htmlFor="reason" className="text-xs font-bold text-muted-foreground uppercase">Reason for Leave</Label>
+      {/* Reason */}
+      <div className="space-y-1.5 pt-1 border-t border-border/20">
+        <Label className={labelClass}>Brief Statement</Label>
         <Textarea
-          id="reason"
-          placeholder="Briefly explain your reason for requesting leave..."
-          className="min-h-[80px] resize-none bg-muted/5 border-border/60 text-sm"
+          placeholder="Reason for leave..."
+          className="min-h-[80px] bg-muted/5 border-border/60 text-xs rounded-sm resize-none focus:ring-primary/10"
           {...register("reason")}
         />
-        {errors.reason && <p className="text-sm text-destructive">{errors.reason.message}</p>}
       </div>
 
-      {/* Error State */}
+      {/* Errors */}
       {serverError && (
-        <div className="bg-destructive/10 text-destructive text-[11px] p-3 rounded-lg flex items-center gap-2 border border-destructive/20 animate-in shake duration-300">
+        <div className="bg-rose-500/5 text-rose-600 text-[10px] p-2.5 rounded-sm flex items-center gap-2 border border-rose-500/20">
           <AlertCircle className="size-3.5 shrink-0" />
-          <span className="font-semibold">{serverError}</span>
+          <span className="font-bold uppercase tracking-tight">{serverError}</span>
         </div>
       )}
 
-      {/* Submit */}
-      <div className="pt-2">
-        <Button type="submit" className="w-full h-11 rounded-full text-xs font-bold shadow-lg shadow-primary/20 transition-all active:scale-95" disabled={isSubmitting}>
-          {isSubmitting ? "Dispatching Application..." : "Submit Leave Application"}
-        </Button>
-      </div>
+      {/* Submit Button */}
+      <Button 
+        type="submit" 
+        className="w-full h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all" 
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? "Dispatching..." : <><Send className="size-3.5 mr-1.5" /> Submit Application</>}
+      </Button>
     </form>
   );
 }

@@ -4,13 +4,9 @@ import prisma from "@/lib/prisma";
 import { RequestLeaveButton } from "@/components/features/leave/request-leave-button";
 import {
   PageContainer,
-  PageHeader,
-  Grid,
   StatCard,
-  StatusBadge,
-  EmptyState
 } from "@/components/ui";
-import { CalendarRange, History, Clock4, AlertCircle, Calendar } from "lucide-react";
+import { CalendarRange, History, Clock4, AlertCircle, Calendar, MessageSquare } from "lucide-react";
 import { ensureBalance } from "@/actions/leave";
 import { cn } from "@/lib/utils";
 
@@ -54,9 +50,9 @@ async function getLeaveData() {
   return {
     leaves: leaves.map(l => ({
       ...l,
-      startDate: l.startDate.toISOString(),
-      endDate: l.endDate.toISOString(),
-      createdAt: l.createdAt.toISOString()
+      startDate: l.startDate,
+      endDate: l.endDate,
+      createdAt: l.createdAt
     })),
     stats: {
       casualTaken,
@@ -73,88 +69,77 @@ export default async function EmployeeLeavesPage() {
   const data = await getLeaveData();
   if (!data) return null;
 
-  const getStatusVariant = (status: string): "success" | "warning" | "error" | "info" => {
-    switch (status) {
-      case "APPROVED": return "success";
-      case "REJECTED": return "error";
-      case "PENDING": return "warning";
-      default: return "info";
-    }
-  };
-
   return (
-    <PageContainer maxWidth="full" className="py-8 animate-fade-in">
+    <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">
       {/* Header */}
-      <PageHeader
-        title="Leave Optimization"
-        description="Monitor annual allocations and synchronize absence vectors."
-        breadcrumb={<span className="text-[10px] font-black text-primary/60 uppercase tracking-[0.2em]">Framework / Leaves</span>}
-        action={<RequestLeaveButton />}
-      />
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-foreground tracking-tight">My Leaves</h1>
+          <p className="text-xs text-muted-foreground font-medium mt-0.5">Manage your leave applications and track balance history</p>
+        </div>
+        <RequestLeaveButton />
+      </div>
 
-      {/* Stats Summary */}
-      <Grid cols={4} className="mb-10">
+      {/* Stats Summary - High Density Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Casual Allocation"
-          value={data.stats.casualRemaining}
-          icon={<CalendarRange className="size-8" />}
-          change={{ value: `${data.stats.casualTaken} Consumed`, trend: "neutral" }}
-          className="premium-card shadow-xl"
+          label="Casual Leave"
+          value={`${data.stats.casualRemaining} days`}
+          subValue={`${data.stats.casualTaken} days consumed`}
+          icon={<CalendarRange className="size-4" />}
+          progress={Math.round((data.stats.casualTaken / 12) * 100)}
+          progressColor="bg-primary"
         />
         <StatCard
-          label="Medical Strategy"
-          value={data.stats.medicalRemaining}
-          icon={<AlertCircle className="size-8 text-rose-500" />}
-          change={{ value: `${data.stats.medicalTaken} Consumed`, trend: "neutral" }}
-          className="premium-card shadow-xl border-rose-500/10"
+          label="Sick Leave"
+          value={`${data.stats.medicalRemaining} days`}
+          subValue={`${data.stats.medicalTaken} days consumed`}
+          icon={<AlertCircle className="size-4" />}
+          progress={Math.round((data.stats.medicalTaken / 12) * 100)}
+          progressColor="bg-rose-500"
         />
         <StatCard
           label="Pending Sync"
           value={data.stats.pendingCount}
-          icon={<Clock4 className="size-8 text-amber-500" />}
-          change={{ value: "Validating", trend: "neutral" }}
-          className="premium-card shadow-xl border-amber-500/10"
+          subValue="Awaiting approval"
+          icon={<Clock4 className="size-4" />}
+          progress={data.stats.pendingCount > 0 ? 50 : 0}
+          progressColor="bg-amber-500"
         />
         <StatCard
-          label="Historical Total"
+          label="Total History"
           value={data.stats.totalRequests}
-          icon={<History className="size-8 text-blue-500" />}
-          className="premium-card shadow-xl border-blue-500/10"
+          subValue="Life-time requests"
+          icon={<History className="size-4" />}
+          progress={100}
+          progressColor="bg-blue-500"
         />
-      </Grid>
+      </div>
 
       {/* Main Table Section */}
-      <div className="premium-card shadow-xl border-border/40 overflow-hidden">
-        <div className="px-6 py-5 bg-primary/2 border-b border-border/40 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <History className="size-5" />
-            </div>
-            <div className="flex flex-col">
-              <h3 className="text-sm font-black uppercase tracking-widest text-foreground leading-none mb-1">Request History</h3>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight opacity-70">Infrastructure logs</p>
-            </div>
+      <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden animate-fade-in">
+        <div className="px-5 py-4 border-b border-border/40 bg-muted/5 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">Leave History</h3>
+            <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Complete record of applications</p>
           </div>
         </div>
 
         {data.leaves.length === 0 ? (
-          <div className="py-24 text-center">
-            <EmptyState
-              title="No Logic Vectors Found"
-              description="Your leave history registry is currently unprovisioned."
-              icon={Calendar}
-            />
+          <div className="py-20 text-center flex flex-col items-center gap-2 opacity-20">
+            <Calendar className="size-7" />
+            <p className="text-[10px] font-black uppercase tracking-widest">No history found</p>
           </div>
         ) : (
           <div className="overflow-x-auto scrollbar-hide">
             <table className="w-full border-collapse">
               <thead className="bg-muted/5 border-b border-border/40">
                 <tr>
-                  <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em] w-[220px]">Timeline</th>
-                  <th className="py-4 px-6 text-center font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Duration</th>
-                  <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Framework Channel</th>
-                  <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Metadata</th>
-                  <th className="py-4 px-6 text-right font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Protocol Status</th>
+                  <th className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 w-[200px]">Timeline</th>
+                  <th className="py-3 px-4 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Duration</th>
+                  <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Type</th>
+                  <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Reason</th>
+                  <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/20">
@@ -164,64 +149,77 @@ export default async function EmployeeLeavesPage() {
                   const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
                   return (
-                    <tr key={leave.id} className="hover:bg-primary/2 transition-colors border-b border-border/10 last:border-0 group">
-                      <td className="py-3 px-6">
-                        <div className="flex items-center gap-4">
-                          <div className="size-9 rounded-xl bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300 border border-primary/10 shadow-sm">
-                            <CalendarRange className="size-4" />
+                    <tr key={leave.id} className="hover:bg-muted/5 transition-colors group">
+                      {/* Timeline */}
+                      <td className="py-3 px-5">
+                        <div className="flex items-center gap-2.5">
+                          <div className="size-7 rounded-sm bg-primary/5 text-primary flex items-center justify-center border border-primary/10">
+                            <CalendarRange className="size-3.5" />
                           </div>
-                          <div className="flex flex-col">
-                            <span className="font-bold text-sm text-foreground leading-tight">
-                              {start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            </span>
+                          <div>
+                            <p className="text-[11px] font-bold text-foreground leading-none">
+                              {start.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </p>
                             {start.getTime() !== end.getTime() && (
-                              <span className="text-[10px] text-muted-foreground font-black uppercase tracking-tight opacity-60 mt-1">
-                                — {end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                              </span>
+                              <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-tight mt-0.5">
+                                — {end.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </p>
                             )}
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-6 text-center">
-                        <div className="flex flex-col items-center">
-                          <span className="text-[10px] font-black bg-muted/20 px-3 py-1.5 rounded-xl border border-border/20 uppercase tracking-widest leading-none mb-1">
-                            {leave.duration}
+
+                      {/* Duration */}
+                      <td className="py-3 px-4 text-center">
+                        <div className="inline-flex flex-col items-center">
+                          <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest bg-muted/20 px-2 py-0.5 rounded-sm border border-border/20 mb-0.5">
+                            {leave.duration === "FULL" ? "Full day" : leave.duration === "HALF" ? "Half day" : "Short"}
                           </span>
-                          <span className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-widest">{days} {days === 1 ? 'Unit' : 'Units'}</span>
+                          <span className="text-[9px] font-bold text-muted-foreground/40 tabular-nums">
+                            {days} {days === 1 ? 'day' : 'days'}
+                          </span>
                         </div>
                       </td>
-                      <td className="py-3 px-6">
-                        <div className="flex flex-col gap-1.5">
-                          <span className="text-[11px] font-black text-foreground uppercase tracking-tight leading-none mb-1">
-                            {leave.category === "MONTHLY_POLICY_1" ? "Monthly Policy" : leave.category === "UNPAID" ? "Unpaid Base" : "Semi-Annual Framework"}
+
+                      {/* Type */}
+                      <td className="py-3 px-4">
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-bold text-foreground/70 uppercase tracking-tight">
+                            {leave.leaveType === "CASUAL" ? "Casual Leave" : "Sick Leave"}
                           </span>
-                          {leave.leaveType && (
-                            <div className="flex items-center gap-2">
-                              <div className={cn(
-                                "size-1.5 rounded-full shadow-sm",
-                                leave.leaveType === "CASUAL" ? "bg-primary" : "bg-rose-500"
-                              )} />
-                              <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest opacity-60">
-                                {leave.leaveType} STRATEGY
-                              </span>
-                            </div>
-                          )}
+                          <span className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-widest mt-0.5">
+                            {leave.category === "MONTHLY_POLICY_1" ? "Monthly" : leave.category === "UNPAID" ? "Unpaid" : "Policy"}
+                          </span>
                         </div>
                       </td>
-                      <td className="py-3 px-6 max-w-[280px]">
-                        <p className="text-[10px] font-medium text-muted-foreground line-clamp-1 italic opacity-80" title={leave.reason || "N/A"}>
-                          "{leave.reason || "Standard operational requirement"}"
-                        </p>
+
+                      {/* Reason */}
+                      <td className="py-3 px-4 max-w-[200px]">
+                        <div className="flex items-start gap-1.5 group/reason">
+                          <MessageSquare className="size-3 text-muted-foreground/20 mt-0.5" />
+                          <p className="text-[10px] font-medium text-muted-foreground/60 leading-snug line-clamp-2 italic" title={leave.reason || ""}>
+                            {leave.reason || "No reason specified"}
+                          </p>
+                        </div>
                       </td>
-                      <td className="py-3 px-6 text-right">
-                        <div className="flex justify-end">
-                          <StatusBadge
-                            status={getStatusVariant(leave.status)}
-                            label={leave.status}
-                            size="sm"
-                            withDot={true}
-                            className="font-black uppercase tracking-widest px-4 h-7 shadow-sm border-transparent"
-                          />
+
+                      {/* Status - Plain text with dot */}
+                      <td className="py-3 px-5 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <div className={cn(
+                            "size-1.5 rounded-full",
+                            leave.status === "APPROVED" && "bg-emerald-500",
+                            leave.status === "REJECTED" && "bg-rose-500",
+                            leave.status === "PENDING" && "bg-amber-500 animate-pulse"
+                          )} />
+                          <span className={cn(
+                            "text-[9px] font-black uppercase tracking-widest",
+                            leave.status === "APPROVED" && "text-emerald-600",
+                            leave.status === "REJECTED" && "text-rose-600",
+                            leave.status === "PENDING" && "text-amber-600"
+                          )}>
+                            {leave.status}
+                          </span>
                         </div>
                       </td>
                     </tr>

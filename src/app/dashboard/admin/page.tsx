@@ -123,7 +123,7 @@ export default async function AdminOverviewPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-foreground tracking-tight">Admin Overview</h1>
-          <p className="text-xs text-muted-foreground font-medium mt-0.5">Real-time personnel and leave management</p>
+          <p className="text-xs text-muted-foreground font-medium mt-0.5">Real-time workforce and leave management</p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm border border-border/60 bg-white text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest shadow-sm">
           <div className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -178,7 +178,7 @@ export default async function AdminOverviewPage() {
             <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Attendance Pulse</h3>
-                <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em]">Live cluster monitoring</p>
+                <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Live cluster monitoring</p>
               </div>
               <Activity className="size-4 text-muted-foreground/30" />
             </div>
@@ -215,7 +215,7 @@ export default async function AdminOverviewPage() {
                   <div className="p-5 space-y-2">
                     <p className="text-[10px] font-black text-amber-600/60 uppercase tracking-widest mb-3">On Leave Today</p>
                     {stats.onLeaveEmployees.slice(0, 4).map(e => (
-                      <div key={e.id} className="flex items-center justify-between py-2 px-3 rounded-sm bg-amber-500/[0.02] border border-amber-500/10 group hover:border-amber-500/20 transition-colors">
+                      <div key={e.id} className="flex items-center justify-between py-2 px-3 rounded-sm bg-amber-500/2 border border-amber-500/10 group hover:border-amber-500/20 transition-colors">
                         <div className="flex items-center gap-2.5">
                           <div className="size-7 rounded-sm bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-[9px]">
                             {e.name.slice(0, 2).toUpperCase()}
@@ -231,7 +231,7 @@ export default async function AdminOverviewPage() {
                   <div className={cn("p-5 space-y-2", stats.onLeaveEmployees.length > 0 && "border-t border-border/30")}>
                     <p className="text-[10px] font-black text-rose-500/60 uppercase tracking-widest mb-3">Unaccounted</p>
                     {stats.absentEmployees.slice(0, 4).map(e => (
-                      <div key={e.id} className="flex items-center justify-between py-2 px-3 rounded-sm bg-rose-500/[0.02] border border-rose-500/10 group hover:border-rose-500/20 transition-colors">
+                      <div key={e.id} className="flex items-center justify-between py-2 px-3 rounded-sm bg-rose-500/2 border border-rose-500/10 group hover:border-rose-500/20 transition-colors">
                         <div className="flex items-center gap-2.5">
                           <div className="size-7 rounded-sm bg-rose-500/10 text-rose-500 flex items-center justify-center font-bold text-[9px]">
                             {e.name.slice(0, 2).toUpperCase()}
@@ -255,7 +255,7 @@ export default async function AdminOverviewPage() {
             <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Recent Approvals</h3>
-                <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em]">Recent valid departures</p>
+                <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Recent valid departures</p>
               </div>
               <CheckCircle2 className="size-4 text-muted-foreground/30" />
             </div>
@@ -263,12 +263,12 @@ export default async function AdminOverviewPage() {
               <table className="w-full border-collapse">
                 <thead className="bg-muted/5 border-b border-border/40">
                   <tr>
-                    <th className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/40">Personnel</th>
-                    <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/40">Period</th>
-                    <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/40">Category</th>
-                    <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/40">Channel</th>
-                    <th className="py-3 px-4 text-right text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/40">Date</th>
-                    <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/40">Action</th>
+                    <th className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Employee</th>
+                    <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Period</th>
+                    <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Category</th>
+                    <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Channel</th>
+                    <th className="py-3 px-4 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Date</th>
+                    <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/20">
@@ -344,7 +344,7 @@ export default async function AdminOverviewPage() {
               <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Pending Requests</h3>
-                  <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em]">Awaiting action</p>
+                  <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Awaiting action</p>
                 </div>
                 <span className="text-[10px] font-bold text-amber-600 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-sm">
                   {stats.allPendingRequests.length}
@@ -378,7 +378,7 @@ export default async function AdminOverviewPage() {
             <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Monthly Utilization</h3>
-                <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em]">Leave saturation report</p>
+                <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Leave saturation report</p>
               </div>
               <FileText className="size-4 text-muted-foreground/30" />
             </div>

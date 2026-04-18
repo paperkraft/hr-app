@@ -3,23 +3,19 @@
 import { revalidatePath } from "next/cache";
 import { leaveApplicationSchema } from "@/lib/validations/leave";
 import prisma from "@/lib/prisma";
+import { getDaysDifference } from "@/lib/utils";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-function getDaysDifference(start: Date, end: Date) {
-  const startUtc = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
-  const endUtc = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
-  return Math.floor((endUtc - startUtc) / (1000 * 60 * 60 * 24)) + 1;
-}
 
 function getCycleRange(month: number, year: number, startMonth: number = 4) {
   // relativeMonth: 0 means startMonth, 11 means startMonth-1
   const relativeMonth = (month - startMonth + 12) % 12;
   const isH1 = relativeMonth < 6;
-  
+
   const cycleStartMonth = isH1 ? startMonth : ((startMonth + 6) % 12 || 12);
   const cycleEndMonth = isH1 ? ((startMonth + 5) % 12 || 12) : ((startMonth + 11) % 12 || 12);
-  
+
   // If the current month belongs to a cycle that started last year (e.g. Jan in an Oct-Mar cycle)
   const cycleStartedLastYear = month < cycleStartMonth && cycleEndMonth >= month;
   const cycleSpansToNextYear = cycleEndMonth < cycleStartMonth;
@@ -52,11 +48,11 @@ async function getCyclePendingDays(userId: string, cycleStart: Date, cycleEnd: D
 
 /**
  * POLICY CONSTANTS
- * Casual (P1): 12 days/year -> 1.0/month. 1.0 max CF. 1 short leave per month.
- * Medical (P2): 12 days/year -> 6.0/half-year.
+ * Casual (P1): 24 days/year -> 2.0/month. 1.0 max CF. 1 short leave per month.
+ * Medical (P2): 6 days/year -> 3.0/half-year.
  */
-const CASUAL_ACCRUAL = 1.0;
-const SICK_ACCRUAL_SEMI = 6.0;
+const CASUAL_ACCRUAL = 2.0;
+const SICK_ACCRUAL_SEMI = 3.0;
 const MAX_CARRY_FORWARD = 1.0;
 
 function round(val: number): number {
@@ -92,42 +88,42 @@ export async function ensureBalance(userId: string, month: number, year: number,
 
   if (lastRecord) {
     const isConsecutive = (lastRecord.year === year && lastRecord.month === month - 1) ||
-                          (lastRecord.year === year - 1 && lastRecord.month === 12 && month === 1);
+      (lastRecord.year === year - 1 && lastRecord.month === 12 && month === 1);
 
     if (isConsecutive) {
-       // Roll over Casual leaves with the 1.0 CF limit
-       if (lastRecord.carriedForward === 0 && lastRecord.encashed === 0 && lastRecord.remainingFull > 0) {
-         const rem = round(lastRecord.remainingFull);
-         carryForwardToNew = Math.min(rem, MAX_CARRY_FORWARD);
-         const encash = round(rem - carryForwardToNew);
-         
-         await prisma.leaveBalance.update({
-           where: { id: lastRecord.id },
-           data: { carriedForward: carryForwardToNew, encashed: encash }
-         });
-       } else {
-         carryForwardToNew = Number(lastRecord.carriedForward);
-       }
+      // Roll over Casual leaves with the 1.0 CF limit
+      if (lastRecord.carriedForward === 0 && lastRecord.encashed === 0 && lastRecord.remainingFull > 0) {
+        const rem = round(lastRecord.remainingFull);
+        carryForwardToNew = Math.min(rem, MAX_CARRY_FORWARD);
+        const encash = round(rem - carryForwardToNew);
 
-       // Roll over Medical pool if still in cycle
-       const getCycleString = (m: number, y: number, sM: number) => {
-         const rel = (m - sM + 12) % 12;
-         const h = rel < 6 ? "H1" : "H2";
-         const sy = (m < sM && (sM + 5) % 12 >= m) ? y - 1 : y;
-         return `${sy}-${h}`;
-       };
-       
-       if (getCycleString(month, year, startMonth) === getCycleString(lastRecord.month, lastRecord.year, startMonth)) {
-          semiAnnualToNew = Number(lastRecord.semiAnnualRemaining);
-       } else {
-          semiAnnualToNew = SICK_ACCRUAL_SEMI;
-       }
+        await prisma.leaveBalance.update({
+          where: { id: lastRecord.id },
+          data: { carriedForward: carryForwardToNew, encashed: encash }
+        });
+      } else {
+        carryForwardToNew = Number(lastRecord.carriedForward);
+      }
+
+      // Roll over Medical pool if still in cycle
+      const getCycleString = (m: number, y: number, sM: number) => {
+        const rel = (m - sM + 12) % 12;
+        const h = rel < 6 ? "H1" : "H2";
+        const sy = (m < sM && (sM + 5) % 12 >= m) ? y - 1 : y;
+        return `${sy}-${h}`;
+      };
+
+      if (getCycleString(month, year, startMonth) === getCycleString(lastRecord.month, lastRecord.year, startMonth)) {
+        semiAnnualToNew = Number(lastRecord.semiAnnualRemaining);
+      } else {
+        semiAnnualToNew = SICK_ACCRUAL_SEMI;
+      }
     } else {
-       // Fill the timeline gap recursively
-       const prevMonth = month === 1 ? 12 : month - 1;
-       const prevYear = month === 1 ? year - 1 : year;
-       const gapPrev = await ensureBalance(userId, prevMonth, prevYear, startMonth);
-       carryForwardToNew = Number(gapPrev.carriedForward);
+      // Fill the timeline gap recursively
+      const prevMonth = month === 1 ? 12 : month - 1;
+      const prevYear = month === 1 ? year - 1 : year;
+      const gapPrev = await ensureBalance(userId, prevMonth, prevYear, startMonth);
+      carryForwardToNew = Number(gapPrev.carriedForward);
     }
   }
 
@@ -152,6 +148,7 @@ export async function ensureBalance(userId: string, month: number, year: number,
     });
   }
 }
+
 function splitLeaveIntoMonths(start: Date, end: Date) {
   const parts: { month: number; year: number; days: number }[] = [];
   let current = new Date(start.getFullYear(), start.getMonth(), start.getDate());
@@ -162,7 +159,7 @@ function splitLeaveIntoMonths(start: Date, end: Date) {
     const y = current.getFullYear();
     const monthStart = new Date(y, m, 1);
     const nextMonthStart = new Date(y, m + 1, 1);
-    
+
     const partStart = current > monthStart ? current : monthStart;
     const partEnd = final < nextMonthStart ? final : new Date(y, m + 1, 0);
 
@@ -229,7 +226,7 @@ export async function submitLeaveRequest(formData: unknown) {
 
   const userId = session.user.id;
   const parsed = leaveApplicationSchema.safeParse(formData);
-  
+
   if (!parsed.success) {
     return { error: "Invalid form data: " + parsed.error.message };
   }
@@ -242,7 +239,7 @@ export async function submitLeaveRequest(formData: unknown) {
 
   try {
     const config = await prisma.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
-    
+
     // Policy Toggle: Semi-Annual
     if (data.category === "SEMI_ANNUAL_POLICY_2" && !config?.semiAnnualPolicyEnabled) {
       return { error: "Semi-annual leave policy is currently disabled by administrator." };
@@ -254,8 +251,8 @@ export async function submitLeaveRequest(formData: unknown) {
     // Policy 2 Enforcement
     if (data.category === "SEMI_ANNUAL_POLICY_2") {
       if (diffDays < 3) {
-        return { 
-          error: "Policy 2 (Semi-Annual) requires a minimum of 3 consecutive leave days." 
+        return {
+          error: "Policy 2 (Semi-Annual) requires a minimum of 3 consecutive leave days."
         };
       }
 
@@ -264,8 +261,8 @@ export async function submitLeaveRequest(formData: unknown) {
       const available = balance.semiAnnualRemaining - pendingDays;
 
       if (diffDays > available) {
-        return { 
-          error: `Policy 2 quota exceeded. Remaining quota: ${available} days. You are trying to apply for ${diffDays} days.` 
+        return {
+          error: `Policy 2 quota exceeded. Remaining quota: ${available} days. You are trying to apply for ${diffDays} days.`
         };
       }
     }
@@ -325,7 +322,7 @@ export async function submitLeaveRequest(formData: unknown) {
         reason: data.reason,
         startTime: data.startTime,
         endTime: data.endTime,
-        halfDayType: data.halfDayType, 
+        halfDayType: data.halfDayType,
         managerNote: approvalNote,
         // systemNote: approvalNote, // Saving note for visibility
       }
@@ -352,7 +349,7 @@ export async function updateLeaveStatus(requestId: string, status: "APPROVED" | 
   const isAdmin = role === "ADMIN" || role === "SYSTEM_ADMIN";
 
   try {
-    const requestMeta = await prisma.leaveRequest.findUnique({ 
+    const requestMeta = await prisma.leaveRequest.findUnique({
       where: { id: requestId },
       include: { user: { select: { id: true, managerId: true, departmentId: true } } }
     });
@@ -378,7 +375,7 @@ export async function updateLeaveStatus(requestId: string, status: "APPROVED" | 
 
     // Additional check for Managers/Leaders: ensure they supervise this specific user
     if (!isAdmin && !isDirectManager && !isDeptLeader) {
-       return { error: "Unauthorized. You do not supervise this employee's leave requests." };
+      return { error: "Unauthorized. You do not supervise this employee's leave requests." };
     }
 
     return await processLeaveRequestStatus(requestId, status, note);
@@ -397,7 +394,7 @@ export async function updateLeaveStatus(requestId: string, status: "APPROVED" | 
  * Does NOT check permissions.
  */
 async function processLeaveRequestStatus(requestId: string, status: "APPROVED" | "REJECTED", note?: string) {
-  const requestMeta = await prisma.leaveRequest.findUnique({ 
+  const requestMeta = await prisma.leaveRequest.findUnique({
     where: { id: requestId },
     include: { user: { select: { id: true } } }
   });
@@ -412,23 +409,23 @@ async function processLeaveRequestStatus(requestId: string, status: "APPROVED" |
   }
 
   const result = await prisma.$transaction(async (tx) => {
-    const txRequest = await tx.leaveRequest.findUnique({ 
-      where: { id: requestId } 
+    const txRequest = await tx.leaveRequest.findUnique({
+      where: { id: requestId }
     });
 
     if (!txRequest || txRequest.status !== "PENDING") return { success: true };
 
     if (status === "REJECTED") {
-      await tx.leaveRequest.update({ 
-        where: { id: requestId }, 
-        data: { status: "REJECTED", managerNote: note || null } 
+      await tx.leaveRequest.update({
+        where: { id: requestId },
+        data: { status: "REJECTED", managerNote: note || null }
       });
       return { success: true };
     }
 
     let totalOverflowLwp = 0;
     const monthParts = splitLeaveIntoMonths(txRequest.startDate, txRequest.endDate);
-    
+
     for (const part of monthParts) {
       const balance = await tx.leaveBalance.findUnique({
         where: { userId_month_year: { userId: txRequest.userId, month: part.month, year: part.year } }
@@ -470,7 +467,7 @@ async function processLeaveRequestStatus(requestId: string, status: "APPROVED" |
 
         await tx.leaveBalance.update({
           where: { id: balance.id },
-          data: { 
+          data: {
             [balanceField]: { decrement: deductAmount },
             [takenField]: { increment: deductAmount },
             unpaidTaken: { increment: overflow }
@@ -498,7 +495,7 @@ async function processLeaveRequestStatus(requestId: string, status: "APPROVED" |
     // Cascade updates for all subsequent months
     const config = await tx.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
     const startMonthConfig = (config as any)?.semiAnnualCycleStartMonth ?? 4;
-    
+
     const firstMonth = monthParts[0];
     let m = firstMonth.month;
     let y = firstMonth.year;
@@ -523,7 +520,7 @@ async function processLeaveRequestStatus(requestId: string, status: "APPROVED" |
       const currentEncashed = Number(Math.max(0, current.remainingFull - newCFFromCurrent).toFixed(2));
 
       if (current.carriedForward !== newCFFromCurrent || current.encashed !== currentEncashed) {
-         await tx.leaveBalance.update({
+        await tx.leaveBalance.update({
           where: { id: current.id },
           data: {
             carriedForward: newCFFromCurrent,
@@ -560,7 +557,7 @@ async function processLeaveRequestStatus(requestId: string, status: "APPROVED" |
   revalidatePath("/dashboard", "layout");
   revalidatePath("/dashboard/employee");
   revalidatePath("/dashboard/manager");
-  
+
   return result;
 }
 
@@ -624,8 +621,8 @@ export async function cancelApprovedLeave(requestId: string, note?: string) {
         if (balanceField && takenField) {
           let overflowRevert = 0;
           if (request.managerNote?.includes("[Auto-LWP:")) {
-             const match = request.managerNote.match(/\[Auto-LWP: ([\d.]+)\]/);
-             if (match) overflowRevert = parseFloat(match[1]);
+            const match = request.managerNote.match(/\[Auto-LWP: ([\d.]+)\]/);
+            if (match) overflowRevert = parseFloat(match[1]);
           }
 
           const deductedFromBalance = amountToRevert - overflowRevert;
@@ -648,15 +645,15 @@ export async function cancelApprovedLeave(requestId: string, note?: string) {
 
       await tx.leaveRequest.update({
         where: { id: requestId },
-        data: { 
-          status: "REJECTED", 
-          managerNote: `CANCELLED: ${note || "Cancelled by administrator."}` 
+        data: {
+          status: "REJECTED",
+          managerNote: `CANCELLED: ${note || "Cancelled by administrator."}`
         }
       });
 
       const config = await tx.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
       const startMonthConfig = (config as any)?.semiAnnualCycleStartMonth ?? 4;
-      
+
       // Final Step: Cascade updates throughout the rest of the year
       let m = monthParts[0].month;
       let y = monthParts[0].year;
@@ -685,34 +682,34 @@ export async function cancelApprovedLeave(requestId: string, note?: string) {
         const expectedEncash = round(rem - expectedCF);
 
         if (current.carriedForward !== expectedCF || current.encashed !== expectedEncash) {
-            await tx.leaveBalance.update({
-                where: { id: current.id },
-                data: { carriedForward: expectedCF, encashed: expectedEncash }
-            });
+          await tx.leaveBalance.update({
+            where: { id: current.id },
+            data: { carriedForward: expectedCF, encashed: expectedEncash }
+          });
         }
 
         // 2. Adjust NEXT's starting balance based on the NEW CF
         // Rule: Start_of_Next = ACCRUAL (1.0) + CF_From_Current
         // Since 'remainingFull' also includes 'used' leaves in that month, we adjust it relatively
         const cfDiff = round(expectedCF - next.carriedForward);
-        
+
         if (cfDiff !== 0) {
-            await tx.leaveBalance.update({
-                where: { id: next.id },
-                data: { 
-                    remainingFull: { increment: cfDiff },
-                    carriedForward: expectedCF
-                }
-            });
+          await tx.leaveBalance.update({
+            where: { id: next.id },
+            data: {
+              remainingFull: { increment: cfDiff },
+              carriedForward: expectedCF
+            }
+          });
         }
 
         // 3. Sync Semi-Annual Sick pool if still in the same cycle
         const isSameCycle = getCycleKey(m, y, startMonthConfig) === getCycleKey(nextM, nextY, startMonthConfig);
         if (isSameCycle && next.semiAnnualRemaining !== current.semiAnnualRemaining) {
-            await tx.leaveBalance.update({
-                where: { id: next.id },
-                data: { semiAnnualRemaining: current.semiAnnualRemaining }
-            });
+          await tx.leaveBalance.update({
+            where: { id: next.id },
+            data: { semiAnnualRemaining: current.semiAnnualRemaining }
+          });
         }
 
         m = nextM;

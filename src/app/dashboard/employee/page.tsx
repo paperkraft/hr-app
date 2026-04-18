@@ -12,6 +12,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getTodayRange } from "@/lib/attendance-helper";
 import { ensureBalance } from "@/actions/leave";
+import { getDaysDifference } from "@/lib/utils";
 import { processAutoPunchOuts } from "@/lib/auto-punch-out";
 import { PageContainer } from "@/components/ui";
 
@@ -51,21 +52,16 @@ async function getEmployeeData() {
   );
 
   const casualTaken = approvedThisYear
-    .filter((r) => r.leaveType === "CASUAL")
-    .reduce((acc, r) => {
-      let days = Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      if (r.duration === "HALF") days = 0.5 * days;
-      if (r.duration === "SHORT") days = 0;
-      return acc + days;
-    }, 0);
+    .filter((r) => r.category === "MONTHLY_POLICY_1" && r.leaveType === "CASUAL")
+    .reduce((acc, r) => acc + getDaysDifference(new Date(r.startDate), new Date(r.endDate)) * (r.duration === "HALF" ? 0.5 : 1), 0);
 
   const medicalTaken = approvedThisYear
-    .filter((r) => r.leaveType === "MEDICAL")
-    .reduce((acc, r) => {
-      let days = Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      if (r.duration === "HALF") days = 0.5 * days;
-      return acc + days;
-    }, 0);
+    .filter((r) => r.category === "MONTHLY_POLICY_1" && r.leaveType === "MEDICAL")
+    .reduce((acc, r) => acc + getDaysDifference(new Date(r.startDate), new Date(r.endDate)) * (r.duration === "HALF" ? 0.5 : 1), 0);
+    
+  const semiAnnualTaken = approvedThisYear
+    .filter((r) => r.category === "SEMI_ANNUAL_POLICY_2")
+    .reduce((acc, r) => acc + getDaysDifference(new Date(r.startDate), new Date(r.endDate)), 0);
 
   const approvalRate = leaveRequests.length > 0
     ? Math.round((leaveRequests.filter((r) => r.status === "APPROVED").length / leaveRequests.length) * 100)
@@ -110,14 +106,16 @@ async function getEmployeeData() {
     balances: {
       casualTaken,
       medicalTaken,
-      casualRemaining: Math.max(0, 12 - casualTaken),
-      medicalRemaining: Math.max(0, 12 - medicalTaken),
+      semiAnnualTaken,
+      casualRemaining: Number(balances.remainingFull),
+      medicalRemaining: Number(balances.semiAnnualRemaining),
     },
     stats: { approvalRate, pendingCount },
     leaveRequests,
     teamOnLeave
   };
 }
+
 
 export default async function EmployeeDashboard() {
   const data = await getEmployeeData();
@@ -162,12 +160,21 @@ export default async function EmployeeDashboard() {
         {/* Leave Balance — 2×2 stat grid alongside attendance */}
         <div className="lg:col-span-7">
           <LeaveBalanceOverview
-            casual={{ taken: data.balances.casualTaken, remaining: data.balances.casualRemaining, total: 12 }}
-            sick={{ taken: data.balances.medicalTaken, remaining: data.balances.medicalRemaining, total: 12 }}
+            casual={{ 
+              taken: data.balances.casualTaken + data.balances.medicalTaken, 
+              remaining: data.balances.casualRemaining, 
+              total: 3 
+            }}
+            sick={{ 
+              taken: data.balances.semiAnnualTaken, 
+              remaining: data.balances.medicalRemaining, 
+              total: 3 
+            }}
             approvalRate={data.stats.approvalRate}
             pendingCount={data.stats.pendingCount}
           />
         </div>
+
       </div>
 
       {/* SECONDARY ROW: Upcoming Leave + Team on Leave + Notifications */}

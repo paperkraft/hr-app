@@ -49,7 +49,8 @@ export async function syncAllBalances() {
                  });
 
                  // If the CF value changed, we MUST adjust the 'remainingFull' of the next month
-                 // because the next month was initialized as (2.0 + OLD_CF)
+                 // because the next month was initialized as (CASUAL_ACCRUAL + OLD_CF)
+                 // where CASUAL_ACCRUAL is currently 2.0
                  if (hasCfDiff) {
                      const cfDiff = expectedCF - current.carriedForward;
                      await prisma.leaveBalance.update({

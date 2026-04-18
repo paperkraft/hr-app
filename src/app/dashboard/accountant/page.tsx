@@ -1,5 +1,5 @@
 import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from "@/components/ui/table";
-import { CheckCircle2, Users, Clock, FileText, IndianRupee, MapPin, CalendarDays } from "lucide-react";
+import { Users, Clock, FileText, IndianRupee, MapPin, CalendarDays } from "lucide-react";
 import { CancelLeaveButton } from "@/components/features/leave/cancel-leave-button";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
@@ -16,15 +16,9 @@ import {
   StatCard
 } from "@/components/ui";
 import { AccountantTabs } from "@/components/features/accountant/accountant-tabs";
-import { cn } from "@/lib/utils";
 
 export const dynamic = 'force-dynamic';
 
-function getDaysDifference(start: Date, end: Date) {
-  const startUtc = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
-  const endUtc = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
-  return Math.floor((endUtc - startUtc) / (1000 * 60 * 60 * 24)) + 1;
-}
 
 async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
   const session = await getServerSession(authOptions);
@@ -197,7 +191,7 @@ export default async function AccountantDashboard({
 
   return (
     <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">
-      
+
       {/* Header Area */}
       <div className="flex items-center justify-between">
         <div>
@@ -280,7 +274,7 @@ export default async function AccountantDashboard({
             <FileText className="size-4 text-muted-foreground/20" />
           </div>
           <div className="p-0">
-             <MasterReportTable data={reportData} month={stats.currentMonth} year={stats.currentYear} />
+            <MasterReportTable data={reportData} month={stats.currentMonth} year={stats.currentYear} />
           </div>
         </div>
       ) : (
@@ -355,9 +349,9 @@ export default async function AccountantDashboard({
                         )}
                       </TableCell>
                       <TableCell className="py-3 px-5 text-right">
-                         <span className="text-[10px] font-bold text-muted-foreground/40 tabular-nums">
-                            {new Date(req.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                         </span>
+                        <span className="text-[10px] font-bold text-muted-foreground/40 tabular-nums">
+                          {new Date(req.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                        </span>
                       </TableCell>
                       <TableCell className="py-3 px-5 text-right">
                         <CancelLeaveButton requestId={req.id} employeeName={req.employeeName} />

@@ -64,8 +64,8 @@ export default async function AdminUsersPage() {
               key={tab}
               className={cn(
                 "px-5 py-2 text-[12px] font-bold rounded-sm transition-all duration-200",
-                i === 0 
-                  ? "bg-white text-primary border border-border/80 shadow-sm" 
+                i === 0
+                  ? "bg-white text-primary border border-border/80 shadow-sm"
                   : "text-muted-foreground/60 hover:text-foreground hover:bg-white/50"
               )}
             >
@@ -78,8 +78,8 @@ export default async function AdminUsersPage() {
         <div className="flex items-center gap-2">
           <div className="relative min-w-[280px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/40" />
-            <Input 
-              placeholder="Search people..." 
+            <Input
+              placeholder="Search people..."
               className="h-10 pl-9 bg-white border-border/80 focus:ring-primary/10 rounded-sm text-xs"
             />
           </div>
@@ -98,11 +98,11 @@ export default async function AdminUsersPage() {
           <table className="w-full border-collapse">
             <thead className="bg-muted/5 border-b border-border/60">
               <tr>
-                <th className="py-4 px-6 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50 w-[300px]">Name</th>
-                <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">Date</th>
-                <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">Job title</th>
-                <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">Employment type</th>
-                <th className="py-4 px-6 text-right text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">Action</th>
+                <th className="py-4 px-6 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 w-[300px]">Name</th>
+                <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Date</th>
+                <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Job title</th>
+                <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Employment type</th>
+                <th className="py-4 px-6 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/20">

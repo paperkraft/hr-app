@@ -1,4 +1,4 @@
-import { Plane, AlertCircle } from "lucide-react";
+import { Plane, AlertCircle, CalendarDays } from "lucide-react";
 import { PageSection, StatusBadge } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -22,50 +22,52 @@ export function UpcomingLeave({ requests }: UpcomingLeaveProps) {
   return (
     <PageSection
       title="Upcoming Leave"
-      description="Your scheduled time off"
+      description="Your scheduled time off and pending requests"
       className="h-full animate-fade-in"
       noPadding
     >
-      <div className="p-6 flex flex-col gap-6">
-        {upcoming ? (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-bold text-foreground">{upcoming.category}</p>
-                <p className="text-[11px] text-muted-foreground mt-1 font-medium">
-                  {new Date(upcoming.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} to {new Date(upcoming.endDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                </p>
-              </div>
-              <StatusBadge status="success" label="Approved" size="sm" withDot={false} className="font-black" />
+      <div className="flex flex-col h-full max-h-[400px]">
+        <div className="divide-y divide-border/40 overflow-y-auto flex-1 scrollbar-hide">
+          {requests.length === 0 ? (
+            <div className="p-12 text-center text-muted-foreground italic text-xs flex flex-col items-center justify-center gap-3 opacity-60">
+               <Plane className="size-6 opacity-20" />
+               <p className="font-bold text-[10px] uppercase tracking-widest">No upcoming leave requests found.</p>
             </div>
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-primary/5 text-primary border border-primary/10">
-               <span className="text-[10px] font-black uppercase tracking-widest">
-                 {upcoming.days} {upcoming.days === 1 ? 'day' : 'days'} total
-               </span>
-            </div>
-          </div>
-        ) : (
-          <div className="py-6 flex flex-col items-center justify-center text-muted-foreground text-xs text-center border-2 border-dashed border-border/40 rounded-2xl bg-muted/5 opacity-60">
-            <Plane className="size-5 mb-2 opacity-20" />
-            <p className="font-bold">No upcoming approved leave.</p>
-          </div>
-        )}
+          ) : (
+            requests.map((request) => (
+              <div key={request.id} className="p-5 flex items-start justify-between hover:bg-muted/10 transition-colors group">
+                <div className="flex flex-col gap-1.5 min-w-0 flex-1 pr-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-foreground truncate">{request.category}</span>
+                    <StatusBadge 
+                      status={request.status === "APPROVED" ? "success" : request.status === "PENDING" ? "warning" : "error"} 
+                      label={request.status} 
+                      size="sm" 
+                      withDot={false} 
+                      className="font-black text-[8px] px-1.5 py-0 h-4 uppercase tracking-tighter" 
+                    />
+                  </div>
+                  <div className="flex items-center gap-3 text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <CalendarDays className="size-3 opacity-60" />
+                      <span className="text-[10px] font-medium truncate">
+                        {new Date(request.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(request.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+                    <div className="size-1 rounded-full bg-border/60" />
+                    <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-none">
+                      {request.days} {request.days === 1 ? 'Day' : 'Days'}
+                    </span>
+                  </div>
+                </div>
 
-        {pending && (
-          <div className="p-4 rounded-xl bg-orange-500/[0.03] border border-orange-500/10 shadow-sm animate-pulse-soft">
-            <div className="flex items-start gap-3">
-              <div className="p-1.5 rounded-lg bg-orange-500/10 shrink-0">
-                <AlertCircle className="size-4 text-orange-600 dark:text-orange-400" />
+                <div className="shrink-0 group-hover:translate-x-1 transition-transform opacity-30 group-hover:opacity-100">
+                   <Plane className="size-4 text-primary" />
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-black text-orange-900 dark:text-orange-200 uppercase tracking-widest">Pending Approval</p>
-                <p className="text-[10px] text-orange-700/80 dark:text-orange-300/60 mt-1 leading-relaxed font-medium">
-                  {new Date(pending.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} request is awaiting manager review.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+            ))
+          )}
+        </div>
       </div>
     </PageSection>
   );

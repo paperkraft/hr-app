@@ -156,58 +156,43 @@ export default async function EmployeeDashboard() {
         <DashboardTabs />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Main Content Area */}
-        <div className="lg:col-span-3 space-y-8">
-          
-          {/* Row 1: Attendance & Stats */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-             <div className="xl:col-span-1">
-                <PunchCard
-                  initialStatus={data.attendanceStatus}
-                  autoPunchOutCount={data.autoPunchOutCount}
-                  warningThreshold={3}
-                />
-             </div>
-             <div className="xl:col-span-2">
-                <LeaveBalanceOverview 
-                  casual={{ taken: data.balances.casualTaken, remaining: data.balances.casualRemaining, total: 12 }}
-                  sick={{ taken: data.balances.medicalTaken, remaining: data.balances.medicalRemaining, total: 12 }}
-                />
-             </div>
-          </div>
-
-          {/* Row 2: Notifications & Quick Access */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-             <NotificationCenter />
-             <UpcomingLeave requests={data.leaveRequests.map(r => ({
-                id: r.id,
-                category: r.category === "MONTHLY_POLICY_1" ? (r.leaveType === "CASUAL" ? "Casual" : "Sick") : "Paid",
-                startDate: r.startDate,
-                endDate: r.endDate,
-                status: r.status,
-                days: Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
-             }))} />
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Top Priority: Attendance & Leave Status */}
+        <div className="lg:col-span-5 xl:col-span-4 h-full">
+          <PunchCard
+            initialStatus={data.attendanceStatus}
+            autoPunchOutCount={data.autoPunchOutCount}
+            warningThreshold={3}
+          />
         </div>
 
-        {/* Sidebar Area */}
-        <div className="lg:col-span-1 space-y-8">
-           <TeamOnLeave members={data.teamOnLeave} />
-           
-           {/* Quick Stats Summary Card */}
-           <PageSection title="Performance" description="Summary for current month" className="animate-fade-in-up">
-              <div className="grid grid-cols-1 gap-4 p-2">
-                <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
-                   <span className="text-[10px] font-black uppercase text-emerald-600 tracking-wider">Approval Rate</span>
-                   <span className="text-lg font-black text-emerald-700">{data.stats.approvalRate}%</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
-                   <span className="text-[10px] font-black uppercase text-amber-600 tracking-wider">Pending Requests</span>
-                   <span className="text-lg font-black text-amber-700">{data.stats.pendingCount}</span>
-                </div>
-              </div>
-           </PageSection>
+        <div className="lg:col-span-7 xl:col-span-8 h-full">
+          <LeaveBalanceOverview
+            casual={{ taken: data.balances.casualTaken, remaining: data.balances.casualRemaining, total: 12 }}
+            sick={{ taken: data.balances.medicalTaken, remaining: data.balances.medicalRemaining, total: 12 }}
+          />
+        </div>
+
+        {/* Secondary Priority: Upcoming Leave & Team Activity */}
+        <div className="lg:col-span-8 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+             <UpcomingLeave requests={data.leaveRequests.map(r => ({
+              id: r.id,
+              category: r.category === "MONTHLY_POLICY_1" ? (r.leaveType === "CASUAL" ? "Casual" : "Sick") : "Paid",
+              startDate: r.startDate,
+              endDate: r.endDate,
+              status: r.status,
+              days: Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
+            }))} />
+            <TeamOnLeave members={data.teamOnLeave} />
+          </div>
+          
+          {/* Recent History or other metrics could go here */}
+        </div>
+
+        {/* Sidebar: Notifications & Information */}
+        <div className="lg:col-span-4 space-y-6">
+          <NotificationCenter />
         </div>
       </div>
     </PageContainer>

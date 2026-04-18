@@ -12,14 +12,14 @@ interface LeaveBalanceOverviewProps {
 export function LeaveBalanceOverview({ casual, sick }: LeaveBalanceOverviewProps) {
   return (
     <PageSection 
-      title="Leave Balance & Allotment" 
-      description="Your remaining annual leave entitlements."
-      className="animate-fade-in-up"
+      title="Entitlements" 
+      description="Your remaining leave balance for this year"
+      className="animate-fade-in-up h-full"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
         {/* Casual Leave Progress */}
-        <div className="p-5 rounded-2xl bg-muted/20 border border-border/40 flex items-center gap-6 group hover:border-primary/20 transition-colors">
-          <div className="relative size-16 shrink-0">
+        <div className="p-4 lg:p-6 rounded-2xl bg-muted/20 border border-border/40 flex items-center gap-4 lg:gap-6 group hover:border-primary/20 hover:bg-muted/30 transition-all duration-300">
+          <div className="relative size-14 lg:size-16 shrink-0">
              <ProgressRing 
                value={(casual.taken / casual.total) * 100} 
                size={64} 
@@ -27,23 +27,25 @@ export function LeaveBalanceOverview({ casual, sick }: LeaveBalanceOverviewProps
                strokeColor="text-primary"
              />
              <div className="absolute inset-0 flex items-center justify-center">
-                <CalendarRange className="size-5 text-primary opacity-60" />
+                <CalendarRange className="size-4 lg:size-5 text-primary opacity-60" />
              </div>
           </div>
-          <div className="flex-1">
-             <div className="flex justify-between items-end mb-1">
-                <h4 className="text-sm font-bold text-foreground">Casual Leave</h4>
-                <span className="text-xs font-black text-primary">{casual.remaining} DAYS LEFT</span>
+          <div className="flex-1 min-w-0">
+             <div className="flex flex-col mb-1">
+                <h4 className="text-sm font-bold text-foreground truncate">Casual Leave</h4>
+                <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-none mt-1">
+                  {casual.remaining} DAYS LEFT
+                </span>
              </div>
-             <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
-               {casual.taken} of {casual.total} Days Utilized
+             <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold opacity-60">
+               {casual.taken} / {casual.total} Used
              </p>
           </div>
         </div>
 
         {/* Sick Leave Progress */}
-        <div className="p-5 rounded-2xl bg-muted/20 border border-border/40 flex items-center gap-6 group hover:border-rose-500/20 transition-colors">
-          <div className="relative size-16 shrink-0">
+        <div className="p-4 lg:p-6 rounded-2xl bg-muted/20 border border-border/40 flex items-center gap-4 lg:gap-6 group hover:border-rose-500/20 hover:bg-muted/30 transition-all duration-300">
+          <div className="relative size-14 lg:size-16 shrink-0">
              <ProgressRing 
                value={(sick.taken / sick.total) * 100} 
                size={64} 
@@ -51,16 +53,18 @@ export function LeaveBalanceOverview({ casual, sick }: LeaveBalanceOverviewProps
                strokeColor="text-rose-500"
              />
              <div className="absolute inset-0 flex items-center justify-center">
-                <Heart className="size-5 text-rose-500 opacity-60" />
+                <Heart className="size-4 lg:size-5 text-rose-500 opacity-60" />
              </div>
           </div>
-          <div className="flex-1">
-             <div className="flex justify-between items-end mb-1">
-                <h4 className="text-sm font-bold text-foreground">Sick Leave</h4>
-                <span className="text-xs font-black text-rose-500">{sick.remaining} DAYS LEFT</span>
+          <div className="flex-1 min-w-0">
+             <div className="flex flex-col mb-1">
+                <h4 className="text-sm font-bold text-foreground truncate">Sick Leave</h4>
+                <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest leading-none mt-1">
+                  {sick.remaining} DAYS LEFT
+                </span>
              </div>
-             <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
-               {sick.taken} of {sick.total} Days Utilized
+             <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold opacity-60">
+               {sick.taken} / {sick.total} Used
              </p>
           </div>
         </div>

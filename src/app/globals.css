@@ -440,4 +440,12 @@
   .table-cell-compact {
     @apply px-4 py-2 text-sm;
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }

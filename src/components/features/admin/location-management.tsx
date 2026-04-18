@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { MapPin, Clock, Plus, Trash2, Edit2, CheckCircle2, Globe, Home, Crosshair } from "lucide-react"
+import { MapPin, Clock, Plus, Trash2, Edit2, CheckCircle2, Globe, Home, Crosshair, Save, X } from "lucide-react"
 import { upsertLocation } from "@/actions/settings"
 import { Switch } from "@/components/ui/switch"
+import { StatusBadge } from "@/components/ui"
 
 interface Location {
   id: string;
@@ -65,81 +65,104 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <Globe className="w-5 h-5 text-primary" />
-            Office Locations & Work Sites
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">Define physical offices and remote hubs with specific geofences.</p>
+        <div className="flex items-center gap-4">
+           <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
+              <Globe className="size-6 shadow-sm" />
+           </div>
+           <div>
+              <h2 className="text-sm font-black uppercase tracking-[0.2em] text-foreground">Operational Clusters</h2>
+              <p className="text-[10px] font-medium text-muted-foreground uppercase mt-1 tracking-tight opacity-70">Physical offices and verified remote hubs</p>
+           </div>
         </div>
-        <Button className="h-10 px-5" onClick={() => setIsAdding(true)} disabled={isAdding}>
-          <Plus className="w-4 h-4 mr-2" /> Add Location
-        </Button>
+        {!isAdding && (
+          <Button 
+            className="h-11 px-6 bg-primary hover:bg-primary/90 text-[11px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95" 
+            onClick={() => setIsAdding(true)}
+          >
+            <Plus className="size-4 mr-2" /> Register Site
+          </Button>
+        )}
       </div>
 
       {isAdding && (
-        <Card className="border-primary/20 shadow-lg animate-in slide-in-from-top-4 duration-300">
-          <CardHeader className="bg-primary/5 pb-4">
-            <CardTitle className="text-base">{editingId ? 'Edit Location' : 'New Office Site'}</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Location Name</Label>
-                <Input value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Bangalore Headquarters" />
+        <div className="premium-card shadow-2xl border-primary/20 bg-primary/[0.01] animate-in slide-in-from-top-4 duration-500 overflow-hidden">
+          <div className="px-6 py-5 bg-primary/5 border-b border-primary/10 flex items-center justify-between">
+            <div>
+               <h3 className="text-xs font-black uppercase tracking-widest">{editingId ? 'Modify Strategy' : 'Initialize New Cluster'}</h3>
+               <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-tight mt-0.5 opacity-60">Defining geofence parameters</p>
+            </div>
+            <Button variant="ghost" size="icon" className="size-8 rounded-lg hover:bg-primary/10" onClick={resetForm}>
+               <X className="size-4" />
+            </Button>
+          </div>
+          <CardContent className="p-8 space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2.5">
+                <Label className="text-[10px] uppercase font-black text-muted-foreground/70 tracking-widest px-1">Identity Vector (Location Name)</Label>
+                <Input 
+                   value={formData.name} 
+                   onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} 
+                   placeholder="e.g. London Tech Hub"
+                   className="h-11 bg-background/50 border-border/40 focus:ring-primary/20 rounded-xl font-bold"
+                />
               </div>
-              <div className="space-y-2">
-                <Label>Address (Optional)</Label>
-                <Input value={formData.address || ""} onChange={(e) => setFormData(p => ({ ...p, address: e.target.value }))} placeholder="Full street address" />
+              <div className="space-y-2.5">
+                <Label className="text-[10px] uppercase font-black text-muted-foreground/70 tracking-widest px-1">Physical Address / Metadata</Label>
+                <Input 
+                   value={formData.address || ""} 
+                   onChange={(e) => setFormData(p => ({ ...p, address: e.target.value }))} 
+                   placeholder="Verified Street Address"
+                   className="h-11 bg-background/50 border-border/40 focus:ring-primary/20 rounded-xl font-medium"
+                />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <Label>Start Time</Label>
-                <Input type="time" value={formData.startTime} onChange={(e) => setFormData(p => ({ ...p, startTime: e.target.value }))} />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="space-y-2.5">
+                <Label className="text-[10px] uppercase font-black text-muted-foreground/70 tracking-widest px-1">Cluster Start</Label>
+                <Input type="time" value={formData.startTime} onChange={(e) => setFormData(p => ({ ...p, startTime: e.target.value }))} className="h-11 bg-background/50 border-border/40 rounded-xl font-mono font-bold" />
               </div>
-              <div className="space-y-2">
-                <Label>End Time</Label>
-                <Input type="time" value={formData.endTime} onChange={(e) => setFormData(p => ({ ...p, endTime: e.target.value }))} />
+              <div className="space-y-2.5">
+                <Label className="text-[10px] uppercase font-black text-muted-foreground/70 tracking-widest px-1">Cluster Termination</Label>
+                <Input type="time" value={formData.endTime} onChange={(e) => setFormData(p => ({ ...p, endTime: e.target.value }))} className="h-11 bg-background/50 border-border/40 rounded-xl font-mono font-bold" />
               </div>
-              <div className="space-y-2">
-                <Label>Grace Period (Min)</Label>
-                <Input type="number" value={formData.graceTimeMinutes} onChange={(e) => setFormData(p => ({ ...p, graceTimeMinutes: Number(e.target.value) }))} />
+              <div className="space-y-2.5">
+                <Label className="text-[10px] uppercase font-black text-muted-foreground/70 tracking-widest px-1">Grace Delta (m)</Label>
+                <Input type="number" value={formData.graceTimeMinutes} onChange={(e) => setFormData(p => ({ ...p, graceTimeMinutes: Number(e.target.value) }))} className="h-11 bg-background/50 border-border/40 rounded-xl font-bold" />
               </div>
-              <div className="space-y-2">
-                <Label>Geofence Radius (m)</Label>
-                <Input type="number" value={formData.radiusMeters} onChange={(e) => setFormData(p => ({ ...p, radiusMeters: Number(e.target.value) }))} />
+              <div className="space-y-2.5">
+                <Label className="text-[10px] uppercase font-black text-muted-foreground/70 tracking-widest px-1">Radius Strategy (m)</Label>
+                <Input type="number" value={formData.radiusMeters} onChange={(e) => setFormData(p => ({ ...p, radiusMeters: Number(e.target.value) }))} className="h-11 bg-background/50 border-border/40 rounded-xl font-bold" />
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border/40">
-              <div className="space-y-0.5">
+            <div className="flex items-center justify-between p-6 bg-primary/[0.03] rounded-3xl border border-primary/10">
+              <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <Label className="text-sm font-bold capitalize">Remote/Co-working Hub</Label>
-                  <Home className="w-3.5 h-3.5 text-muted-foreground" />
+                  <Label className="text-sm font-black uppercase tracking-tight">Decentralized Hub (Remote)</Label>
+                  <Home className="size-3.5 text-primary/60" />
                 </div>
-                <p className="text-[10px] text-muted-foreground italic">If enabled, physical geofencing will be bypassed for this site.</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight opacity-70 italic">Bypasses strict physical proximity verification.</p>
               </div>
-              <Switch checked={formData.isRemote} onCheckedChange={(val) => setFormData(p => ({ ...p, isRemote: val }))} />
+              <Switch checked={formData.isRemote} onCheckedChange={(val) => setFormData(p => ({ ...p, isRemote: val }))} className="data-[state=checked]:bg-primary" />
             </div>
 
             {!formData.isRemote && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg bg-background">
-                <div className="space-y-2">
-                  <Label className="text-xs">Latitude</Label>
-                  <Input type="number" step="any" value={formData.lat || ""} onChange={(e) => setFormData(p => ({ ...p, lat: Number(e.target.value) }))} />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 border border-border/40 rounded-3xl bg-muted/5 shadow-inner">
+                <div className="space-y-2.5">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 px-1">Vector Latitude</Label>
+                  <Input type="number" step="any" value={formData.lat || ""} onChange={(e) => setFormData(p => ({ ...p, lat: Number(e.target.value) }))} className="h-11 bg-background border-border/20 rounded-xl font-mono text-xs font-bold" />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Longitude</Label>
-                  <Input type="number" step="any" value={formData.lng || ""} onChange={(e) => setFormData(p => ({ ...p, lng: Number(e.target.value) }))} />
+                <div className="space-y-2.5">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 px-1">Vector Longitude</Label>
+                  <Input type="number" step="any" value={formData.lng || ""} onChange={(e) => setFormData(p => ({ ...p, lng: Number(e.target.value) }))} className="h-11 bg-background border-border/20 rounded-xl font-mono text-xs font-bold" />
                 </div>
                 <div className="flex items-end">
                   <Button 
                     variant="outline" 
-                    className="w-full text-xs h-9" 
+                    className="w-full text-[10px] font-black uppercase tracking-widest h-11 rounded-xl bg-background hover:bg-primary/10 hover:text-primary transition-all shadow-sm" 
                     type="button"
                     onClick={() => {
                       navigator.geolocation.getCurrentPosition(pos => {
@@ -147,49 +170,67 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
                       })
                     }}
                   >
-                    <Crosshair className="w-3 h-3 mr-2" /> Capture Current
+                    <Crosshair className="size-3.5 mr-2" /> Capture Coords
                   </Button>
                 </div>
               </div>
             )}
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="ghost" onClick={resetForm}>Cancel</Button>
-              <Button onClick={handleSave} disabled={loading}>{loading ? 'Saving...' : 'Save Location'}</Button>
+            <div className="flex justify-end gap-3 pt-6 border-t border-border/20">
+              <Button variant="ghost" onClick={resetForm} className="text-xs font-black uppercase tracking-widest h-11 px-6 rounded-xl">Discard</Button>
+              <Button onClick={handleSave} disabled={loading} className="h-11 px-8 bg-primary hover:bg-primary/90 text-[11px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95">
+                {loading ? 'Processing...' : <><Save className="size-4 mr-2" /> Commit Infrastructure</>}
+              </Button>
             </div>
           </CardContent>
-        </Card>
+        </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {locations.map(loc => (
-          <Card key={loc.id} className="shadow-sm hover:shadow-md transition-all border-border/40 overflow-hidden group">
-            <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0 bg-muted/5 group-hover:bg-muted/10 transition-colors">
-              <div className="flex items-center gap-2">
-                <MapPin className={`w-4 h-4 ${loc.isRemote ? 'text-blue-500' : 'text-primary'}`} />
-                <CardTitle className="text-sm font-bold">{loc.name}</CardTitle>
+          <div key={loc.id} className="premium-card shadow-xl hover:shadow-2xl transition-all border-border/40 overflow-hidden group border-b border-border/10 last:border-0 relative">
+            <div className="px-5 py-4 flex items-center justify-between space-y-0 bg-primary/[0.02] border-b border-border/40 group-hover:bg-primary/[0.05] transition-colors">
+              <div className="flex items-center gap-3">
+                <div className={`size-8 rounded-xl flex items-center justify-center shadow-sm ${loc.isRemote ? 'bg-blue-500/10 text-blue-600' : 'bg-primary/10 text-primary'}`}>
+                   <MapPin className="size-4" />
+                </div>
+                <div>
+                   <h3 className="text-[12px] font-black uppercase tracking-tight text-foreground">{loc.name}</h3>
+                   <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest">Zone ID: {loc.id.slice(-4).toUpperCase()}</span>
+                   </div>
+                </div>
               </div>
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(loc)}>
-                  <Edit2 className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100">
+                <Button variant="ghost" size="icon" className="size-8 rounded-lg hover:bg-primary/10" onClick={() => handleEdit(loc)}>
+                  <Edit2 className="size-3.5" />
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent className="p-4 space-y-3">
-              <div className="flex items-center justify-between text-[11px]">
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>{loc.startTime} - {loc.endTime}</span>
+            </div>
+            <div className="p-6 space-y-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">
+                  <Clock className="size-3.5" />
+                  <span>{loc.startTime} — {loc.endTime}</span>
                 </div>
-                <Badge variant="secondary" className="text-[9px] pointer-events-none">
-                  {loc.isRemote ? 'Remote' : `${loc.radiusMeters}m Geofence`}
-                </Badge>
+                <StatusBadge 
+                  status={loc.isRemote ? "info" : "success"} 
+                  label={loc.isRemote ? 'Remote' : 'Verified'} 
+                  size="sm" 
+                  className="font-black uppercase text-[8px] tracking-[0.15em] px-2 h-5" 
+                />
               </div>
-              <div className="text-[10px] text-muted-foreground bg-muted/20 p-2 rounded truncate" title={loc.address || ""}>
-                {loc.address || "No address provided"}
+              {!loc.isRemote && (
+                 <div className="flex items-center gap-2 px-3 py-2 bg-muted/20 border border-border/20 rounded-xl">
+                    <Crosshair className="size-3 text-emerald-500" />
+                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Radius: {loc.radiusMeters}m Geofence</span>
+                 </div>
+              )}
+              <div className="text-[10px] font-medium text-muted-foreground bg-primary/[0.02] p-3 rounded-xl border border-primary/5 line-clamp-2 min-h-[48px] leading-relaxed" title={loc.address || ""}>
+                {loc.address || "Global metadata not specified"}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
     </div>

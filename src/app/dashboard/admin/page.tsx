@@ -151,90 +151,101 @@ export default async function AdminOverviewPage() {
   const stats = await getAdminStats();
 
   return (
-    <PageContainer maxWidth="full" className="py-8">
-      {/* Header */}
-      <PageHeader
-        title="System Overview"
-        description="Real-time administration and key metrics"
-      />
+    <PageContainer maxWidth="full" className="py-8 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <PageHeader
+          title="Administrative Core"
+          description="Real-time personnel orchestration and enterprise metrics architecture."
+        />
+        <div className="hidden lg:flex items-center gap-2 bg-muted/20 px-4 py-2 rounded-2xl border border-border/20">
+           <Activity className="size-4 text-primary animate-pulse" />
+           <span className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-widest">System Health: Optimal</span>
+        </div>
+      </div>
 
       {/* Key Metrics */}
-      <Grid cols={4} className="mb-8">
+      <Grid cols={4} className="mb-10">
         <StatCard
-          icon={<Users className="w-8 h-8" />}
-          label="Total Employees"
+          icon={<Users className="size-8" />}
+          label="Total Identities"
           value={stats.totalEmployees}
-          className="animate-fade-in"
+          className="premium-card shadow-xl"
         />
 
         <StatCard
-          icon={<CheckCircle2 className="w-8 h-8 text-emerald-500" />}
-          label="Present Today"
+          icon={<CheckCircle2 className="size-8 text-emerald-500" />}
+          label="Operational Today"
           value={stats.presentEmployees.length}
-          className="animate-fade-in"
-          change={{ value: "Active", trend: "up" }}
+          className="premium-card shadow-xl"
+          change={{ value: "Live", trend: "up" }}
         />
 
         <StatCard
-          icon={<ShieldAlert className="w-8 h-8 text-rose-500" />}
-          label="Absent Today"
+          icon={<ShieldAlert className="size-8 text-rose-500" />}
+          label="Critical Absences"
           value={stats.absentEmployees.length}
-          className="animate-fade-in"
-          change={{ value: "Check", trend: "down" }}
+          className="premium-card shadow-xl"
+          change={{ value: "Pending", trend: "down" }}
         />
 
         <StatCard
-          icon={<Calendar className="w-8 h-8 text-amber-500" />}
-          label="On Leave Today"
+          icon={<Calendar className="size-8 text-amber-500" />}
+          label="Approved Absence"
           value={stats.onLeaveEmployees.length}
-          className="animate-fade-in"
-          change={{ value: "Approved", trend: "neutral" }}
+          className="premium-card shadow-xl"
+          change={{ value: "Valid", trend: "neutral" }}
         />
       </Grid>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10">
         {/* Attendance Status Card */}
-        <PageSection
-          title="Attendance Status"
-          description="Real-time headcount overview"
-          className="animate-fade-in-up"
-        >
-          <div className="space-y-6">
+        <div className="premium-card shadow-xl border-border/40 overflow-hidden flex flex-col">
+          <div className="px-6 py-5 bg-primary/[0.02] border-b border-border/40 flex items-center justify-between">
+             <div className="flex items-center gap-3">
+                <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                   <Activity className="size-5" />
+                </div>
+                <div className="flex flex-col">
+                   <h3 className="text-sm font-black uppercase tracking-widest text-foreground leading-none mb-1">Attendance Pulse</h3>
+                   <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight opacity-70">Live cluster monitoring</p>
+                </div>
+             </div>
+          </div>
+          <div className="p-8 space-y-8 flex-1">
             {/* Status Summary Grid */}
-            <div className="grid grid-cols-3 gap-4 p-6 bg-muted/10 rounded-xl border border-border/40">
+            <div className="grid grid-cols-3 gap-8 p-8 bg-muted/10 rounded-3xl border border-border/20 shadow-inner">
               <div className="text-center">
-                <div className="text-4xl font-bold text-emerald-600">{stats.presentEmployees.length}</div>
-                <p className="text-[10px] font-bold text-muted-foreground mt-2 uppercase tracking-widest">Present</p>
+                <div className="text-5xl font-black text-emerald-600 tracking-tighter">{stats.presentEmployees.length}</div>
+                <p className="text-[10px] font-black text-muted-foreground/60 mt-3 uppercase tracking-widest">Active</p>
               </div>
-              <div className="flex justify-center items-center">
-                <Divider vertical className="h-12" />
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-rose-600">{stats.absentEmployees.length}</div>
-                <p className="text-[10px] font-bold text-muted-foreground mt-2 uppercase tracking-widest">Absent</p>
-              </div>
-              <div className="flex justify-center items-center">
-                <Divider vertical className="h-12" />
+              <div className="text-center border-x border-border/40">
+                <div className="text-5xl font-black text-rose-600 tracking-tighter">{stats.absentEmployees.length}</div>
+                <p className="text-[10px] font-black text-muted-foreground/60 mt-3 uppercase tracking-widest">Absent</p>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-bold text-amber-600">{stats.onLeaveEmployees.length}</div>
-                <p className="text-[10px] font-bold text-muted-foreground mt-2 uppercase tracking-widest">On Leave</p>
+                <div className="text-5xl font-black text-amber-500 tracking-tighter">{stats.onLeaveEmployees.length}</div>
+                <p className="text-[10px] font-black text-muted-foreground/60 mt-3 uppercase tracking-widest">On Leave</p>
               </div>
             </div>
 
             {/* Detailed Lists */}
-            <div className="space-y-4 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-6 max-h-[360px] overflow-y-auto pr-2 scrollbar-hide">
               {stats.onLeaveEmployees.length > 0 && (
-                <div className="p-4 bg-amber-50/50 dark:bg-amber-950/10 border border-amber-200/50 dark:border-amber-900/20 rounded-xl">
-                  <h4 className="text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5" /> Currently On Leave
+                <div className="space-y-3">
+                  <h4 className="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 opacity-80">
+                    <Calendar className="size-3.5" /> Approved Departures
                   </h4>
-                  <div className="grid grid-cols-1 gap-2">
+                  <div className="grid grid-cols-1 gap-3">
                     {stats.onLeaveEmployees.map(e => (
-                      <div key={e.id} className="flex items-center justify-between p-3 bg-white/80 dark:bg-background/40 rounded-lg shadow-sm border border-amber-100 dark:border-amber-900/30">
-                        <span className="text-sm font-semibold">{e.name}</span>
-                        <StatusBadge status="warning" label="Away" withDot={false} size="sm" />
+                      <div key={e.id} className="flex items-center justify-between p-4 bg-amber-500/[0.03] border border-amber-500/10 rounded-2xl group hover:bg-amber-500/[0.06] transition-all">
+                        <div className="flex items-center gap-3">
+                           <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-black text-[10px]">
+                              {e.name.slice(0, 2).toUpperCase()}
+                           </div>
+                           <span className="text-sm font-bold text-foreground">{e.name}</span>
+                        </div>
+                        <StatusBadge status="warning" label="Away" withDot size="sm" className="font-black uppercase text-[8px] tracking-widest" />
                       </div>
                     ))}
                   </div>
@@ -242,136 +253,167 @@ export default async function AdminOverviewPage() {
               )}
 
               {stats.absentEmployees.length > 0 && (
-                <div className="p-4 bg-rose-50/50 dark:bg-rose-950/10 border border-rose-200/50 dark:border-rose-900/20 rounded-xl">
-                  <h4 className="text-[10px] font-bold text-rose-800 dark:text-rose-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
-                    <ShieldAlert className="w-3.5 h-3.5" /> Still Not In
+                <div className="space-y-3 pt-4 border-t border-border/20">
+                  <h4 className="text-[10px] font-black text-rose-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 opacity-80">
+                    <ShieldAlert className="size-3.5" /> Pending Synchronizations
                   </h4>
-                  <div className="grid grid-cols-1 gap-2">
+                  <div className="grid grid-cols-1 gap-3">
                     {stats.absentEmployees.slice(0, 5).map(e => (
-                      <div key={e.id} className="flex items-center justify-between p-3 bg-white/80 dark:bg-background/40 rounded-lg shadow-sm border border-rose-100 dark:border-rose-900/30">
-                        <span className="text-sm font-semibold">{e.name}</span>
-                        <StatusBadge status="error" label="Pending" withDot={false} size="sm" />
+                      <div key={e.id} className="flex items-center justify-between p-4 bg-rose-500/[0.03] border border-rose-500/10 rounded-2xl group hover:bg-rose-500/[0.06] transition-all">
+                        <div className="flex items-center gap-3">
+                           <div className="size-8 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center font-black text-[10px]">
+                              {e.name.slice(0, 2).toUpperCase()}
+                           </div>
+                           <span className="text-sm font-bold text-foreground">{e.name}</span>
+                        </div>
+                        <StatusBadge status="error" label="Late" withDot size="sm" className="font-black uppercase text-[8px] tracking-widest" />
                       </div>
                     ))}
                     {stats.absentEmployees.length > 5 && (
-                      <p className="text-[10px] text-muted-foreground italic text-center py-2 font-medium">+{stats.absentEmployees.length - 5} more absent</p>
+                      <p className="text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest text-center py-4 italic">+{stats.absentEmployees.length - 5} More Not Synced</p>
                     )}
                   </div>
                 </div>
               )}
             </div>
           </div>
-        </PageSection>
+        </div>
 
         {/* Leave Summary Card */}
-        <PageSection
-          title="Monthly Leave Summary"
-          description="Total days taken this month"
-          className="animate-fade-in-up"
-        >
-          <div className="space-y-3 max-h-[440px] overflow-y-auto pr-2 custom-scrollbar">
+        <div className="premium-card shadow-xl border-border/40 overflow-hidden flex flex-col">
+          <div className="px-6 py-5 bg-primary/[0.02] border-b border-border/40 flex items-center justify-between">
+             <div className="flex items-center gap-3">
+                <div className="size-9 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center">
+                   <FileText className="size-5" />
+                </div>
+                <div className="flex flex-col">
+                   <h3 className="text-sm font-black uppercase tracking-widest text-foreground leading-none mb-1">Monthly Utilization</h3>
+                   <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight opacity-70">Saturation report</p>
+                </div>
+             </div>
+          </div>
+          <div className="p-8 space-y-4 flex-1 overflow-y-auto scrollbar-hide">
             {stats.monthlyLeaveSummary.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground opacity-40">
-                <FileText className="w-12 h-12 mb-4" />
-                <p className="text-sm font-medium italic">No leave data available</p>
+              <div className="flex flex-col items-center justify-center py-20 text-muted-foreground opacity-20 italic">
+                <FileText className="size-16 mb-4" />
+                <p className="text-[10px] font-black uppercase tracking-widest">No Leave Vectors Detected</p>
               </div>
             ) : (
               stats.monthlyLeaveSummary.slice(0, 10).map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-4 bg-muted/5 rounded-xl border border-border/40 hover:bg-muted/10 transition-all duration-200 group">
-                  <div className="flex-1">
-                    <p className="font-bold text-sm group-hover:text-primary transition-colors">{item.name}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 font-medium">{item.totalDays} {item.totalDays === 1 ? 'day' : 'days'} taken</p>
+                <div key={item.id} className="flex items-center justify-between p-5 bg-muted/10 rounded-2xl border border-border/20 hover:bg-primary/[0.02] hover:border-primary/20 transition-all group">
+                  <div className="flex items-center gap-4">
+                    <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black text-xs group-hover:bg-primary group-hover:text-white transition-all">
+                       {item.name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="flex flex-col">
+                      <p className="font-black text-sm text-foreground uppercase tracking-tight leading-none mb-1">{item.name}</p>
+                      <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">{item.totalDays} Units Allocated</p>
+                    </div>
                   </div>
                   <div>
                     {item.totalDays > 3 ? (
-                      <StatusBadge status="error" label="High Usage" withDot={false} size="sm" />
+                      <StatusBadge status="error" label="High Usage" withDot={false} size="sm" className="font-black uppercase text-[8px] tracking-widest" />
                     ) : item.totalDays > 0 ? (
-                      <StatusBadge status="success" label="On Track" withDot={false} size="sm" />
+                      <StatusBadge status="success" label="On Track" withDot={false} size="sm" className="font-black uppercase text-[8px] tracking-widest" />
                     ) : (
-                      <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">Perfect record</span>
+                      <span className="text-[9px] font-black text-emerald-500/40 uppercase tracking-widest">Perfect Saturation</span>
                     )}
                   </div>
                 </div>
               ))
             )}
           </div>
-        </PageSection>
+        </div>
       </div>
 
       {/* Recent Approvals Table Section */}
-      <PageSection
-        title="Recent Leave Approvals"
-        description="Processed leave requests and auto-approvals"
-        className="animate-fade-in-up"
-      >
-        <div className="border border-border/40 rounded-xl overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-muted/10">
-                <TableRow className="border-b border-border/40 hover:bg-transparent">
-                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Employee</TableHead>
-                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Duration</TableHead>
-                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Type</TableHead>
-                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Method</TableHead>
-                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground text-right">Processed</TableHead>
-                  <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground text-right w-10">Action</TableHead>
+      <div className="premium-card shadow-xl border-border/40 overflow-hidden">
+        <div className="px-6 py-5 bg-primary/[0.02] border-b border-border/40 flex items-center justify-between">
+           <div className="flex items-center gap-3">
+              <div className="size-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                 <CheckCircle2 className="size-5" />
+              </div>
+              <div className="flex flex-col">
+                 <h3 className="text-sm font-black uppercase tracking-widest text-foreground leading-none mb-1">Infrastructure Approvals</h3>
+                 <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight opacity-70">Recent valid departures</p>
+              </div>
+           </div>
+        </div>
+        <div className="overflow-x-auto scrollbar-hide">
+          <Table>
+            <TableHeader className="bg-muted/5">
+              <TableRow className="border-b border-border/40 hover:bg-transparent">
+                <TableHead className="py-4 px-6 font-black text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">Personnel</TableHead>
+                <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Framework Vector</th>
+                <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Strategy</th>
+                <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Channel</th>
+                <th className="py-4 px-6 text-right font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Timestamp</th>
+                <th className="py-4 px-6 text-right font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Control</th>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {stats.recentApprovals.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-20 text-center text-muted-foreground opacity-30 italic font-medium uppercase text-[10px] tracking-widest">
+                    No approved vectors found
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {stats.recentApprovals.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="py-12 text-center text-muted-foreground opacity-50 italic font-medium">
-                      No approval history found
+              ) : (
+                stats.recentApprovals.map((req: any) => (
+                  <TableRow key={req.id} className="hover:bg-primary/[0.02] transition-colors border-b border-border/10 last:border-0 group">
+                    <TableCell className="py-3 px-6">
+                      <div className="flex items-center gap-4">
+                        <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black text-[10px] group-hover:bg-primary group-hover:text-white transition-all">
+                           {req.employeeName.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div className="flex flex-col">
+                          <div className="font-bold text-sm text-foreground leading-none mb-1">{req.employeeName}</div>
+                          <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest opacity-60">{req.role}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3 px-6">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-bold text-foreground">{req.startDate === req.endDate ? req.startDate : `${req.startDate} — ${req.endDate}`}</span>
+                        {req.duration === 'HALF' && (
+                          <span className="text-[8px] text-primary px-2 py-0.5 bg-primary/5 border border-primary/10 rounded-md w-fit uppercase font-black tracking-widest">Half Cycle</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3 px-6">
+                      <StatusBadge
+                        status="info"
+                        label={req.category.replace(/_/g, ' ')}
+                        size="sm"
+                        className="font-black uppercase text-[8px] tracking-widest px-3 h-6"
+                      />
+                    </TableCell>
+                    <TableCell className="py-3 px-6">
+                      {req.systemNote ? (
+                        <div className="flex items-center gap-1.5 text-emerald-600 font-black text-[9px] uppercase tracking-widest bg-emerald-500/5 px-2.5 py-1 rounded-lg border border-emerald-500/10">
+                          <Check className="size-3" /> Autonomous
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 text-blue-600 font-black text-[9px] uppercase tracking-widest bg-blue-500/5 px-2.5 py-1 rounded-lg border border-blue-500/10">
+                          <TrendingUp className="size-3 text-blue-500/40" /> Manual
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3 px-6 text-right font-mono text-[10px] font-bold text-muted-foreground/60">
+                      {new Date(req.updatedAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="py-3 px-6 text-right">
+                      <div className="opacity-0 group-hover:opacity-100 transition-all">
+                        <CancelLeaveButton requestId={req.id} employeeName={req.employeeName} />
+                      </div>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  stats.recentApprovals.map((req: any) => (
-                    <TableRow key={req.id} className="hover:bg-muted/5 transition-colors border-b border-border/40 last:border-0">
-                      <TableCell className="py-4 px-6">
-                        <div className="font-bold text-sm text-foreground">{req.employeeName}</div>
-                        <div className="text-[10px] text-muted-foreground font-semibold mt-0.5 uppercase tracking-wider">{req.role}</div>
-                      </TableCell>
-                      <TableCell className="py-4 px-6 text-xs font-semibold">
-                        <div className="flex flex-col gap-1">
-                          <span>{req.startDate === req.endDate ? req.startDate : `${req.startDate} to ${req.endDate}`}</span>
-                          {req.duration === 'HALF' && (
-                            <span className="text-[9px] text-primary px-1.5 py-0.5 bg-primary/10 rounded w-fit uppercase font-bold tracking-tighter">Half Day</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-4 px-6">
-                        <StatusBadge
-                          status="info"
-                          label={req.category.replace(/_/g, ' ')}
-                          size="sm"
-                          className="font-bold py-1 px-3"
-                        />
-                      </TableCell>
-                      <TableCell className="py-4 px-6">
-                        {req.systemNote ? (
-                          <Badge variant="outline" className="bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-900/30 font-bold text-[10px] px-2 py-0.5">
-                            Auto
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="bg-blue-50/50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border-blue-200/50 dark:border-blue-900/30 font-bold text-[10px] px-2 py-0.5">
-                            Manual
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="py-4 px-6 text-right text-xs font-mono font-medium text-muted-foreground">
-                        {new Date(req.updatedAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="py-4 px-6 text-right">
-                        <CancelLeaveButton requestId={req.id} employeeName={req.employeeName} />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
-      </PageSection>
+      </div>
     </PageContainer>
   );
 }

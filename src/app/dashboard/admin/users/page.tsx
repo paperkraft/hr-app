@@ -1,10 +1,9 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Globe, Laptop } from "lucide-react";
+import { MapPin, Globe, Laptop, Users } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { AddUserDialog } from "@/components/features/admin/add-user-dialog";
 import { EditUserDialog } from "@/components/features/admin/edit-user-dialog";
 import { DeleteUserButton } from "@/components/features/admin/delete-user-button";
+import { PageContainer, PageHeader, StatusBadge } from "@/components/ui";
 
 export const dynamic = 'force-dynamic';
 
@@ -43,38 +42,44 @@ export default async function AdminUsersPage() {
   const getRoleBadge = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100 border-none uppercase text-[10px]">ADMIN</Badge>;
+        return <StatusBadge status="warning" label="Admin" size="sm" className="font-black uppercase tracking-widest px-2.5 h-6 text-[9px] shadow-sm" />;
       case "ACCOUNTANT":
-        return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none uppercase text-[10px]">ACCOUNTANT</Badge>;
+        return <StatusBadge status="info" label="Accountant" size="sm" className="font-black uppercase tracking-widest px-2.5 h-6 text-[9px] shadow-sm" />;
       default:
-        return <Badge variant="secondary" className="border-none uppercase text-[10px]">EMPLOYEE</Badge>;
+        return <StatusBadge status="success" label="Employee" size="sm" className="font-black uppercase tracking-widest px-2.5 h-6 text-[9px] shadow-sm" />;
     }
   };
 
   const getWorkModeBadge = (mode: string) => {
     switch (mode) {
       case "REMOTE":
-        return <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50 text-[10px] h-5 flex items-center gap-1">
-          <Laptop className="w-2.5 h-2.5" /> REMOTE
-        </Badge>;
+        return (
+          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-500/5 text-blue-600 border border-blue-500/10 text-[9px] font-black uppercase tracking-widest">
+            <Laptop className="size-3" /> Remote
+          </div>
+        );
       case "HYBRID":
-        return <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50 text-[10px] h-5 flex items-center gap-1">
-          <Globe className="w-2.5 h-2.5" /> HYBRID
-        </Badge>;
+        return (
+          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-500/5 text-emerald-600 border border-emerald-500/10 text-[9px] font-black uppercase tracking-widest">
+            <Globe className="size-3" /> Hybrid
+          </div>
+        );
       default:
-        return <Badge variant="outline" className="text-slate-600 border-slate-200 bg-slate-50 text-[10px] h-5 flex items-center gap-1">
-          <MapPin className="w-2.5 h-2.5" /> ON-SITE
-        </Badge>;
+        return (
+          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-500/5 text-slate-600 border border-slate-500/10 text-[9px] font-black uppercase tracking-widest">
+            <MapPin className="size-3" /> On-Site
+          </div>
+        );
     }
   };
 
   return (
-    <div className="flex flex-col gap-10 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Employee Directory</h1>
-          <p className="text-muted-foreground mt-1 text-sm font-medium">Comprehensive workforce management for distributed teams.</p>
-        </div>
+    <PageContainer maxWidth="full" className="py-8 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <PageHeader
+          title="Workforce Directory"
+          description="Provision and manage centralized personnel records for distributed clusters."
+        />
         <AddUserDialog
           managers={validManagers}
           departments={departments}
@@ -82,54 +87,65 @@ export default async function AdminUsersPage() {
         />
       </div>
 
-      <Card className="shadow-sm border-border/40 p-0 overflow-hidden">
-        <CardHeader className="bg-muted/10 border-b border-border/40 p-4">
-          <CardTitle className="text-base text-primary">Personnel Records</CardTitle>
-          <CardDescription className="text-xs">Active accounts currently provisioned in the system.</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
-            <thead className="bg-muted/30 border-b border-border/40 py-2">
+      <div className="premium-card shadow-xl border-border/40 overflow-hidden">
+        <div className="px-6 py-5 bg-primary/2 border-b border-border/40 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <Users className="size-5" />
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-sm font-black uppercase tracking-widest text-foreground leading-none mb-1">Personnel Records</h3>
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight opacity-70">Interactive staff catalog</p>
+            </div>
+          </div>
+          <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-[0.2em] bg-muted/20 px-3 py-1.5 rounded-full border border-border/20">
+            {users.length} Identities Verified
+          </span>
+        </div>
+
+        <div className="overflow-x-auto scrollbar-hide">
+          <table className="w-full border-collapse">
+            <thead className="bg-muted/5 border-b border-border/40">
               <tr>
-                <th className="h-10 px-6 text-left align-middle font-bold text-muted-foreground text-[10px] uppercase tracking-wider">Employee</th>
-                <th className="h-10 px-6 text-left align-middle font-bold text-muted-foreground text-[10px] uppercase tracking-wider">Role</th>
-                <th className="h-10 px-6 text-left align-middle font-bold text-muted-foreground text-[10px] uppercase tracking-wider">Work Mode</th>
-                <th className="h-10 px-6 text-left align-middle font-bold text-muted-foreground text-[10px] uppercase tracking-wider">Location</th>
-                <th className="h-10 px-6 text-right align-middle font-bold text-muted-foreground text-[10px] uppercase tracking-wider">Actions</th>
+                <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Employee Profile</th>
+                <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Framework Role</th>
+                <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Operational Mode</th>
+                <th className="py-4 px-6 text-left font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Primary Location</th>
+                <th className="py-4 px-6 text-right font-black text-muted-foreground/70 text-[10px] uppercase tracking-[0.2em]">Infrastructure</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/20">
               {users.map((user) => (
-                <tr key={user.id} className="hover:bg-muted/5 transition-colors duration-200">
-                  <td className="p-3 px-6 align-middle">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center font-bold text-muted-foreground uppercase text-[10px] border border-border/50">
+                <tr key={user.id} className="hover:bg-primary/2 transition-colors group border-b border-border/10 last:border-0">
+                  <td className="py-2.5 px-6">
+                    <div className="flex items-center gap-4">
+                      <div className="h-9 w-9 rounded-xl bg-primary/5 text-primary flex items-center justify-center font-black uppercase text-[11px] border border-primary/10 shadow-sm group-hover:bg-primary group-hover:text-white transition-all duration-300">
                         {user.name ? user.name.slice(0, 2) : user.email.slice(0, 2)}
                       </div>
                       <div className="flex flex-col">
-                        <span className="font-semibold text-foreground leading-none">{user.name}</span>
-                        <span className="text-[10px] text-muted-foreground mt-0.5">{user.email}</span>
+                        <span className="font-bold text-sm text-foreground leading-tight">{user.name}</span>
+                        <span className="text-[10px] text-muted-foreground font-medium tracking-tight">{user.email}</span>
                       </div>
                     </div>
                   </td>
-                  <td className="p-3 px-6 align-middle">
+                  <td className="py-2.5 px-6">
                     {getRoleBadge(user.role)}
                   </td>
-                  <td className="p-3 px-6 align-middle">
+                  <td className="py-2.5 px-6">
                     {getWorkModeBadge(user.workMode)}
                   </td>
-                  <td className="p-3 px-6 align-middle">
+                  <td className="py-2.5 px-6">
                     {user.location ? (
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-xs font-semibold text-foreground">{user.location.name}</span>
-                        {user.location.isRemote && <span className="text-[9px] text-primary/70 font-bold uppercase tracking-widest">Remote hub</span>}
+                        <span className="text-xs font-bold text-foreground leading-none">{user.location.name}</span>
+                        {user.location.isRemote && <span className="text-[9px] text-primary/70 font-black uppercase tracking-[0.15em] leading-none mt-1">Remote hub</span>}
                       </div>
                     ) : (
-                      <span className="text-xs text-muted-foreground italic font-medium">Default Office</span>
+                      <span className="text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest">Global Default</span>
                     )}
                   </td>
-                  <td className="p-3 px-6 align-middle text-right">
-                    <div className="flex justify-end gap-1">
+                  <td className="py-2.5 px-6 text-right">
+                    <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <EditUserDialog
                         user={user}
                         managers={validManagers}
@@ -143,8 +159,8 @@ export default async function AdminUsersPage() {
               ))}
             </tbody>
           </table>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </div>
+    </PageContainer>
   );
 }

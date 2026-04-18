@@ -1,7 +1,8 @@
 import prisma from "@/lib/prisma"
-import { Building2 } from "lucide-react"
+import { Building2, Info } from "lucide-react"
 import { DepartmentList } from "@/components/features/admin/department-list"
 import { AddDepartmentDialog } from "@/components/features/admin/add-department-dialog"
+import { PageContainer, PageHeader } from "@/components/ui"
 
 export const dynamic = 'force-dynamic'
 
@@ -35,32 +36,34 @@ export default async function AdminDepartmentsPage() {
   })
 
   return (
-    <div className="flex flex-col gap-8 p-6 md:p-10 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Department Management</h1>
-          <p className="text-muted-foreground mt-1">Manage organizational units and assign team leaders.</p>
-        </div>
+    <PageContainer maxWidth="full" className="py-8 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <PageHeader
+          title="Organizational Clusters"
+          description="Architecture and leadership management for functional departments."
+        />
         <AddDepartmentDialog />
       </div>
 
-      <div className="grid gap-6">
-        <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 flex items-start gap-4">
-          <div className="bg-primary/10 p-3 rounded-lg">
-            <Building2 className="w-6 h-6 text-primary" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-lg">Department Roles</h3>
-            <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-              Each department can have one designated Team Leader. This person acts as the primary 
-              contact and manager for the employees within that department. You can assign any existing 
-              user as a leader using the dropdowns below.
-            </p>
+      <div className="grid gap-8">
+        <div className="premium-card shadow-xl border-border/40 bg-primary/2 overflow-hidden">
+          <div className="p-6 flex items-start gap-4">
+            <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
+              <Info className="size-6 shadow-sm" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-base font-black uppercase tracking-widest text-foreground">Leadership Hierarchy</h3>
+              <p className="text-xs text-muted-foreground mt-2 max-w-3xl leading-relaxed font-medium">
+                Functional units are governed by designated Team Leaders. These individuals act as primary
+                administrative anchors for their respective clusters. Use the management grid below to
+                designate leadership roles and verify membership saturation.
+              </p>
+            </div>
           </div>
         </div>
 
         <DepartmentList departments={departments} users={users} />
       </div>
-    </div>
+    </PageContainer>
   )
 }

@@ -135,28 +135,48 @@ export function SettingsForm({ initialData, initialLocations, initialHolidays, i
 
     return (
         <div className="space-y-6 animate-fade-in">
-            <Tabs defaultValue="general">
-                {/* Tab Bar — TabsList with overriding classes to match design */}
-                <TabsList className="flex gap-1 p-4 bg-muted border border-border/60 rounded-sm w-fit overflow-x-auto scrollbar-hide mb-4">
-                    <TabsTrigger value="general" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50">
-                        <Clock className="size-4" /> Global Defaults
-                    </TabsTrigger>
-                    <TabsTrigger value="locations" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50">
-                        <Globe className="size-4" /> Locations
-                    </TabsTrigger>
-                    <TabsTrigger value="attendance" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50">
-                        <ShieldAlert className="size-4" /> Attendance Policies
-                    </TabsTrigger>
-                    <TabsTrigger value="leave" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50">
-                        <CalendarRange className="size-4" /> Leave Frameworks
-                    </TabsTrigger>
-                    <TabsTrigger value="holidays" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50">
-                        <Sparkles className="size-4" /> Public Holidays
-                    </TabsTrigger>
-                    <TabsTrigger value="announcements" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50">
-                        <Megaphone className="size-4" /> Announcements
-                    </TabsTrigger>
-                </TabsList>
+            <Tabs defaultValue="general" className="w-full">
+                {/* Tab Bar — Matches DashboardTabs aesthetic */}
+                <div className="w-full overflow-x-auto scrollbar-hide mb-6">
+                    <TabsList className="inline-flex items-center gap-1 bg-muted/10 p-1 rounded-sm border border-border/60 min-w-max h-auto">
+                        <TabsTrigger
+                            value="general"
+                            className="flex items-center gap-2 h-8 px-4 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
+                        >
+                            <Clock className="size-3.5" /> Global Defaults
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="locations"
+                            className="flex items-center gap-2 h-8 px-4 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
+                        >
+                            <Globe className="size-3.5" /> Locations
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="attendance"
+                            className="flex items-center gap-2 h-8 px-4 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
+                        >
+                            <ShieldAlert className="size-3.5" /> Attendance Policies
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="leave"
+                            className="flex items-center gap-2 h-8 px-4 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
+                        >
+                            <CalendarRange className="size-3.5" /> Leave Frameworks
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="holidays"
+                            className="flex items-center gap-2 h-8 px-4 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
+                        >
+                            <Sparkles className="size-3.5" /> Public Holidays
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="announcements"
+                            className="flex items-center gap-2 h-8 px-4 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
+                        >
+                            <Megaphone className="size-3.5" /> Announcements
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
 
                 {/* ─── GLOBAL DEFAULTS ─── */}
                 <TabsContent value="general" className="outline-none">

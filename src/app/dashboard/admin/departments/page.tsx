@@ -26,7 +26,7 @@ export default async function AdminDepartmentsPage() {
   return (
     <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">
       {/* Page Header — consistent with admin dashboard */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-foreground tracking-tight">Departments</h1>
           <p className="text-xs text-muted-foreground font-medium mt-0.5">Manage functional units and team leadership assignments</p>

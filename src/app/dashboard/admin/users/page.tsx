@@ -75,7 +75,7 @@ export default async function AdminUsersPage() {
               <tr>
                 <th className="py-4 px-6 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 w-[300px]">Name</th>
                 <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Date</th>
-                <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Job title</th>
+                <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Department</th>
                 <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Employment type</th>
                 <th className="py-4 px-6 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Action</th>
               </tr>

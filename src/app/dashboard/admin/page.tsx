@@ -178,10 +178,10 @@ export default async function AdminOverviewPage() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         {/* Left: Attendance Status (2/3 width) */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-8 space-y-6">
 
           {/* Attendance Pulse */}
           <div className="bg-card border border-border rounded-sm overflow-hidden">

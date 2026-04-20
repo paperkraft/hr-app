@@ -1,8 +1,9 @@
 "use client";
 
-import { Menu, Bell, Activity, ChevronRight } from "lucide-react";
+import { Menu, Activity, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/layout/user-nav";
+import { NotificationNav } from "@/components/layout/notification-nav";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { roleNavigation } from "@/config/navigation";
 import Link from "next/link";
@@ -82,15 +83,8 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
         </div>
       </div>
 
-      <div className="flex items-center gap-2 md:gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-foreground relative rounded-sm"
-        >
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-2 right-2.5 w-2 h-2 bg-destructive border-2 border-background rounded-full animate-pulse"></span>
-        </Button>
+      <div className="flex items-center gap-1 md:gap-3">
+        <NotificationNav />
         <div className="h-6 w-px bg-border/50 mx-1 hidden md:block"></div>
         <UserNav userName={userName} />
       </div>

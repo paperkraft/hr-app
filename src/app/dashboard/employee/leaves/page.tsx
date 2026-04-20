@@ -172,10 +172,23 @@ export default async function EmployeeLeavesPage() {
                       {/* Duration */}
                       <td className="py-3 px-4 text-center">
                         <div className="inline-flex flex-col items-center">
-                          <span className="text-[9px] font-black text-muted-foreground/80 uppercase tracking-widest bg-muted/20 px-2 py-0.5 rounded-sm border border-border/20 mb-0.5">
+                          <span className={cn(
+                            "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-sm border mb-0.5",
+                            leave.duration === "FULL" ? "bg-muted/20 text-muted-foreground/80 border-border/20" : 
+                            leave.duration === "HALF" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/10" : 
+                            "bg-primary/10 text-primary border-primary/10"
+                          )}>
                             {leave.duration === "FULL" ? "Full day" : leave.duration === "HALF" ? "Half day" : "Short"}
                           </span>
-                          <span className="text-[9px] font-bold text-muted-foreground/60 tabular-nums">
+                          {leave.duration === "HALF" && leave.halfDayType && (
+                            <span className={cn(
+                              "text-[8px] font-bold uppercase tracking-tight mb-1",
+                              leave.halfDayType === "FIRST_HALF" ? "text-emerald-500" : "text-amber-500"
+                            )}>
+                              {leave.halfDayType === "FIRST_HALF" ? "1st Half" : "2nd Half"}
+                            </span>
+                          )}
+                          <span className="text-[9px] font-bold text-muted-foreground/40 tabular-nums">
                             {days} {days === 1 ? 'day' : 'days'}
                           </span>
                         </div>

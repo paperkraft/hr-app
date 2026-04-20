@@ -109,6 +109,7 @@ async function getAdminStats() {
       startDate: new Date(req.startDate).toISOString().split('T')[0],
       endDate: new Date(req.endDate).toISOString().split('T')[0],
       duration: req.duration,
+      halfDayType: req.halfDayType,
       category: req.category,
       reason: req.reason || "No reason provided",
     })),
@@ -120,6 +121,7 @@ async function getAdminStats() {
       endDate: new Date(req.endDate).toISOString().split('T')[0],
       category: req.category,
       duration: req.duration,
+      halfDayType: req.halfDayType,
       systemNote: req.systemNote,
       updatedAt: req.updatedAt
     })),
@@ -307,7 +309,12 @@ export default async function AdminOverviewPage() {
                             {req.startDate === req.endDate ? req.startDate : `${req.startDate} — ${req.endDate}`}
                           </span>
                           {req.duration === 'HALF' && (
-                            <span className="ml-1.5 text-[8px] font-black text-primary/60 uppercase">Half</span>
+                            <span className={cn(
+                              "ml-1.5 text-[8px] font-black uppercase px-1.5 py-0.5 rounded-sm",
+                              req.halfDayType === "FIRST_HALF" ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600"
+                            )}>
+                              {req.halfDayType === "FIRST_HALF" ? "1st Half" : "2nd Half"}
+                            </span>
                           )}
                         </td>
                         <td className="py-3 px-4">
@@ -390,8 +397,16 @@ export default async function AdminOverviewPage() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-[12px] font-bold text-foreground truncate">{req.employeeName}</p>
-                        <p className="text-[10px] font-bold text-muted-foreground/50 uppercase truncate mt-0.5">
+                        <p className="text-[10px] font-bold text-muted-foreground/50 uppercase truncate mt-0.5 flex items-center gap-1.5">
                           {req.startDate} · {req.category.replace(/_/g, ' ')}
+                          {req.duration === "HALF" && (
+                            <span className={cn(
+                              "px-1.5 py-0.5 rounded-[2px] text-[7px] font-black tracking-normal",
+                              req.halfDayType === "FIRST_HALF" ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600"
+                            )}>
+                              {req.halfDayType === "FIRST_HALF" ? "1H" : "2H"}
+                            </span>
+                          )}
                         </p>
                       </div>
                     </div>

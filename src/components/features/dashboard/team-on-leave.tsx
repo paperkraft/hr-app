@@ -9,6 +9,8 @@ interface TeamMember {
   startDate: Date;
   endDate: Date;
   leaveType: string;
+  duration?: string;
+  halfDayType?: string | null;
 }
 
 interface TeamOnLeaveProps {
@@ -50,9 +52,16 @@ export function TeamOnLeave({ members }: TeamOnLeaveProps) {
               </div>
 
               <div className="flex flex-col items-end">
-                <span className="text-[9px] font-black text-primary uppercase tracking-widest">
-                  {member.leaveType}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] font-black text-primary uppercase tracking-widest text-right">
+                    {member.leaveType}
+                  </span>
+                  {member.duration === "HALF" && member.halfDayType && (
+                    <span className="text-[7px] font-black bg-amber-500/10 text-amber-600 px-1 rounded-[2px] border border-amber-500/10">
+                      {member.halfDayType === "FIRST_HALF" ? "1H" : "2H"}
+                    </span>
+                  )}
+                </div>
                 <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-tighter">
                   Until {new Date(member.endDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
                 </span>

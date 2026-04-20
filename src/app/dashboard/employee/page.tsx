@@ -85,14 +85,28 @@ async function getEmployeeData() {
       status: "APPROVED",
       startDate: { lte: today },
       endDate: { gte: today },
-      user: { id: { not: session.user.id } }
+      user: {
+        id: { not: session.user.id },
+        OR: [
+          { departmentId: user?.departmentId },
+          { managerId: session.user.id },
+          { managerId: user?.managerId }
+        ]
+      }
     },
-    include: { user: { include: { department: true } } },
+    include: { 
+      user: { 
+        include: { 
+          department: true,
+          manager: true
+        } 
+      } 
+    },
+    orderBy: { createdAt: "desc" },
     take: 10
   });
 
   const teamOnLeave = onLeave
-    .filter(l => !presentIds.has(l.userId))
     .slice(0, 5)
     .map((l) => ({
       id: l.user.id,
@@ -100,6 +114,8 @@ async function getEmployeeData() {
       role: l.user.department?.name || "Team Member",
       startDate: l.startDate,
       endDate: l.endDate,
+      duration: l.duration,
+      halfDayType: l.halfDayType,
       leaveType: l.category === "UNPAID" ? "Unpaid" : "Paid"
     }));
 

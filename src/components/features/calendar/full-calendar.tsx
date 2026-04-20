@@ -13,9 +13,10 @@ import {
   isSameDay,
   eachDayOfInterval,
   isWeekend,
-  isToday
+  isToday,
+  startOfDay
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, User, Palmtree, MapPin, Megaphone } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, User, Palmtree, MapPin, Megaphone, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +34,7 @@ interface Event {
   startDate?: Date;
   endDate?: Date;
   category?: string;
+  status?: "PENDING" | "APPROVED" | "REJECTED";
 }
 
 interface FullCalendarProps {
@@ -66,9 +68,10 @@ export function FullCalendar({ initialHolidays, initialLeaves, initialAnnounceme
     const dayHolidays = holidays.filter(h => isSameDay(h.date, day));
     const dayAnnouncements = announcements.filter(a => isSameDay(a.date, day));
     const dayLeaves = leaves.filter(l => {
-      const start = new Date(l.startDate);
-      const end = new Date(l.endDate);
-      return day >= start && day <= end;
+      const dayStart = startOfDay(day);
+      const leaveStart = startOfDay(new Date(l.startDate));
+      const leaveEnd = startOfDay(new Date(l.endDate));
+      return dayStart >= leaveStart && dayStart <= leaveEnd;
     });
     return [...dayHolidays, ...dayAnnouncements, ...dayLeaves];
   };
@@ -178,13 +181,21 @@ export function FullCalendar({ initialHolidays, initialLeaves, initialAnnounceme
                             "px-2 py-1 rounded-sm text-[9px] font-bold truncate transition-all flex items-center gap-1.5 border",
                             event.type === "HOLIDAY" && "bg-rose-500/10 text-rose-600 border-rose-500/20",
                             event.type === "ANNOUNCEMENT" && "bg-blue-500/10 text-blue-600 border-blue-500/20",
-                            event.type === "LEAVE" && "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                            event.type === "LEAVE" && (
+                              event.status === "PENDING"
+                                ? "bg-amber-500/5 text-amber-600/70 border-amber-500/20 border-dashed"
+                                : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                            )
                           )}
-                          title={event.title}
+                          title={`${event.title}${event.status === "PENDING" ? " (Pending)" : ""}`}
                         >
                           {event.type === "HOLIDAY" && <Palmtree className="size-2.5 shrink-0" />}
                           {event.type === "ANNOUNCEMENT" && <Megaphone className="size-2.5 shrink-0" />}
-                          {event.type === "LEAVE" && <User className="size-2.5 shrink-0" />}
+                          {event.type === "LEAVE" && (
+                            event.status === "PENDING"
+                              ? <Clock className="size-2.5 shrink-0 animate-pulse" />
+                              : <User className="size-2.5 shrink-0" />
+                          )}
                           <span className="truncate flex-1 min-w-0">{event.title}</span>
                         </div>
                       ))}
@@ -203,7 +214,7 @@ export function FullCalendar({ initialHolidays, initialLeaves, initialAnnounceme
                                     "size-1.5 rounded-full shrink-0",
                                     event.type === "HOLIDAY" && "bg-rose-600",
                                     event.type === "ANNOUNCEMENT" && "bg-blue-600",
-                                    event.type === "LEAVE" && "bg-amber-600"
+                                    event.type === "LEAVE" && (event.status === "PENDING" ? "bg-amber-600 opacity-40 ring-1 ring-amber-600 ring-offset-1" : "bg-amber-600")
                                   )}
                                 />
                               ))}

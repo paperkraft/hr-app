@@ -3,21 +3,21 @@
 import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCw } from "lucide-react";
-import { triggerMaintenance } from "@/actions/maintenance";
+import { triggerFinancialSync } from "@/actions/financials";
 import { toast } from "sonner";
 
-export function MaintenanceButton() {
+export function FinancialSyncButton() {
   const [isPending, startTransition] = useTransition();
 
   const handleTrigger = () => {
     startTransition(async () => {
-      const result = await triggerMaintenance();
+      const result = await triggerFinancialSync();
       if (result.success) {
-        toast.success("Maintenance Complete", {
+        toast.success("Processing Complete", {
           description: result.message,
         });
       } else if (result.error) {
-        toast.error("Maintenance Failed", {
+        toast.error("Process Failed", {
           description: result.error,
         });
       }
@@ -39,7 +39,7 @@ export function MaintenanceButton() {
       ) : (
         <>
           <RefreshCw className="mr-2 h-4 w-4" />
-          Maintenance
+          Financial Sync
         </>
       )}
     </Button>

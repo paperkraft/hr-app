@@ -9,7 +9,7 @@ import { ExportLedgerButton } from "@/components/features/accountant/export-ledg
 import { MasterReportTable } from "@/components/features/accountant/master-report-table";
 import { MonthYearPicker } from "@/components/features/accountant/month-year-picker";
 import { ensureBalance } from "@/actions/leave";
-import { MaintenanceButton } from "@/components/features/accountant/maintenance-button";
+import { FinancialSyncButton } from "@/components/features/accountant/financial-sync-button";
 import Link from "next/link";
 import {
   PageContainer,
@@ -202,7 +202,7 @@ export default async function AccountantDashboard({
         </div>
         <div className="flex items-center gap-2">
           <MonthYearPicker currentMonth={stats.currentMonth} currentYear={stats.currentYear} />
-          <MaintenanceButton />
+          <FinancialSyncButton />
           <ExportLedgerButton data={reportData} month={stats.currentMonthName} />
         </div>
       </div>

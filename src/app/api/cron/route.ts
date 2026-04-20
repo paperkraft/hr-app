@@ -4,7 +4,7 @@ import { generateAllMonthlyBalances } from "@/lib/balance-accrual";
 
 /**
  * SECURE CRON ENDPOINT
- * Triggers daily/monthly maintenance tasks for HRM.
+ * Triggers daily/monthly automated processing tasks for HRM.
  * 
  * Authorization: 
  * 1. Bearer Token in header: `Authorization: Bearer <CRON_SECRET>`
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log("[CRON] Starting maintenance tasks...");
+    console.log("[CRON] Starting automated processing tasks...");
 
     // 1. Proactive Auto Punch-Out
     const punchOutCount = await processAllAutoPunchOuts();
@@ -44,9 +44,9 @@ export async function GET(request: NextRequest) {
       time: new Date().toISOString()
     });
   } catch (error: any) {
-    console.error("[CRON] Maintenance failed:", error);
+    console.error("[CRON] Automated processing failed:", error);
     return NextResponse.json({ 
-      error: "Maintenance task failed", 
+      error: "Automated task failed", 
       details: error.message 
     }, { status: 500 });
   }

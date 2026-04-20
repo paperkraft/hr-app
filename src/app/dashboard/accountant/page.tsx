@@ -1,14 +1,9 @@
 import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from "@/components/ui/table";
 import { Users, Clock, FileText, IndianRupee, MapPin, CalendarDays } from "lucide-react";
 import { CancelLeaveButton } from "@/components/features/leave/cancel-leave-button";
-import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import { ExportLedgerButton } from "@/components/features/accountant/export-ledger-button";
 import { MasterReportTable } from "@/components/features/accountant/master-report-table";
 import { MonthYearPicker } from "@/components/features/accountant/month-year-picker";
-import { ensureBalance } from "@/actions/leave";
 import { FinancialSyncButton } from "@/components/features/accountant/financial-sync-button";
 import Link from "next/link";
 import {
@@ -16,167 +11,9 @@ import {
   StatCard
 } from "@/components/ui";
 import { AccountantTabs } from "@/components/features/accountant/accountant-tabs";
+import { getAccountantDashboardStats } from "@/actions/dashboard";
 
 export const dynamic = 'force-dynamic';
-
-
-async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
-  const session = await getServerSession(authOptions);
-  const isAdmin = session?.user?.role === "ADMIN" || session?.user?.role === "SYSTEM_ADMIN";
-  if (!session?.user || (session.user.role !== "ACCOUNTANT" && !isAdmin)) {
-    redirect("/dashboard/employee");
-  }
-
-  const now = new Date();
-  const currentYear = reqYear || now.getFullYear();
-  const currentMonth = reqMonth || now.getMonth() + 1;
-
-  const startOfMonth = new Date(currentYear, currentMonth - 1, 1, 0, 0, 0, 0);
-  const endOfMonth = new Date(currentYear, currentMonth, 0, 23, 59, 59, 999);
-
-  const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
-  const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
-
-  const usersToProcess = await prisma.user.findMany({
-    where: {
-      role: { in: ["EMPLOYEE", "ACCOUNTANT"] },
-      createdAt: { lte: endOfMonth }
-    },
-    select: { id: true }
-  });
-
-  await Promise.all(usersToProcess.map(u => ensureBalance(u.id, currentMonth, currentYear)));
-
-  const users = await prisma.user.findMany({
-    where: {
-      role: { in: ["EMPLOYEE", "ACCOUNTANT"] },
-      createdAt: { lte: endOfMonth }
-    },
-    include: {
-      attendances: {
-        where: {
-          date: { gte: startOfMonth, lte: endOfMonth }
-        }
-      },
-      leaveBalances: {
-        where: {
-          OR: [
-            { month: currentMonth, year: currentYear },
-            { month: prevMonth, year: prevYear }
-          ]
-        }
-      },
-      leaveRequests: {
-        where: {
-          status: "APPROVED",
-          startDate: { gte: startOfMonth, lte: endOfMonth }
-        }
-      },
-      allowances: {
-        where: {
-          OR: [
-            { fromDate: { gte: startOfMonth, lte: endOfMonth } },
-            { toDate: { gte: startOfMonth, lte: endOfMonth } },
-            { fromDate: { lte: startOfMonth }, toDate: { gte: endOfMonth } }
-          ]
-        }
-      }
-    },
-    orderBy: { name: 'asc' }
-  });
-
-  let totalLatesSystemWide = 0;
-  let totalEncashments = 0;
-  let totalLwpSystemWide = 0;
-  let totalAllowancesSystemWide = 0;
-
-  const reportData = users.map(user => {
-    const attendances = user.attendances;
-    const currentBalance = user.leaveBalances.find(lb => lb.month === currentMonth && lb.year === currentYear);
-
-    let allowanceDays = 0;
-    user.allowances.forEach(allw => {
-      const overlapStart = allw.fromDate > startOfMonth ? allw.fromDate : startOfMonth;
-      const overlapEnd = allw.toDate < endOfMonth ? allw.toDate : endOfMonth;
-      if (overlapEnd >= overlapStart) {
-        allowanceDays += Math.ceil(Math.abs(overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      }
-    });
-
-    const policy1FullUsed = currentBalance?.fullTaken ?? 0;
-    const policy1ShortUsed = currentBalance?.shortTaken ?? 0;
-    const policy2Used = currentBalance?.semiAnnualTaken ?? 0;
-    const unpaidTaken = currentBalance?.unpaidTaken ?? 0;
-
-    const totalLate = attendances.filter(a => a.isLate).length;
-    const specialCaseLate = attendances.filter(a => a.isLate && a.isLateSpecialCase).length;
-    const punishableLate = totalLate - specialCaseLate;
-    const lateDeduction = punishableLate > 3 ? Math.ceil((punishableLate - 3) / 3) * 0.5 : 0;
-
-    totalLatesSystemWide += totalLate;
-    const lwpDays = unpaidTaken + lateDeduction;
-    totalLwpSystemWide += lwpDays;
-    totalEncashments += (currentBalance?.encashed ?? 0);
-    totalAllowancesSystemWide += allowanceDays;
-
-    return {
-      id: user.id,
-      name: user.name || user.email,
-      role: user.role,
-      totalPresent: attendances.length,
-      leavesTaken: policy1FullUsed + policy1ShortUsed + policy2Used + unpaidTaken,
-      totalLate,
-      specialCaseLate,
-      punishableLate,
-      lwpDays,
-      encashableDays: currentBalance?.encashed ?? 0,
-      allowanceDays,
-      balances: {
-        full: currentBalance?.remainingFull ?? 0,
-        short: currentBalance?.remainingShort ?? 0,
-        semiAnnual: currentBalance?.semiAnnualRemaining ?? 0,
-      },
-      offSiteCount: attendances.filter(a => a.isOutsideOffice).length
-    };
-  });
-
-  const recentApprovals = await prisma.leaveRequest.findMany({
-    where: {
-      status: "APPROVED",
-      updatedAt: { gte: startOfMonth }
-    },
-    include: { user: true },
-    orderBy: { updatedAt: "desc" },
-    take: 20
-  });
-
-  return {
-    reportData,
-    recentApprovals: recentApprovals.map((req: any) => ({
-      id: req.id,
-      employeeName: `${req.user.name || req.user.email}`,
-      role: req.user.role,
-      startDate: new Date(req.startDate).toISOString().split('T')[0],
-      endDate: new Date(req.endDate).toISOString().split('T')[0],
-      category: req.category,
-      duration: req.duration,
-      halfDayType: req.halfDayType,
-      leaveType: req.leaveType,
-      systemNote: req.systemNote,
-      updatedAt: req.updatedAt
-    })),
-    stats: {
-      totalStaff: users.length,
-      totalLates: totalLatesSystemWide,
-      totalEncashments: totalEncashments,
-      totalLwp: totalLwpSystemWide,
-      totalAllowances: totalAllowancesSystemWide,
-      currentMonthName: new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' }),
-      currentYear,
-      currentMonth
-    }
-  };
-}
 
 export default async function AccountantDashboard({
   searchParams
@@ -188,7 +25,9 @@ export default async function AccountantDashboard({
   const y = params.y ? parseInt(params.y) : undefined;
   const tab = params.tab || "report";
 
-  const { reportData, stats, recentApprovals } = await getPayrollReportData(m, y);
+  const result = await getAccountantDashboardStats(m, y);
+  if (!result.success || !result.data) return null;
+  const { reportData, stats, recentApprovals } = result.data;
 
   return (
     <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">

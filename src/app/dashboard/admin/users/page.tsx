@@ -1,44 +1,17 @@
 import { MapPin, Globe, Laptop, Users, Search, Filter, ArrowUpDown, Plus, MoreVertical } from "lucide-react";
-import prisma from "@/lib/prisma";
 import { AddUserDialog } from "@/components/features/admin/add-user-dialog";
 import { EditUserDialog } from "@/components/features/admin/edit-user-dialog";
 import { DeleteUserButton } from "@/components/features/admin/delete-user-button";
-import { PageContainer, PageHeader, StatusBadge, Input, Button } from "@/components/ui";
+import { PageContainer, Input, Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { getAdminUsersData } from "@/actions/user";
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminUsersPage() {
-  const users = await prisma.user.findMany({
-    where: {
-      role: { not: 'SYSTEM_ADMIN' }
-    },
-    include: {
-      manager: true,
-      department: true,
-      shift: true,
-      location: true
-    },
-    orderBy: { createdAt: 'desc' }
-  });
-
-  const validManagers = await prisma.user.findMany({
-    where: {
-      role: { in: ['ADMIN', 'EMPLOYEE', 'ACCOUNTANT'] }
-    },
-    select: { id: true, name: true, email: true },
-    orderBy: { name: 'asc' }
-  });
-
-  const departments = await prisma.department.findMany({
-    select: { id: true, name: true },
-    orderBy: { name: 'asc' }
-  });
-
-  const locations = await prisma.location.findMany({
-    select: { id: true, name: true, isRemote: true },
-    orderBy: { name: 'asc' }
-  });
+  const result = await getAdminUsersData();
+  if (!result.success || !result.data) return <div>Error loading users</div>;
+  const { users, validManagers, departments, locations } = result.data;
 
   return (
     <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-4">

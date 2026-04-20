@@ -76,3 +76,34 @@ export async function deleteDepartment(id: string) {
     return { success: false, error: "Failed to delete department: " + error.message }
   }
 }
+
+export async function getAdminDepartmentsData() {
+  try {
+    await authorizeAdmin()
+    const departments = await prisma.department.findMany({
+      include: {
+        teamLeader: {
+          select: { id: true, name: true, email: true }
+        },
+        _count: { select: { members: true } }
+      },
+      orderBy: { name: 'asc' }
+    })
+
+    const users = await prisma.user.findMany({
+      where: { role: { not: 'SYSTEM_ADMIN' } },
+      select: { id: true, name: true, email: true },
+      orderBy: { name: 'asc' }
+    })
+
+    return {
+      success: true,
+      data: {
+        departments,
+        users
+      }
+    };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

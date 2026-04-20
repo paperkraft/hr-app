@@ -1,27 +1,15 @@
-import prisma from "@/lib/prisma"
 import { Building2 } from "lucide-react"
 import { DepartmentList } from "@/components/features/admin/department-list"
 import { AddDepartmentDialog } from "@/components/features/admin/add-department-dialog"
 import { PageContainer } from "@/components/ui"
+import { getAdminDepartmentsData } from "@/actions/department"
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminDepartmentsPage() {
-  const departments = await prisma.department.findMany({
-    include: {
-      teamLeader: {
-        select: { id: true, name: true, email: true }
-      },
-      _count: { select: { members: true } }
-    },
-    orderBy: { name: 'asc' }
-  })
-
-  const users = await prisma.user.findMany({
-    where: { role: { not: 'SYSTEM_ADMIN' } },
-    select: { id: true, name: true, email: true },
-    orderBy: { name: 'asc' }
-  })
+  const result = await getAdminDepartmentsData()
+  if (!result.success || !result.data) return <div>Error loading departments</div>
+  const { departments, users } = result.data
 
   return (
     <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">

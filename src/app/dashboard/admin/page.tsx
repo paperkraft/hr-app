@@ -1,135 +1,18 @@
 import { Users, FileText, Activity, ShieldAlert, CheckCircle2, Check, TrendingUp, Calendar, Clock, ArrowRight } from "lucide-react";
-import prisma from "@/lib/prisma";
-import { getTodayRange } from "@/lib/attendance-helper";
 import { CancelLeaveButton } from "@/components/features/leave/cancel-leave-button";
 import { PageContainer, StatCard } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { getUpcomingHolidays } from "@/actions/holiday";
-import { getAnnouncements } from "@/actions/announcement";
-import { getNotifications } from "@/actions/notification";
 import { UpcomingHolidays } from "@/components/features/dashboard/upcoming-holidays";
 import { CommunicationHub } from "@/components/features/dashboard/communication-hub";
 
+import { getAdminDashboardStats } from "@/actions/dashboard";
+
 export const dynamic = 'force-dynamic';
 
-function getDaysDifference(start: Date, end: Date) {
-  const startUtc = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
-  const endUtc = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
-  return Math.floor((endUtc - startUtc) / (1000 * 60 * 60 * 24)) + 1;
-}
-
-async function getAdminStats() {
-  const totalEmployees = await prisma.user.count({ where: { role: { not: 'SYSTEM_ADMIN' } } });
-
-  const allPendingRequests = await prisma.leaveRequest.findMany({
-    where: { status: "PENDING" },
-    include: { user: true },
-    orderBy: { createdAt: "asc" }
-  });
-
-  const now = new Date();
-  const currentMonth = now.getMonth() + 1;
-  const currentYear = now.getFullYear();
-  const startOfMonth = new Date(currentYear, currentMonth - 1, 1);
-  const endOfMonth = new Date(currentYear, currentMonth, 0, 23, 59, 59);
-
-  const { start: today, end: tomorrow } = getTodayRange();
-
-  const staff = await prisma.user.findMany({
-    where: { role: { in: ["EMPLOYEE", "ACCOUNTANT"] } },
-    include: {
-      leaveRequests: {
-        where: {
-          status: "APPROVED",
-          startDate: { gte: startOfMonth, lte: endOfMonth }
-        }
-      }
-    }
-  });
-
-  const todayAttendance = await prisma.attendance.findMany({
-    where: { date: { gte: today, lte: tomorrow } }
-  });
-
-  const todayLeaves = await prisma.leaveRequest.findMany({
-    where: {
-      status: "APPROVED",
-      startDate: { lte: today },
-      endDate: { gte: today }
-    },
-    include: { user: true }
-  });
-
-  const presentIds = new Set(todayAttendance.map(a => a.userId));
-  const onLeaveIds = new Set(todayLeaves.map(l => l.userId));
-
-  const presentEmployees = staff.filter(s => presentIds.has(s.id));
-  const onLeaveEmployees = staff.filter(s => onLeaveIds.has(s.id) && !presentIds.has(s.id));
-  const absentEmployees = staff.filter(s => !presentIds.has(s.id) && !onLeaveIds.has(s.id));
-
-  const attendanceRate = staff.length > 0 ? Math.round((presentEmployees.length / staff.length) * 100) : 100;
-
-  const recentApprovals = await prisma.leaveRequest.findMany({
-    where: { status: "APPROVED" },
-    include: { user: true },
-    orderBy: { updatedAt: "desc" },
-    take: 15
-  });
-
-  const monthlyLeaveSummary = staff.map(s => {
-    let totalDays = 0;
-    s.leaveRequests.forEach(req => {
-      const diff = getDaysDifference(req.startDate, req.endDate);
-      totalDays += req.duration === "HALF" ? diff * 0.5 : diff;
-    });
-    return { id: s.id, name: s.name || s.email, totalDays };
-  }).sort((a, b) => b.totalDays - a.totalDays);
-
-  const holidaysResult = await getUpcomingHolidays(5);
-  const holidays = holidaysResult.success ? holidaysResult.data : [];
-
-  const deptsResult = await getAnnouncements();
-  const announcements = deptsResult.success ? deptsResult.data : [];
-
-  return {
-    totalEmployees,
-    pendingCount: allPendingRequests.length,
-    attendanceRate,
-    presentEmployees: presentEmployees.map(e => ({ id: e.id, name: e.name || e.email })),
-    absentEmployees: absentEmployees.map(e => ({ id: e.id, name: e.name || e.email })),
-    onLeaveEmployees: onLeaveEmployees.map(e => ({ id: e.id, name: e.name || e.email })),
-    monthlyLeaveSummary,
-    holidays: (await getUpcomingHolidays(5)).data || [],
-    announcements: (await getAnnouncements()).data || [],
-    notifications: (await getNotifications()).data || [],
-    allPendingRequests: allPendingRequests.map((req: any) => ({
-      id: req.id,
-      employeeName: req.user.name || req.user.email,
-      role: req.user.role,
-      startDate: new Date(req.startDate).toISOString().split('T')[0],
-      endDate: new Date(req.endDate).toISOString().split('T')[0],
-      duration: req.duration,
-      halfDayType: req.halfDayType,
-      category: req.category,
-      reason: req.reason || "No reason provided",
-    })),
-    recentApprovals: recentApprovals.map((req: any) => ({
-      id: req.id,
-      employeeName: req.user.name || req.user.email,
-      role: req.user.role,
-      startDate: new Date(req.startDate).toISOString().split('T')[0],
-      endDate: new Date(req.endDate).toISOString().split('T')[0],
-      category: req.category,
-      duration: req.duration,
-      halfDayType: req.halfDayType,
-      systemNote: req.systemNote,
-      updatedAt: req.updatedAt
-    })),
-  };
-}
-
 export default async function AdminOverviewPage() {
-  const stats = await getAdminStats();
+  const result = await getAdminDashboardStats();
+  if (!result.success) return <div>Error loading stats</div>;
+  const stats = result.data;
   const totalStaff = stats.presentEmployees.length + stats.absentEmployees.length + stats.onLeaveEmployees.length;
 
   return (

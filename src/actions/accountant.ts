@@ -64,3 +64,46 @@ export async function processLeaveSplit(formData: unknown) {
     return { error: "Failed to process the leave balance split: " + error.message };
   }
 }
+
+export async function getLocationLogsAction(reqMonth?: number, reqYear?: number) {
+  try {
+    const now = new Date();
+    const currentYear = reqYear || now.getFullYear();
+    const currentMonth = reqMonth || now.getMonth() + 1;
+    const startOfMonth = new Date(currentYear, currentMonth - 1, 1, 0, 0, 0, 0);
+    const endOfMonth = new Date(currentYear, currentMonth, 0, 23, 59, 59, 999);
+
+    const attendances = await prisma.attendance.findMany({
+      where: { date: { gte: startOfMonth, lte: endOfMonth } },
+      include: { user: { select: { name: true, email: true } } },
+      orderBy: { date: 'desc' },
+    });
+
+    return {
+      success: true,
+      data: {
+        logs: attendances.map(a => ({
+          id: a.id,
+          userName: a.user.name || a.user.email,
+          date: a.date,
+          punchIn: a.punchIn,
+          punchOut: a.punchOut,
+          lat: a.lat,
+          lng: a.lng,
+          isOutsideOffice: a.isOutsideOffice,
+          ipAddress: a.ipAddress,
+        })),
+        stats: {
+          total: attendances.length,
+          outside: attendances.filter(a => a.isOutsideOffice).length,
+          inside: attendances.filter(a => !a.isOutsideOffice).length,
+          monthName: new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' }),
+          year: currentYear,
+          month: currentMonth
+        }
+      }
+    };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

@@ -72,7 +72,7 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">Office Locations</h3>
-          <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Physical offices and remote hubs</p>
+          <p className="text-[10px] text-muted-foreground/80 font-bold">Physical offices and remote hubs</p>
         </div>
         {!isAdding && (
           <Button
@@ -213,14 +213,14 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
           {locations.map(loc => (
             <div key={loc.id} className="bg-card border border-border rounded-sm overflow-hidden group hover:border-border/80 transition-colors">
               {/* Card Header */}
-              <div className="px-4 py-3 border-b border-border/40 flex items-center justify-between bg-muted/5">
+              <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-muted/5">
                 <div className="flex items-center gap-2.5">
                   <div className={cn("size-7 rounded-sm flex items-center justify-center border", loc.isRemote ? "bg-sky-500/5 text-sky-600 border-sky-500/10" : "bg-primary/5 text-primary border-primary/10")}>
                     <MapPin className="size-3.5" />
                   </div>
                   <div>
                     <h4 className="text-[11px] font-bold text-foreground tracking-tight leading-none">{loc.name}</h4>
-                    <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-tight mt-0.5">
+                    <p className="text-[9px] text-muted-foreground/80 font-bold tracking-tight mt-0.5">
                       #{loc.id.slice(-4).toUpperCase()}
                     </p>
                   </div>
@@ -237,12 +237,12 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
               {/* Card Body */}
               <div className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground/60">
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground/80">
                     <Clock className="size-3" />
                     <span>{loc.startTime} — {loc.endTime}</span>
                   </div>
                   <span className={cn(
-                    "text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-sm border",
+                    "text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-sm border",
                     loc.isRemote
                       ? "bg-sky-500/5 text-sky-600 border-sky-500/10"
                       : "bg-emerald-500/5 text-emerald-600 border-emerald-500/10"
@@ -252,14 +252,14 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
                 </div>
 
                 {!loc.isRemote && (
-                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-muted/5 border border-border/40 rounded-sm">
-                    <Crosshair className="size-2.5 text-muted-foreground/30" />
-                    <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest">{loc.radiusMeters}m radius · {loc.graceTimeMinutes}min grace</span>
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-muted border border-border rounded-sm">
+                    <Crosshair className="size-2.5 text-muted-foreground/80" />
+                    <span className="text-[9px] font-bold text-muted-foreground/80 uppercase tracking-widest">{loc.radiusMeters}m radius · {loc.graceTimeMinutes}min grace</span>
                   </div>
                 )}
 
                 {loc.address && (
-                  <p className="text-[10px] text-muted-foreground/50 font-medium leading-snug line-clamp-2">
+                  <p className="text-[10px] text-muted-foreground/60 font-medium leading-snug line-clamp-2">
                     {loc.address}
                   </p>
                 )}

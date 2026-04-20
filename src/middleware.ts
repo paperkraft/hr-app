@@ -26,6 +26,11 @@ export default withAuth(
     const isAdmin = token?.role === "ADMIN" || token?.role === "SYSTEM_ADMIN";
     const isManager = token?.isTeamLeader === true;
     
+    // Explicitly allow API routes to pass through if they reached here
+    if (path.startsWith("/api/")) {
+      return NextResponse.next();
+    }
+
     if (path.startsWith("/dashboard/manager") && !isManager && !isAdmin) {
       return NextResponse.redirect(new URL("/dashboard/employee", req.url));
     }
@@ -42,8 +47,12 @@ export default withAuth(
     callbacks: {
       authorized: ({ token, req }) => {
         const path = req.nextUrl.pathname;
-        // Allow public access to cron and auth APIs
-        if (path.startsWith("/api/cron") || path.startsWith("/api/auth")) {
+        // Public paths
+        if (
+          path.startsWith("/api/auth") || 
+          path.startsWith("/api/cron") || 
+          path === "/login"
+        ) {
           return true;
         }
         return !!token;
@@ -59,13 +68,10 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api/auth (NextAuth endpoints)
-     * - api/cron (Protected by its own key)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - login (login page)
      */
-    "/((?!api/auth|api/cron|_next/static|_next/image|favicon.ico|login).*)",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };

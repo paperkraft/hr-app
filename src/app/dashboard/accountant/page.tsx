@@ -22,7 +22,8 @@ export const dynamic = 'force-dynamic';
 
 async function getPayrollReportData(reqMonth?: number, reqYear?: number) {
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "ACCOUNTANT") {
+  const isAdmin = session?.user?.role === "ADMIN" || session?.user?.role === "SYSTEM_ADMIN";
+  if (!session?.user || (session.user.role !== "ACCOUNTANT" && !isAdmin)) {
     redirect("/dashboard/employee");
   }
 

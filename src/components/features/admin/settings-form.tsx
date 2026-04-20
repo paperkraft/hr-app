@@ -119,7 +119,7 @@ export function SettingsForm({ initialData, initialLocations }: SettingsFormProp
 
     return (
         <div className="space-y-6 animate-fade-in">
-            <Tabs defaultValue="general" className="w-full">
+            <Tabs defaultValue="general">
                 {/* Tab Bar — TabsList with overriding classes to match design */}
                 <TabsList className="flex gap-1 p-4 bg-muted border border-border/60 rounded-sm w-fit overflow-x-auto scrollbar-hide mb-4">
                     <TabsTrigger value="general" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50">

@@ -23,14 +23,13 @@ export const roleNavigation: Record<string, NavItem[]> = {
     { title: "Configuration", href: "/dashboard/admin/settings", icon: Settings },
     { title: "Employees", href: "/dashboard/admin/users", icon: Users },
     { title: "Departments", href: "/dashboard/admin/departments", icon: Building2 },
-    { title: "Location Status", href: "/dashboard/accountant/location-logs", icon: MapPin },
+    { title: "Payroll & Processing", href: "/dashboard/accountant", icon: Calculator },
   ],
   SYSTEM_ADMIN: [
     { title: "System Overview", href: "/dashboard/admin", icon: LayoutDashboard },
     { title: "Configuration", href: "/dashboard/admin/settings", icon: Settings },
     { title: "Employees", href: "/dashboard/admin/users", icon: Users },
     { title: "Departments", href: "/dashboard/admin/departments", icon: Building2 },
-    { title: "Location Status", href: "/dashboard/accountant/location-logs", icon: MapPin },
     { title: "Payroll & Processing", href: "/dashboard/accountant", icon: Calculator },
   ],
 };

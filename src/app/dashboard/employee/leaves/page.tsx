@@ -121,7 +121,7 @@ export default async function EmployeeLeavesPage() {
         <div className="px-5 py-4 border-b border-border/40 bg-muted/5 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">Leave History</h3>
-            <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Complete record of applications</p>
+            <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Complete record of applications</p>
           </div>
         </div>
 

@@ -282,7 +282,7 @@ export default async function AccountantDashboard({
           <div className="px-5 py-4 border-b border-border/40 bg-muted/5 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">History & Recent Approvals</h3>
-              <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Aduit log for current cycle</p>
+              <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Aduit log for current cycle</p>
             </div>
             <CalendarDays className="size-4 text-muted-foreground/20" />
           </div>
@@ -290,12 +290,12 @@ export default async function AccountantDashboard({
             <Table>
               <TableHeader className="bg-muted/5">
                 <TableRow className="border-b border-border/40 hover:bg-transparent">
-                  <TableHead className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Employee</TableHead>
-                  <TableHead className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Period & Type</TableHead>
-                  <TableHead className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Policy Branch</TableHead>
-                  <TableHead className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">System Note</TableHead>
-                  <TableHead className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Date</TableHead>
-                  <TableHead className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Actions</TableHead>
+                  <TableHead className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Employee</TableHead>
+                  <TableHead className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Period & Type</TableHead>
+                  <TableHead className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Policy Branch</TableHead>
+                  <TableHead className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">System Note</TableHead>
+                  <TableHead className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Date</TableHead>
+                  <TableHead className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

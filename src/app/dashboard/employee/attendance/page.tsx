@@ -103,9 +103,9 @@ export default async function AttendanceHistoryPage() {
         <div className="px-5 py-4 border-b border-border/40 bg-muted/5 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">Session Logs</h3>
-            <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Recent operational activity registry</p>
+            <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Recent operational activity registry</p>
           </div>
-          <CalendarDays className="size-4 text-muted-foreground/20" />
+          <CalendarDays className="size-4 text-muted-foreground/80" />
         </div>
         <div className="p-0">
           <AttendanceHistoryTable logs={logs} />

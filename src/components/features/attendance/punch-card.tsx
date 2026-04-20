@@ -54,7 +54,7 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
       if (result.success) {
         setStatus(targetStatus);
         toast.success(`Session ${targetStatus === "PUNCHED_IN" ? "started" : "ended"} successfully`);
-        window.location.reload(); 
+        window.location.reload();
       } else {
         toast.error("Process failed: " + result.error);
       }
@@ -70,7 +70,7 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
         </div>
 
         <div className="flex flex-col items-center gap-1 mt-2">
-          <div className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.2em]">
+          <div className="text-[10px] font-black text-muted-foreground/80 uppercase tracking-[0.2em]">
             Digital Time
           </div>
           <div className="text-5xl font-bold tabular-nums tracking-tighter text-foreground">
@@ -123,7 +123,7 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
             <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Active Session</span>
           </div>
         )}
-        
+
         <div className="flex-1 min-h-[20px]" />
 
         {/* High-Density Warning */}

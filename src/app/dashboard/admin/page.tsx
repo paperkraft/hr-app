@@ -178,30 +178,30 @@ export default async function AdminOverviewPage() {
             <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Attendance Pulse</h3>
-                <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Live cluster monitoring</p>
+                <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Live cluster monitoring</p>
               </div>
-              <Activity className="size-4 text-muted-foreground/30" />
+              <Activity className="size-4 text-muted-foreground/80" />
             </div>
 
             {/* 3-column metric strip */}
             <div className="grid grid-cols-3 divide-x divide-border/30">
               <div className="p-6 text-center">
                 <div className="text-3xl font-bold text-emerald-600 tabular-nums mb-1">{stats.presentEmployees.length}</div>
-                <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">Active</p>
+                <p className="text-[10px] font-black text-muted-foreground/80 uppercase tracking-widest">Active</p>
                 <div className="mt-3 h-1 bg-muted/20 rounded-full overflow-hidden">
                   <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${totalStaff > 0 ? (stats.presentEmployees.length / totalStaff) * 100 : 0}%` }} />
                 </div>
               </div>
               <div className="p-6 text-center">
                 <div className="text-3xl font-bold text-rose-500 tabular-nums mb-1">{stats.absentEmployees.length}</div>
-                <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">Absent</p>
+                <p className="text-[10px] font-black text-muted-foreground/80 uppercase tracking-widest">Absent</p>
                 <div className="mt-3 h-1 bg-muted/20 rounded-full overflow-hidden">
                   <div className="h-full bg-rose-500 rounded-full" style={{ width: `${totalStaff > 0 ? (stats.absentEmployees.length / totalStaff) * 100 : 0}%` }} />
                 </div>
               </div>
               <div className="p-6 text-center">
                 <div className="text-3xl font-bold text-amber-500 tabular-nums mb-1">{stats.onLeaveEmployees.length}</div>
-                <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">On Leave</p>
+                <p className="text-[10px] font-black text-muted-foreground/80 uppercase tracking-widest">On Leave</p>
                 <div className="mt-3 h-1 bg-muted/20 rounded-full overflow-hidden">
                   <div className="h-full bg-amber-500 rounded-full" style={{ width: `${totalStaff > 0 ? (stats.onLeaveEmployees.length / totalStaff) * 100 : 0}%` }} />
                 </div>
@@ -255,20 +255,20 @@ export default async function AdminOverviewPage() {
             <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Recent Approvals</h3>
-                <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Recent valid departures</p>
+                <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Recent valid departures</p>
               </div>
-              <CheckCircle2 className="size-4 text-muted-foreground/30" />
+              <CheckCircle2 className="size-4 text-muted-foreground/80" />
             </div>
             <div className="overflow-x-auto scrollbar-hide">
               <table className="w-full border-collapse">
                 <thead className="bg-muted/5 border-b border-border/40">
                   <tr>
-                    <th className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Employee</th>
-                    <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Period</th>
-                    <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Category</th>
-                    <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Channel</th>
-                    <th className="py-3 px-4 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Date</th>
-                    <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Action</th>
+                    <th className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Employee</th>
+                    <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Period</th>
+                    <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Category</th>
+                    <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Channel</th>
+                    <th className="py-3 px-4 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Date</th>
+                    <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/20">
@@ -378,9 +378,9 @@ export default async function AdminOverviewPage() {
             <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Monthly Utilization</h3>
-                <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Leave saturation report</p>
+                <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Leave saturation report</p>
               </div>
-              <FileText className="size-4 text-muted-foreground/30" />
+              <FileText className="size-4 text-muted-foreground/80" />
             </div>
 
             <div className="divide-y divide-border/20 max-h-[420px] overflow-y-auto scrollbar-hide">

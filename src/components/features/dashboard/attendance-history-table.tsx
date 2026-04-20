@@ -71,11 +71,11 @@ export function AttendanceHistoryTable({ logs }: AttendanceHistoryTableProps) {
           <Table>
             <TableHeader className="bg-muted/5">
               <TableRow className="border-b border-border/40 hover:bg-transparent">
-                <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/40 w-[180px]">Date</TableHead>
-                <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/40">Check In</TableHead>
-                <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/40">Check Out</TableHead>
-                <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/40">Location</TableHead>
-                <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/40 text-right">Status</TableHead>
+                <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 w-[180px]">Date</TableHead>
+                <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Check In</TableHead>
+                <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Check Out</TableHead>
+                <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Location</TableHead>
+                <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 text-right">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

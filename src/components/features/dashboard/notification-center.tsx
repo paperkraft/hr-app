@@ -55,7 +55,7 @@ export function NotificationCenter({ notifications: initialNotifications, classN
               key={notif.id}
               className={cn(
                 "p-3 flex items-start gap-3 hover:bg-muted/5 transition-all duration-200 rounded-sm cursor-pointer group/item",
-                !notif.isRead && "bg-primary/[0.02]"
+                !notif.isRead && "bg-primary/2"
               )}
             >
               <div className={cn(

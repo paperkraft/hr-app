@@ -9,6 +9,7 @@ import { getAnnouncements } from "@/actions/announcement";
 import { getNotifications } from "@/actions/notification";
 import { UpcomingHolidays } from "@/components/features/dashboard/upcoming-holidays";
 import { AnnouncementWidget } from "@/components/features/dashboard/announcement-widget";
+import { NotificationCenter } from "@/components/features/dashboard/notification-center";
 
 export const dynamic = 'force-dynamic';
 

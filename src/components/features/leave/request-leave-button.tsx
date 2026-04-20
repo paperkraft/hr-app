@@ -28,7 +28,6 @@ export function RequestLeaveButton() {
                 </div>
                 <div>
                   <h2 className="text-sm font-bold tracking-tight">Apply for Leave</h2>
-                  <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest mt-0.5">Submit request for administrative review</p>
                 </div>
               </div>
             </DialogHeader>

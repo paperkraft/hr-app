@@ -138,12 +138,21 @@ export async function getEmployeeDashboardStats() {
   await processAutoPunchOuts(session.user.id);
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    include: { department: true }
+    include: { department: true, leaveBalances: true }
   });
+
+  if (!user) return { success: false, error: "User profile not found." };
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
-  const balances = await ensureBalance(session.user.id, currentMonth, currentYear);
+  const balances = (await ensureBalance(session.user.id, currentMonth, currentYear).catch(() => null)) || {
+    remainingFull: 0,
+    semiAnnualRemaining: 0,
+    casualTaken: 0,
+    medicalTaken: 0,
+    semiAnnualTaken: 0,
+    unpaidTaken: 0
+  };
 
   const { start, end } = getTodayRange();
   const todaysLog = await prisma.attendance.findFirst({
@@ -232,8 +241,8 @@ export async function getEmployeeDashboardStats() {
         casualTaken,
         medicalTaken,
         semiAnnualTaken,
-        casualRemaining: Number(balances.remainingFull),
-        medicalRemaining: Number(balances.semiAnnualRemaining),
+        casualRemaining: Number(balances.remainingFull || 0),
+        medicalRemaining: Number(balances.semiAnnualRemaining || 0),
       },
       stats: { approvalRate, pendingCount },
       leaveRequests,

@@ -38,16 +38,16 @@ export function StatCard({
         >
             <div className="flex flex-col h-full justify-between gap-3">
                 <div className="flex items-start justify-between w-full">
-                    <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.1em]">{label}</p>
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{label}</p>
                     {icon && (
-                        <div className="text-muted-foreground/20 size-6 flex items-center justify-center -mt-0.5 -mr-0.5 transition-colors group-hover:text-primary/30">
+                        <div className="text-muted-foreground size-6 flex items-center justify-center -mt-0.5 -mr-0.5 transition-colors group-hover:text-primary/30">
                             {icon}
                         </div>
                     )}
                 </div>
 
                 <div className="space-y-0.5">
-                    <p className="text-2xl font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">{value}</p>
+                    <p className="text-2xl font-bold text-muted-foreground tracking-tight group-hover:text-primary transition-colors">{value}</p>
                     {subValue && (
                         <p className="text-[10px] font-bold text-muted-foreground/60 tracking-tight lowercase first-letter:uppercase">{subValue}</p>
                     )}
@@ -75,7 +75,7 @@ export function StatCard({
 
                 {progress !== undefined && (
                     <div className="w-full h-1.5 bg-muted/20 rounded-full overflow-hidden mt-2">
-                        <div 
+                        <div
                             className={cn("h-full transition-all duration-1000 ease-out rounded-full", progressColor)}
                             style={{ width: `${progress}%` }}
                         />
@@ -145,7 +145,7 @@ export function SectionHeader({
                 )}
             </div>
 
-            {action && <div className="flex-shrink-0">{action}</div>}
+            {action && <div className="shrink-0">{action}</div>}
         </div>
     );
 }

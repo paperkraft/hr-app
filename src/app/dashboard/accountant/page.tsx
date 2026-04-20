@@ -269,7 +269,7 @@ export default async function AccountantDashboard({
           <div className="px-5 py-4 border-b border-border/40 bg-muted/5 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">Master Report</h3>
-              <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">End-of-month salary calculation base</p>
+              <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">End-of-month salary calculation base</p>
             </div>
             <FileText className="size-4 text-muted-foreground/20" />
           </div>

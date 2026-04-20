@@ -90,12 +90,12 @@ export function MasterReportTable({
           <TableHeader>
             {/* Header Tier 1: Grouping */}
             <TableRow className="bg-muted/5 hover:bg-muted/5 border-b border-border/40">
-              <TableHead className="py-2.5 px-5 font-black text-[9px] uppercase tracking-widest text-muted-foreground/40 border-r border-border/20">Staff Identity</TableHead>
-              <TableHead colSpan={3} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/40 text-center border-r border-border/20 bg-primary/2">Attendance Summary</TableHead>
-              <TableHead className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/40 text-center border-r border-border/20 bg-amber-500/2">Usage</TableHead>
-              <TableHead colSpan={3} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/40 text-center border-r border-border/20 bg-emerald-500/2">Balance Frameworks</TableHead>
-              <TableHead colSpan={2} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/40 text-center border-r border-border/20 bg-rose-500/2">Payroll Deductions</TableHead>
-              <TableHead className="py-2.5 px-5 font-black text-[9px] uppercase tracking-widest text-muted-foreground/40 text-right">Adjustment</TableHead>
+              <TableHead className="py-2.5 px-5 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 border-r border-border/20">Staff Identity</TableHead>
+              <TableHead colSpan={3} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-center border-r border-border/20 bg-primary/2">Attendance Summary</TableHead>
+              <TableHead className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-center border-r border-border/20 bg-amber-500/2">Usage</TableHead>
+              <TableHead colSpan={3} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-center border-r border-border/20 bg-emerald-500/2">Balance Frameworks</TableHead>
+              <TableHead colSpan={2} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-center border-r border-border/20 bg-rose-500/2">Payroll Deductions</TableHead>
+              <TableHead className="py-2.5 px-5 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-right">Adjustment</TableHead>
             </TableRow>
 
             {/* Header Tier 2: Column Titles */}

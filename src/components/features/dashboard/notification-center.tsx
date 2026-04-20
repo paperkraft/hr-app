@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { Bell, CheckCircle2, AlertCircle, Info, Clock, ArrowRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -92,7 +91,7 @@ export function NotificationCenter({ className }: { className?: string }) {
       <div className="p-4 pt-1">
         <Link
           href="#"
-          className="w-full py-2.5 rounded-sm flex items-center justify-center gap-2 text-[10px] font-black text-primary bg-primary/[0.02] border border-primary/5 hover:bg-primary/[0.05] transition-all duration-200 uppercase tracking-widest"
+          className="w-full py-2.5 rounded-sm flex items-center justify-center gap-2 text-[10px] font-black text-primary bg-primary/2 border border-primary/5 hover:bg-primary/5 transition-all duration-200 uppercase tracking-widest"
         >
           Audit Timeline
           <ArrowRight className="size-3" />

@@ -23,17 +23,6 @@ export function DepartmentList({
 }) {
   const [loading, setLoading] = useState<string | null>(null)
 
-  async function handleLeaderChange(deptId: string, leaderId: string) {
-    setLoading(deptId)
-    const res = await updateDepartmentLeader(deptId, leaderId === "none" ? null : leaderId)
-    setLoading(null)
-    if (!res.success) {
-      toast.error(res.error)
-    } else {
-      toast.success("Team leader updated")
-    }
-  }
-
   async function handleDelete(id: string) {
     if (!confirm("Delete this department?")) return
     const res = await deleteDepartment(id)
@@ -50,10 +39,9 @@ export function DepartmentList({
         <table className="w-full border-collapse">
           <thead className="bg-muted/5 border-b border-border/40">
             <tr>
-              <th className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/40">Department</th>
-              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/40">Team Leader</th>
-              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/40">Members</th>
-              <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/40">Action</th>
+              <th className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Department</th>
+              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Members</th>
+              <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/20">
@@ -74,28 +62,6 @@ export function DepartmentList({
                   </div>
                 </td>
 
-                {/* Team Leader Select */}
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-2">
-                    <Select
-                      defaultValue={dept.teamLeaderId || "none"}
-                      onValueChange={(val) => handleLeaderChange(dept.id, val)}
-                      disabled={loading === dept.id}
-                    >
-                      <SelectTrigger className="w-[220px] h-8 bg-muted/5 border-border/60 rounded-sm text-xs font-bold shadow-none focus:ring-primary/10">
-                        <SelectValue placeholder="Assign leader" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-sm shadow-lg border-border/60">
-                        <SelectItem value="none" className="text-xs">None assigned</SelectItem>
-                        {users.map(u => (
-                          <SelectItem key={u.id} value={u.id} className="text-xs">{u.name || u.email}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {loading === dept.id && <Loader2 className="size-3.5 animate-spin text-primary/50" />}
-                  </div>
-                </td>
-
                 {/* Member Count */}
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-1.5">
@@ -112,7 +78,7 @@ export function DepartmentList({
                     className="h-7 w-7 p-0 text-muted-foreground/30 hover:text-rose-500 hover:bg-rose-500/5 rounded-sm transition-all opacity-0 group-hover:opacity-100"
                     onClick={() => handleDelete(dept.id)}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
                   </Button>
                 </td>
               </tr>

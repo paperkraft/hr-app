@@ -15,12 +15,16 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-export function EditUserDialog({ 
+const labelClass = "text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/80"
+const inputClass = "h-8 w-full bg-muted border-border rounded-sm text-xs font-medium px-3 focus:ring-2 focus:ring-primary/10 focus:border-primary/40 transition-all outline-none placeholder:text-muted-foreground/30"
+const selectTriggerClass = "h-8 w-full bg-muted border-border rounded-sm text-xs font-medium px-3 focus:ring-2 focus:ring-primary/10 focus:border-primary/40 transition-all outline-none shadow-none"
+
+export function EditUserDialog({
   user,
-  managers, 
+  managers,
   departments,
   locations
-}: { 
+}: {
   user: any,
   managers: { id: string, name: string | null, email: string }[],
   departments: { id: string, name: string }[],
@@ -64,110 +68,143 @@ export function EditUserDialog({
           <Edit2 className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold tracking-tight">Update Profile</DialogTitle>
-          <p className="text-xs text-muted-foreground italic tracking-tight">Modifying credentials for {user.name}</p>
+      <DialogContent className="p-0 rounded-sm border-border/60 shadow-lg overflow-hidden max-w-[520px]">
+        {/* Dialog Header */}
+        <DialogHeader className="px-5 py-4 border-b border-border">
+          <DialogTitle className="text-sm font-bold tracking-tight">Update Profile</DialogTitle>
+          <p className="text-[10px] text-muted-foreground/80 font-bold tracking-widest">
+            Modifying credentials for {user.name}
+          </p>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4 mt-2">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <Label className="text-xs">Name</Label>
-              <Input name="name" defaultValue={user.name || ""} required className="h-9" />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Email</Label>
-              <Input type="email" name="email" defaultValue={user.email} required className="h-9" />
+
+        <form onSubmit={onSubmit} className="p-4 space-y-2">
+          {/* Identity */}
+          <div>
+            <p className="text-[9px] font-black uppercase tracking-[0.12em] text-muted-foreground/60 mb-2">Identity</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className={labelClass}>Full Name</Label>
+                <Input name="name" defaultValue={user.name || ""} required className={inputClass} placeholder="Jane Doe" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className={labelClass}>Email Address</Label>
+                <Input type="email" name="email" defaultValue={user.email} required className={inputClass} placeholder="jane@company.com" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className={labelClass}>Password</Label>
+                <Input type="password" name="password" className={inputClass} placeholder="Leave blank to keep" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className={labelClass}>Role</Label>
+                <Select name="role" defaultValue={user.role} required>
+                  <SelectTrigger className={selectTriggerClass}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-sm shadow-lg border-border/60">
+                    <SelectItem value="EMPLOYEE" className="text-xs">Employee</SelectItem>
+                    <SelectItem value="ACCOUNTANT" className="text-xs">Accountant</SelectItem>
+                    <SelectItem value="ADMIN" className="text-xs">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
-          
-          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/40">
-             <div className="space-y-1">
-                <Label className="text-xs text-primary font-bold">Work Mode</Label>
+
+          {/* Work Setup */}
+          <div className="pt-3 border-t border-border/30">
+            <p className="text-[9px] font-black uppercase tracking-[0.12em] text-muted-foreground/60 mb-2">Work Setup</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className={labelClass}>Work Mode</Label>
                 <Select name="workMode" defaultValue={user.workMode || "OFFICE"}>
-                    <SelectTrigger className="h-9">
-                    <SelectValue placeholder="Select mode" />
-                    </SelectTrigger>
-                    <SelectContent>
-                    <SelectItem value="OFFICE">On-site (Office)</SelectItem>
-                    <SelectItem value="REMOTE">Remote (WFH)</SelectItem>
-                    <SelectItem value="HYBRID">Hybrid</SelectItem>
-                    </SelectContent>
+                  <SelectTrigger className={selectTriggerClass}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-sm shadow-lg border-border/60">
+                    <SelectItem value="OFFICE" className="text-xs">On-site</SelectItem>
+                    <SelectItem value="REMOTE" className="text-xs">Remote</SelectItem>
+                    <SelectItem value="HYBRID" className="text-xs">Hybrid</SelectItem>
+                  </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-primary font-bold">Office/Hub Location</Label>
+              <div className="space-y-1.5">
+                <Label className={labelClass}>Office / Hub</Label>
                 <Select name="locationId" defaultValue={user.locationId || "none"}>
-                    <SelectTrigger className="h-9">
-                    <SelectValue placeholder="Select location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                    <SelectItem value="none">Default Office</SelectItem>
+                  <SelectTrigger className={selectTriggerClass}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-sm shadow-lg border-border/60">
+                    <SelectItem value="none" className="text-xs">Default Office</SelectItem>
                     {locations.map(l => (
-                        <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                      <SelectItem key={l.id} value={l.id} className="text-xs">{l.name}</SelectItem>
                     ))}
-                    </SelectContent>
+                  </SelectContent>
                 </Select>
               </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <Label className="text-xs">Role</Label>
-              <Select name="role" defaultValue={user.role} required>
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="EMPLOYEE">Employee</SelectItem>
-                  <SelectItem value="ACCOUNTANT">Accountant</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Department</Label>
-              <Select name="departmentId" defaultValue={user.departmentId || "none"}>
-                <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="Dept" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {departments.map(d => (
-                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
-          <div className="space-y-1 pt-2 border-t border-border/40">
-            <Label className="text-xs text-muted-foreground uppercase font-bold tracking-widest">Assign Manager</Label>
-            <Select name="managerId" defaultValue={user.managerId || "none"}>
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="Select a manager" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None (Top Level)</SelectItem>
-                {managers.filter(m => m.id !== user.id).map(m => (
-                  <SelectItem key={m.id} value={m.id}>{m.name || m.email}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Organization */}
+          <div className="pt-3 border-t border-border/30 space-y-4">
+            <p className="text-[9px] font-black uppercase tracking-[0.12em] text-muted-foreground/60 mb-2">Organization</p>
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label className={labelClass}>Department</Label>
+                <Select name="departmentId" defaultValue={user.departmentId || "none"}>
+                  <SelectTrigger className={selectTriggerClass}>
+                    <SelectValue placeholder="None" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-sm shadow-lg border-border/60">
+                    <SelectItem value="none" className="text-xs">None</SelectItem>
+                    {departments.map(d => (
+                      <SelectItem key={d.id} value={d.id} className="text-xs">{d.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className={labelClass}>Reporting Manager</Label>
+                <Select name="managerId" defaultValue={user.managerId || "none"}>
+                  <SelectTrigger className={selectTriggerClass}>
+                    <SelectValue placeholder="None" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-sm shadow-lg border-border/60">
+                    <SelectItem value="none" className="text-xs">None (Top Level)</SelectItem>
+                    {managers.filter(m => m.id !== user.id).map(m => (
+                      <SelectItem key={m.id} value={m.id} className="text-xs">{m.name || m.email}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-1">
-            <Label className="text-xs">Update Password (Optional)</Label>
-            <Input type="password" name="password" placeholder="Leave blank to keep current" className="h-9" />
-          </div>
+          {/* Error */}
+          {error && (
+            <p className="text-[10px] font-bold text-rose-500 uppercase tracking-widest px-1">{error}</p>
+          )}
 
-          {error && <p className="text-xs text-destructive font-medium bg-destructive/5 p-2 rounded border border-destructive/20">{error}</p>}
-          <Button type="submit" className="w-full mt-2" disabled={loading}>
-            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-            Save Changes
-          </Button>
+          {/* Actions */}
+          <div className="flex items-center gap-2 pt-2 border-t border-border/30">
+            <Button
+              type="button"
+              variant="ghost"
+              className="flex-1 h-9 text-xs font-bold uppercase tracking-widest rounded-sm"
+              onClick={() => setOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="flex-1 h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm"
+            >
+              {loading ? <Loader2 className="size-3.5 animate-spin" /> : <><Save className="size-3.5 mr-1.5" /> Save Changes</>}
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
   )
 }
+

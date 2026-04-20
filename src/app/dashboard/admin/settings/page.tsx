@@ -10,16 +10,12 @@ export default async function SettingsPage() {
   const locations = await getLocations()
 
   return (
-    <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">
+    <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-4">
       {/* Page Header — matches admin dashboard style */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-foreground tracking-tight">System Configuration</h1>
           <p className="text-xs text-muted-foreground font-medium mt-0.5">Manage attendance policies, locations, and leave frameworks</p>
-        </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm border border-border/60 bg-white text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest shadow-sm">
-          <Settings2 className="size-3.5 text-primary/60" />
-          Global Config
         </div>
       </div>
 

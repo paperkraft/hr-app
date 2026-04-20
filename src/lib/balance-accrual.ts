@@ -79,6 +79,11 @@ export async function generateAllMonthlyBalances() {
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
 
+  // Also check for NEXT month if we are in the latter half of the month
+  const checkNext = now.getDate() >= 15;
+  const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
+  const nextYear = currentMonth === 12 ? currentYear + 1 : currentYear;
+
   const users = await prisma.user.findMany({
     where: {
       role: { in: ["EMPLOYEE", "ACCOUNTANT", "ADMIN", "SYSTEM_ADMIN"] }
@@ -94,7 +99,14 @@ export async function generateAllMonthlyBalances() {
   let processedCount = 0;
   for (const user of users) {
     try {
+      // Ensure current month exists
       await ensureBalance(user.id, currentMonth, currentYear, startMonth);
+      
+      // Proactively ensure next month exists if near the transition
+      if (checkNext) {
+        await ensureBalance(user.id, nextMonth, nextYear, startMonth);
+      }
+      
       processedCount++;
     } catch (error) {
       console.error(`Failed to ensure balance for user ${user.id}:`, error);

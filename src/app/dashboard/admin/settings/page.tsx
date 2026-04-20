@@ -1,4 +1,7 @@
 import { getSystemConfig, getLocations } from "@/actions/settings"
+import { getHolidays } from "@/actions/holiday"
+import { getDepartments } from "@/actions/department"
+import { getAllAnnouncementsForAdmin } from "@/actions/announcement"
 import { SettingsForm } from "@/components/features/admin/settings-form"
 import { PageContainer } from "@/components/ui"
 import { Settings2 } from "lucide-react"
@@ -8,6 +11,14 @@ export const dynamic = 'force-dynamic'
 export default async function SettingsPage() {
   const config = await getSystemConfig()
   const locations = await getLocations()
+  const holidaysResult = await getHolidays()
+  const holidays = holidaysResult.success ? holidaysResult.data : []
+
+  const deptsResult = await getDepartments()
+  const departments = deptsResult.success ? deptsResult.departments : []
+
+  const announcementsResult = await getAllAnnouncementsForAdmin()
+  const announcements = announcementsResult.success ? announcementsResult.data : []
 
   return (
     <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-4">
@@ -37,6 +48,9 @@ export default async function SettingsPage() {
           secondHalfStartTime: config.secondHalfStartTime ?? "13:30",
         }}
         initialLocations={locations}
+        initialHolidays={holidays || []}
+        initialDepartments={departments || []}
+        initialAnnouncements={announcements || []}
       />
     </PageContainer>
   )

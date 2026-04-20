@@ -15,6 +15,10 @@ import { ensureBalance } from "@/actions/leave";
 import { getDaysDifference } from "@/lib/utils";
 import { processAutoPunchOuts } from "@/lib/auto-punch-out";
 import { PageContainer } from "@/components/ui";
+import { getUpcomingHolidays } from "@/actions/holiday";
+import { getAnnouncements } from "@/actions/announcement";
+import { UpcomingHolidays } from "@/components/features/dashboard/upcoming-holidays";
+import { AnnouncementWidget } from "@/components/features/dashboard/announcement-widget";
 
 export const dynamic = 'force-dynamic';
 
@@ -58,7 +62,7 @@ async function getEmployeeData() {
   const medicalTaken = approvedThisYear
     .filter((r) => r.category === "MONTHLY_POLICY_1" && r.leaveType === "MEDICAL")
     .reduce((acc, r) => acc + getDaysDifference(new Date(r.startDate), new Date(r.endDate)) * (r.duration === "HALF" ? 0.5 : 1), 0);
-    
+
   const semiAnnualTaken = approvedThisYear
     .filter((r) => r.category === "SEMI_ANNUAL_POLICY_2")
     .reduce((acc, r) => acc + getDaysDifference(new Date(r.startDate), new Date(r.endDate)), 0);
@@ -112,7 +116,9 @@ async function getEmployeeData() {
     },
     stats: { approvalRate, pendingCount },
     leaveRequests,
-    teamOnLeave
+    teamOnLeave: teamOnLeave,
+    holidays: (await getUpcomingHolidays(3)).data || [],
+    announcements: (await getAnnouncements(user?.departmentId || undefined)).data || []
   };
 }
 
@@ -160,15 +166,15 @@ export default async function EmployeeDashboard() {
         {/* Leave Balance — 2×2 stat grid alongside attendance */}
         <div className="lg:col-span-7">
           <LeaveBalanceOverview
-            casual={{ 
-              taken: data.balances.casualTaken + data.balances.medicalTaken, 
-              remaining: data.balances.casualRemaining, 
-              total: 3 
+            casual={{
+              taken: data.balances.casualTaken + data.balances.medicalTaken,
+              remaining: data.balances.casualRemaining,
+              total: 3
             }}
-            sick={{ 
-              taken: data.balances.semiAnnualTaken, 
-              remaining: data.balances.medicalRemaining, 
-              total: 3 
+            sick={{
+              taken: data.balances.semiAnnualTaken,
+              remaining: data.balances.medicalRemaining,
+              total: 3
             }}
             approvalRate={data.stats.approvalRate}
             pendingCount={data.stats.pendingCount}
@@ -192,10 +198,13 @@ export default async function EmployeeDashboard() {
             <TeamOnLeave members={data.teamOnLeave} />
           </div>
         </div>
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-4 space-y-5">
+          <UpcomingHolidays holidays={data.holidays} />
+          <AnnouncementWidget announcements={data.announcements} />
           <NotificationCenter />
         </div>
       </div>
+
     </PageContainer>
   );
 }

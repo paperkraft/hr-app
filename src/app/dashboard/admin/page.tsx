@@ -4,6 +4,10 @@ import { getTodayRange } from "@/lib/attendance-helper";
 import { CancelLeaveButton } from "@/components/features/leave/cancel-leave-button";
 import { PageContainer, StatCard, StatusBadge } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { getUpcomingHolidays } from "@/actions/holiday";
+import { getAnnouncements } from "@/actions/announcement";
+import { UpcomingHolidays } from "@/components/features/dashboard/upcoming-holidays";
+import { AnnouncementWidget } from "@/components/features/dashboard/announcement-widget";
 
 export const dynamic = 'force-dynamic';
 
@@ -80,6 +84,12 @@ async function getAdminStats() {
     return { id: s.id, name: s.name || s.email, totalDays };
   }).sort((a, b) => b.totalDays - a.totalDays);
 
+  const holidaysResult = await getUpcomingHolidays(5);
+  const holidays = holidaysResult.success ? holidaysResult.data : [];
+
+  const deptsResult = await getAnnouncements();
+  const announcements = deptsResult.success ? deptsResult.data : [];
+
   return {
     totalEmployees,
     pendingCount: allPendingRequests.length,
@@ -88,6 +98,8 @@ async function getAdminStats() {
     absentEmployees: absentEmployees.map(e => ({ id: e.id, name: e.name || e.email })),
     onLeaveEmployees: onLeaveEmployees.map(e => ({ id: e.id, name: e.name || e.email })),
     monthlyLeaveSummary,
+    holidays,
+    announcements,
     allPendingRequests: allPendingRequests.map((req: any) => ({
       id: req.id,
       employeeName: req.user.name || req.user.email,
@@ -334,6 +346,9 @@ export default async function AdminOverviewPage() {
         {/* Right: Monthly Leave Utilization (1/3 width) */}
         <div className="space-y-6">
 
+          {/* Broadcast Center */}
+          <AnnouncementWidget announcements={stats.announcements} />
+
           {/* Pending Requests */}
           {stats.allPendingRequests.length > 0 && (
             <div className="bg-card border border-border rounded-sm overflow-hidden">
@@ -368,6 +383,9 @@ export default async function AdminOverviewPage() {
               </div>
             </div>
           )}
+
+          {/* Upcoming Holidays */}
+          <UpcomingHolidays holidays={stats.holidays || []} />
 
           {/* Monthly Leave Utilization */}
           <div className="bg-card border border-border rounded-sm overflow-hidden">

@@ -9,10 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
     Clock, Timer, CheckCircle, AlertCircle, Save, Loader2,
-    ShieldAlert, CalendarRange, ListOrdered, Globe
+    ShieldAlert, CalendarRange, ListOrdered, Globe, Sparkles,
+    Megaphone
 } from "lucide-react"
 import { updateSystemConfig } from "@/actions/settings"
 import { LocationManagement } from "./location-management"
+import { HolidayManagement } from "./holiday-management"
+import { AnnouncementManagement } from "./announcement-management"
+import { AnnouncementPriority } from "@prisma/client"
 import { cn } from "@/lib/utils"
 
 interface SettingsFormProps {
@@ -33,6 +37,18 @@ interface SettingsFormProps {
         secondHalfStartTime: string;
     },
     initialLocations: any[];
+    initialHolidays: { id: string; name: string; date: Date }[];
+    initialDepartments: { id: string; name: string }[];
+    initialAnnouncements: {
+        id: string;
+        title: string;
+        content: string;
+        priority: AnnouncementPriority;
+        createdAt: Date;
+        isActive: boolean;
+        author: { name: string | null; email: string };
+        targetDepartment?: { name: string } | null;
+    }[];
 }
 
 function SectionCard({ title, description, icon: Icon, iconColor = "text-primary", iconBg = "bg-primary/5", children }: {
@@ -94,7 +110,7 @@ function ToggleRow({ label, description, checked, onCheckedChange, disabled, col
     )
 }
 
-export function SettingsForm({ initialData, initialLocations }: SettingsFormProps) {
+export function SettingsForm({ initialData, initialLocations, initialHolidays, initialDepartments, initialAnnouncements }: SettingsFormProps) {
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -133,6 +149,12 @@ export function SettingsForm({ initialData, initialLocations }: SettingsFormProp
                     </TabsTrigger>
                     <TabsTrigger value="leave" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50">
                         <CalendarRange className="size-4" /> Leave Frameworks
+                    </TabsTrigger>
+                    <TabsTrigger value="holidays" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50">
+                        <Sparkles className="size-4" /> Public Holidays
+                    </TabsTrigger>
+                    <TabsTrigger value="announcements" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50">
+                        <Megaphone className="size-4" /> Announcements
                     </TabsTrigger>
                 </TabsList>
 
@@ -334,6 +356,16 @@ export function SettingsForm({ initialData, initialLocations }: SettingsFormProp
 
                         <SaveBar loading={loading} success={success} error={error} label="Save Leave Frameworks" />
                     </form>
+                </TabsContent>
+
+                {/* ─── PUBLIC HOLIDAYS ─── */}
+                <TabsContent value="holidays" className="outline-none">
+                    <HolidayManagement initialHolidays={initialHolidays} />
+                </TabsContent>
+
+                {/* ─── ANNOUNCEMENTS ─── */}
+                <TabsContent value="announcements" className="outline-none">
+                    <AnnouncementManagement initialAnnouncements={initialAnnouncements} departments={initialDepartments} />
                 </TabsContent>
             </Tabs>
         </div>

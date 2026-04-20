@@ -20,6 +20,7 @@ import { getAnnouncements } from "@/actions/announcement";
 import { getNotifications } from "@/actions/notification";
 import { UpcomingHolidays } from "@/components/features/dashboard/upcoming-holidays";
 import { AnnouncementWidget } from "@/components/features/dashboard/announcement-widget";
+import { CommunicationHub } from "@/components/features/dashboard/communication-hub";
 
 export const dynamic = 'force-dynamic';
 
@@ -202,8 +203,11 @@ export default async function EmployeeDashboard() {
         </div>
         <div className="lg:col-span-4 space-y-5">
           <UpcomingHolidays holidays={data.holidays} />
-          <AnnouncementWidget announcements={data.announcements} />
-          <NotificationCenter notifications={data.notifications} />
+          
+          <CommunicationHub 
+            announcements={data.announcements} 
+            notifications={data.notifications} 
+          />
         </div>
       </div>
 

@@ -16,9 +16,10 @@ interface Announcement {
 
 interface AnnouncementWidgetProps {
   announcements: Announcement[];
+  className?: string;
 }
 
-export function AnnouncementWidget({ announcements: initialAnnouncements }: AnnouncementWidgetProps) {
+export function AnnouncementWidget({ announcements: initialAnnouncements, className }: AnnouncementWidgetProps) {
   const announcements = initialAnnouncements.map(a => ({ ...a, createdAt: new Date(a.createdAt) }))
 
   const priorityColors: Record<AnnouncementPriority, string> = {
@@ -40,7 +41,7 @@ export function AnnouncementWidget({ announcements: initialAnnouncements }: Anno
   }
 
   return (
-    <div className="bg-card border border-border rounded-sm overflow-hidden flex flex-col">
+    <div className={cn("bg-card border border-border rounded-sm overflow-hidden flex flex-col", className)}>
       <div className="px-5 py-3 border-b border-border/40 flex items-center justify-between">
         <div>
           <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Notice Board</h3>

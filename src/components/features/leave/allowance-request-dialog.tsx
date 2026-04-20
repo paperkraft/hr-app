@@ -19,11 +19,11 @@ export function AllowanceRequestDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all">
+        <Button className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors">
           <MapPin className="size-3.5 mr-1.5" /> Allowance Request
         </Button>
       </DialogTrigger>
-      <DialogContent className="p-0 rounded-sm border-border/60 shadow-lg overflow-hidden sm:max-w-xl group">
+      <DialogContent className="p-0 rounded-sm border-border overflow-hidden sm:max-w-xl group">
         <div className="flex flex-col max-h-[96vh]">
           {/* Header */}
           <div className="px-5 py-4 border-b border-border/40 bg-muted/5 shrink-0">

@@ -170,7 +170,7 @@ export default async function AdminOverviewPage() {
         <div className="lg:col-span-2 space-y-6">
 
           {/* Attendance Pulse */}
-          <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden">
+          <div className="bg-card border border-border rounded-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Attendance Pulse</h3>
@@ -247,7 +247,7 @@ export default async function AdminOverviewPage() {
           </div>
 
           {/* Recent Approvals Table */}
-          <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden">
+          <div className="bg-card border border-border rounded-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Recent Approvals</h3>
@@ -336,7 +336,7 @@ export default async function AdminOverviewPage() {
 
           {/* Pending Requests */}
           {stats.allPendingRequests.length > 0 && (
-            <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden">
+            <div className="bg-card border border-border rounded-sm overflow-hidden">
               <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Pending Requests</h3>
@@ -370,7 +370,7 @@ export default async function AdminOverviewPage() {
           )}
 
           {/* Monthly Leave Utilization */}
-          <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden">
+          <div className="bg-card border border-border rounded-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Monthly Utilization</h3>

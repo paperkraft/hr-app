@@ -12,7 +12,7 @@ export function RequestLeaveButton() {
   return (
     <Dialog open={open} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <Button className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all">
+        <Button className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors">
           <CalendarRange className="size-3.5 mr-1.5" /> Request Leave
         </Button>
       </DialogTrigger>

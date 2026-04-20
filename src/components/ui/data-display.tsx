@@ -31,8 +31,8 @@ export function StatCard({
         <div
             onClick={onClick}
             className={cn(
-                "bg-white border border-border/60 rounded-sm shadow-sm p-5 relative overflow-hidden group",
-                onClick && "cursor-pointer hover:bg-muted/5 transition-colors",
+                "bg-card border border-border rounded-sm p-4 relative overflow-hidden group",
+                onClick && "cursor-pointer hover:bg-muted/30 transition-colors",
                 className
             )}
         >
@@ -98,7 +98,7 @@ interface InfoCardProps {
 
 export function InfoCard({ items, className, title }: InfoCardProps) {
     return (
-        <div className={cn("premium-card p-6 rounded-lg space-y-4", className)}>
+        <div className={cn("bg-card border border-border rounded-sm p-4 space-y-4", className)}>
             {title && <h3 className="text-lg font-semibold text-foreground">{title}</h3>}
 
             <div className="space-y-3">

@@ -62,7 +62,7 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
   };
 
   return (
-    <div className="bg-white border border-border/50 rounded-sm overflow-hidden h-full flex flex-col animate-fade-in shadow-sm group">
+    <div className="bg-card border border-border rounded-sm overflow-hidden h-full flex flex-col animate-fade-in group">
       <div className="p-6 flex-1 flex flex-col items-center justify-center gap-6 relative overflow-hidden">
         {/* Subtle Decorative Element */}
         <div className="absolute -top-4 -right-4 opacity-[0.02] select-none pointer-events-none group-hover:rotate-12 transition-transform duration-700">

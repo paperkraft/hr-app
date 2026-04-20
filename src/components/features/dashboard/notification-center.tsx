@@ -32,7 +32,7 @@ const mockNotifications: Notification[] = [
 
 export function NotificationCenter({ className }: { className?: string }) {
   return (
-    <div className={cn("bg-white border border-border/60 rounded-sm flex flex-col h-full animate-fade-in shadow-sm overflow-hidden", className)}>
+    <div className={cn("bg-card border border-border rounded-sm flex flex-col h-full animate-fade-in overflow-hidden", className)}>
       {/* Widget Header */}
       <div className="p-6 pb-2 flex items-center justify-between">
         <div>
@@ -41,7 +41,7 @@ export function NotificationCenter({ className }: { className?: string }) {
         </div>
         <div className="size-8 rounded-sm bg-primary/5 text-primary flex items-center justify-center border border-primary/10 relative">
           <Bell className="size-4" />
-          <div className="absolute -top-0.5 -right-0.5 size-2 bg-rose-500 rounded-full border border-white" />
+          <div className="absolute -top-0.5 -right-0.5 size-2 bg-rose-500 rounded-full border border-card" />
         </div>
       </div>
 

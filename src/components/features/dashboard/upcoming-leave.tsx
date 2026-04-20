@@ -18,7 +18,7 @@ export function UpcomingLeave({ requests }: UpcomingLeaveProps) {
   const activeRequests = requests.filter(r => r.status !== "CANCELLED").slice(0, 3);
 
   return (
-    <div className="bg-white border border-border/60 rounded-sm p-6 space-y-5 h-full animate-fade-in shadow-sm">
+    <div className="bg-card border border-border rounded-sm p-5 space-y-5 h-full animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Upcoming Leave</h3>

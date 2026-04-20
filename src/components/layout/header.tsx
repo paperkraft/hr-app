@@ -28,7 +28,7 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
   };
 
   return (
-    <header className="h-16 border-b border-border/40 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4 md:px-6 sticky top-0 z-50 transition-all duration-300 animate-fade-in">
+    <header className="h-14 border-b border-border bg-card flex items-center justify-between px-4 md:px-6 sticky top-0 z-50 animate-fade-in">
       <div className="flex items-center gap-4">
         {/* Mobile Menu Toggle via Sheet */}
         <Sheet>
@@ -42,11 +42,11 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
               <span className="sr-only">Toggle mobile menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-72 p-0 flex flex-col animate-slide-in-right">
+          <SheetContent side="left" className="w-64 p-0 flex flex-col">
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-            <div className="h-16 flex items-center px-6 border-b border-border/50 bg-muted/30">
-              <Activity className="w-6 h-6 text-primary mr-2" />
-              <span className="font-bold text-lg tracking-tight text-gradient">Sigma HRMS</span>
+            <div className="h-14 flex items-center px-5 border-b border-border">
+              <Activity className="w-5 h-5 text-primary mr-2" />
+              <span className="font-bold text-base tracking-tight">Sigma HRMS</span>
             </div>
             <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4 px-2">
@@ -86,7 +86,7 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
         <Button
           variant="ghost"
           size="icon"
-          className="text-muted-foreground hover:text-foreground relative rounded-full transition-all duration-200 hover-glow"
+          className="text-muted-foreground hover:text-foreground relative rounded-sm"
         >
           <Bell className="w-5 h-5" />
           <span className="absolute top-2 right-2.5 w-2 h-2 bg-destructive border-2 border-background rounded-full animate-pulse"></span>

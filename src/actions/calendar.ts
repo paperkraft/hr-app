@@ -18,17 +18,21 @@ export async function getCalendarEvents(month?: number, year?: number) {
     const start = startOfMonth(new Date(targetYear, targetMonth));
     const end = endOfMonth(new Date(targetYear, targetMonth));
 
+    // For holidays, we fetch for the entire year to support frontend navigation without refetching
+    const yearStart = new Date(targetYear, 0, 1);
+    const yearEnd = new Date(targetYear, 11, 31, 23, 59, 59);
+
     const currentUserRole = session.user.role;
     const currentUserId = session.user.id;
 
     console.log(`[Calendar] Fetching for User: ${currentUserId}, Role: ${currentUserRole}`);
 
-    // Fetch Public Holidays (Global)
+    // Fetch Public Holidays (Global for the current target year)
     const holidays = await prisma.publicHoliday.findMany({
       where: {
         date: {
-          gte: start,
-          lte: end,
+          gte: yearStart,
+          lte: yearEnd,
         },
       },
     });

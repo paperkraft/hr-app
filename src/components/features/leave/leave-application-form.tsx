@@ -77,7 +77,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
   const semiAnnualEnabled = config?.semiAnnualPolicyEnabled ?? true;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 animate-fade-in">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 animate-fade-in">
       {/* Category Selection */}
       <div className="space-y-2">
         <Label className={labelClass}>Leave Category</Label>
@@ -91,8 +91,8 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
               key={cat.id}
               className={cn(
                 "relative flex flex-col p-2.5 cursor-pointer rounded-sm border transition-all",
-                selectedCategory === cat.id 
-                  ? `border-${cat.color} bg-${cat.color}/5 ring-1 ring-${cat.color}/20` 
+                selectedCategory === cat.id
+                  ? `border-${cat.color} bg-${cat.color}/5 ring-1 ring-${cat.color}/20`
                   : "border-border/60 bg-muted/5 hover:bg-muted/10 transition-colors"
               )}
             >
@@ -119,8 +119,8 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
                 key={type.id}
                 className={cn(
                   "relative flex flex-col p-2 cursor-pointer rounded-sm border transition-all",
-                  watch("leaveType") === type.id 
-                    ? "border-primary bg-primary/10" 
+                  watch("leaveType") === type.id
+                    ? "border-primary bg-primary/10"
                     : "border-border/40 bg-muted/5"
                 )}
               >
@@ -140,8 +140,8 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
           {["FULL", "HALF", "SHORT"].map((type) => {
             const isDisabled = selectedCategory === "SEMI_ANNUAL_POLICY_2" && type !== "FULL";
             return (
-              <label 
-                key={type} 
+              <label
+                key={type}
                 className={cn(
                   "flex justify-center p-2 cursor-pointer rounded-sm border transition-all text-[10px] font-bold uppercase tracking-widest",
                   selectedDuration === type ? "bg-primary text-white border-primary" : "bg-muted/5 border-border/60 hover:bg-muted/10 transition-colors",
@@ -189,11 +189,11 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
         </div>
         <div className="space-y-1.5">
           <Label className={labelClass}>Ending Date</Label>
-          <Input 
-            type="date" 
-            {...register("endDate")} 
-            disabled={selectedDuration === "HALF" || selectedDuration === "SHORT"} 
-            className={cn(inputClass, (selectedDuration === "HALF" || selectedDuration === "SHORT") && "opacity-50")} 
+          <Input
+            type="date"
+            {...register("endDate")}
+            disabled={selectedDuration === "HALF" || selectedDuration === "SHORT"}
+            className={cn(inputClass, (selectedDuration === "HALF" || selectedDuration === "SHORT") && "opacity-50")}
           />
         </div>
       </div>
@@ -231,9 +231,9 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
       )}
 
       {/* Submit Button */}
-      <Button 
-        type="submit" 
-        className="w-full h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors" 
+      <Button
+        type="submit"
+        className="w-full h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors"
         disabled={isSubmitting}
       >
         {isSubmitting ? "Dispatching..." : <><Send className="size-3.5 mr-1.5" /> Submit Application</>}

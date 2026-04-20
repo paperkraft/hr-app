@@ -17,13 +17,13 @@ export function RequestLeaveButton() {
         </Button>
       </DialogTrigger>
       <DialogContent className="p-0 rounded-sm border border-border shadow-none overflow-hidden sm:max-w-xl group">
-        <div className="flex flex-col max-h-[96vh]">
+        <div className="flex flex-col max-h-[90vh]">
           {/* Header */}
           <div className="px-5 py-4 border-b border-border/40 bg-muted/5 shrink-0">
             <DialogTitle className="sr-only">Apply for Leave</DialogTitle>
             <DialogHeader>
               <div className="flex items-center gap-3">
-                <div className="size-7 rounded-sm bg-primary/5 text-primary flex items-center justify-center border border-primary/10">
+                <div className="size-6 rounded-sm bg-primary/5 text-primary flex items-center justify-center border border-primary/10">
                   <CalendarRange className="size-4" />
                 </div>
                 <div>
@@ -35,7 +35,7 @@ export function RequestLeaveButton() {
           </div>
 
           {/* Form Body */}
-          <div className="flex-1 overflow-y-auto p-5">
+          <div className="flex-1 overflow-y-auto p-4">
             <LeaveApplicationForm onSuccess={() => setDialogOpen(false)} />
           </div>
         </div>

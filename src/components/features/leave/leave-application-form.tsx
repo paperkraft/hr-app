@@ -83,8 +83,8 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
         <Label className={labelClass}>Leave Category</Label>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {[
-            { id: "MONTHLY_POLICY_1", label: "Monthly", sub: "Standard quota", color: "primary" },
-            ...(semiAnnualEnabled ? [{ id: "SEMI_ANNUAL_POLICY_2", label: "Semi-Annual", sub: "Cycle based", color: "amber-500" }] : []),
+            { id: "MONTHLY_POLICY_1", label: "Monthly", sub: "Casual / Medical", color: "primary" },
+            ...(semiAnnualEnabled ? [{ id: "SEMI_ANNUAL_POLICY_2", label: "Earned Leave", sub: "Hangout (3+ Days)", color: "amber-500" }] : []),
             { id: "UNPAID", label: "Unpaid", sub: "No balance", color: "rose-500" }
           ].map((cat) => (
             <label

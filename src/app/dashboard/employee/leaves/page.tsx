@@ -72,7 +72,7 @@ export default async function EmployeeLeavesPage() {
   return (
     <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-foreground tracking-tight">My Leaves</h1>
           <p className="text-xs text-muted-foreground font-medium mt-0.5">Manage your leave applications and track balance history</p>

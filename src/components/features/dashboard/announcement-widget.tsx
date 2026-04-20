@@ -1,6 +1,6 @@
 "use client"
 
-import { Megaphone, AlertCircle, AlertTriangle, Info, ChevronRight, MessageSquare } from "lucide-react"
+import { Megaphone, AlertCircle, AlertTriangle, Info, MessageSquare } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { AnnouncementPriority } from "@prisma/client"
@@ -17,9 +17,10 @@ interface Announcement {
 interface AnnouncementWidgetProps {
   announcements: Announcement[];
   className?: string;
+  hideHeader?: boolean;
 }
 
-export function AnnouncementWidget({ announcements: initialAnnouncements, className }: AnnouncementWidgetProps) {
+export function AnnouncementWidget({ announcements: initialAnnouncements, className, hideHeader }: AnnouncementWidgetProps) {
   const announcements = initialAnnouncements.map(a => ({ ...a, createdAt: new Date(a.createdAt) }))
 
   const priorityColors: Record<AnnouncementPriority, string> = {
@@ -42,20 +43,22 @@ export function AnnouncementWidget({ announcements: initialAnnouncements, classN
 
   return (
     <div className={cn("bg-card border border-border rounded-sm overflow-hidden flex flex-col", className)}>
-      <div className="px-5 py-3 border-b border-border/40 flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Notice Board</h3>
-          <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest text-xs">Broadcasts</p>
+      {!hideHeader && (
+        <div className="px-5 py-3 border-b border-border/40 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Notice Board</h3>
+            <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest text-xs">Broadcasts</p>
+          </div>
+          <div className="relative">
+            <Megaphone className="size-3.5 text-muted-foreground/80" />
+            {announcements.some(a => a.priority === "CRITICAL") && (
+              <span className="absolute -top-1 -right-1 size-1.5 bg-rose-500 rounded-full animate-pulse border border-card" />
+            )}
+          </div>
         </div>
-        <div className="relative">
-          <Megaphone className="size-3.5 text-muted-foreground/80" />
-          {announcements.some(a => a.priority === "CRITICAL") && (
-            <span className="absolute -top-1 -right-1 size-1.5 bg-rose-500 rounded-full animate-pulse border border-card" />
-          )}
-        </div>
-      </div>
+      )}
 
-      <div className="flex-1 divide-y divide-border/20 overflow-y-auto scrollbar-hide max-h-[280px]">
+      <div className={cn("flex-1 divide-y divide-border/20 overflow-y-auto scrollbar-hide max-h-[280px]", hideHeader && "-mx-5")}>
         {announcements.length === 0 ? (
           <div className="py-12 text-center flex flex-col items-center gap-2 opacity-20 px-8">
             <MessageSquare className="size-5" />

@@ -4,7 +4,6 @@ import { AllowanceRequestDialog } from "@/components/features/leave/allowance-re
 import { DashboardTabs } from "@/components/features/dashboard/dashboard-tabs";
 import { TeamOnLeave } from "@/components/features/dashboard/team-on-leave";
 import { UpcomingLeave } from "@/components/features/dashboard/upcoming-leave";
-import { NotificationCenter } from "@/components/features/dashboard/notification-center";
 import { LeaveBalanceOverview } from "@/components/features/dashboard/leave-balance-overview";
 
 import prisma from "@/lib/prisma";
@@ -19,7 +18,6 @@ import { getUpcomingHolidays } from "@/actions/holiday";
 import { getAnnouncements } from "@/actions/announcement";
 import { getNotifications } from "@/actions/notification";
 import { UpcomingHolidays } from "@/components/features/dashboard/upcoming-holidays";
-import { AnnouncementWidget } from "@/components/features/dashboard/announcement-widget";
 import { CommunicationHub } from "@/components/features/dashboard/communication-hub";
 
 export const dynamic = 'force-dynamic';
@@ -186,31 +184,36 @@ export default async function EmployeeDashboard() {
 
       </div>
 
-      {/* SECONDARY ROW: Upcoming Leave + Team on Leave + Notifications */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div className="lg:col-span-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <UpcomingLeave requests={data.leaveRequests.map(r => ({
-              id: r.id,
-              category: r.category === "MONTHLY_POLICY_1" ? (r.leaveType === "CASUAL" ? "Casual" : "Sick") : "Paid",
-              startDate: r.startDate,
-              endDate: r.endDate,
-              status: r.status,
-              days: Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
-            }))} />
-            <TeamOnLeave members={data.teamOnLeave} />
-          </div>
-        </div>
-        <div className="lg:col-span-4 space-y-5">
-          <UpcomingHolidays holidays={data.holidays} />
-          
-          <CommunicationHub 
-            announcements={data.announcements} 
-            notifications={data.notifications} 
-          />
-        </div>
-      </div>
+      {/* SECONDARY ROW: Balanced Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
 
+        {/* My Upcoming Leaves */}
+        <div className="flex flex-col">
+          <UpcomingLeave requests={data.leaveRequests.map(r => ({
+            id: r.id,
+            category: r.category === "MONTHLY_POLICY_1" ? (r.leaveType === "CASUAL" ? "Casual" : "Sick") : "Paid",
+            startDate: r.startDate,
+            endDate: r.endDate,
+            status: r.status,
+            days: Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
+          }))} />
+        </div>
+
+        {/* Team Activity */}
+        <div className="flex flex-col">
+          <TeamOnLeave members={data.teamOnLeave} />
+        </div>
+
+        {/* Broadcast & Feed Hub */}
+        <div className="flex flex-col space-y-5">
+          <CommunicationHub
+            announcements={data.announcements}
+            notifications={data.notifications}
+          />
+          <UpcomingHolidays holidays={data.holidays} />
+        </div>
+
+      </div>
     </PageContainer>
   );
 }

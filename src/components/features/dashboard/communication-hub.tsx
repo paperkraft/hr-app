@@ -16,9 +16,9 @@ export function CommunicationHub({ announcements, notifications, className }: Co
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn("bg-card border border-border rounded-sm p-5", className)}>
       <Tabs defaultValue="announcements" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-muted/20 p-1 h-11 rounded-sm border border-border/40">
+        <TabsList className="grid w-full grid-cols-2 bg-muted/30 p-1 h-10 rounded-sm border border-border/40 mb-4">
           <TabsTrigger 
             value="announcements" 
             className="rounded-sm text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all flex items-center gap-2"
@@ -42,11 +42,19 @@ export function CommunicationHub({ announcements, notifications, className }: Co
             )}
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="announcements" className="mt-4 ring-0 focus-visible:ring-0">
-          <AnnouncementWidget announcements={announcements} className="border-0 shadow-none bg-transparent p-0" />
+        <TabsContent value="announcements" className="mt-0 ring-0 focus-visible:ring-0">
+          <AnnouncementWidget 
+            announcements={announcements} 
+            className="border-0 shadow-none bg-transparent p-0" 
+            hideHeader={true}
+          />
         </TabsContent>
-        <TabsContent value="notifications" className="mt-4 ring-0 focus-visible:ring-0">
-          <NotificationCenter notifications={notifications} className="border-0 shadow-none bg-transparent p-0" />
+        <TabsContent value="notifications" className="mt-0 ring-0 focus-visible:ring-0">
+          <NotificationCenter 
+            notifications={notifications} 
+            className="border-0 shadow-none bg-transparent p-0" 
+            hideHeader={true}
+          />
         </TabsContent>
       </Tabs>
     </div>

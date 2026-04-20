@@ -1,15 +1,13 @@
-import { Users, FileText, Activity, ShieldAlert, CheckCircle2, Check, TrendingUp, Calendar, Clock, ArrowRight, MoreVertical } from "lucide-react";
+import { Users, FileText, Activity, ShieldAlert, CheckCircle2, Check, TrendingUp, Calendar, Clock, ArrowRight } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { getTodayRange } from "@/lib/attendance-helper";
 import { CancelLeaveButton } from "@/components/features/leave/cancel-leave-button";
-import { PageContainer, StatCard, StatusBadge } from "@/components/ui";
+import { PageContainer, StatCard } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { getUpcomingHolidays } from "@/actions/holiday";
 import { getAnnouncements } from "@/actions/announcement";
 import { getNotifications } from "@/actions/notification";
 import { UpcomingHolidays } from "@/components/features/dashboard/upcoming-holidays";
-import { AnnouncementWidget } from "@/components/features/dashboard/announcement-widget";
-import { NotificationCenter } from "@/components/features/dashboard/notification-center";
 import { CommunicationHub } from "@/components/features/dashboard/communication-hub";
 
 export const dynamic = 'force-dynamic';
@@ -351,9 +349,9 @@ export default async function AdminOverviewPage() {
         <div className="lg:col-span-4 space-y-6">
 
           {/* Combined Communication & Activity */}
-          <CommunicationHub 
-            announcements={stats.announcements} 
-            notifications={stats.notifications} 
+          <CommunicationHub
+            announcements={stats.announcements}
+            notifications={stats.notifications}
           />
 
           {/* Upcoming Holidays */}
@@ -363,7 +361,7 @@ export default async function AdminOverviewPage() {
 
       {/* ACTION & REPORTING ROW */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
+
         {/* Pending Requests Section (1/2 width) */}
         <div className="lg:col-span-6">
           <div className="bg-card border border-border rounded-sm overflow-hidden h-full">
@@ -376,12 +374,12 @@ export default async function AdminOverviewPage() {
                 {stats.allPendingRequests.length}
               </span>
             </div>
-            
+
             <div className="divide-y divide-border/20 max-h-[320px] overflow-y-auto scrollbar-hide">
               {stats.allPendingRequests.length === 0 ? (
                 <div className="py-12 text-center opacity-20 flex flex-col items-center gap-2">
-                   <ShieldAlert className="size-5" />
-                   <p className="text-[10px] font-black uppercase tracking-widest">Queue Clear</p>
+                  <ShieldAlert className="size-5" />
+                  <p className="text-[10px] font-black uppercase tracking-widest">Queue Clear</p>
                 </div>
               ) : (
                 stats.allPendingRequests.slice(0, 10).map((req: any) => (
@@ -398,7 +396,7 @@ export default async function AdminOverviewPage() {
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1.5">
-                       <div className="px-2 py-0.5 rounded-sm bg-amber-500/10 text-amber-600 text-[8px] font-black uppercase border border-amber-500/10 shrink-0">
+                      <div className="px-2 py-0.5 rounded-sm bg-amber-500/10 text-amber-600 text-[8px] font-black uppercase border border-amber-500/10 shrink-0">
                         Awaiting
                       </div>
                       <div className="text-[9px] font-black text-primary/40 uppercase group-hover:text-primary transition-colors flex items-center gap-1">

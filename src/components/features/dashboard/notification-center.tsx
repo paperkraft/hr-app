@@ -1,8 +1,7 @@
 "use client";
 
-import { Bell, CheckCircle2, AlertCircle, Info, Clock, ArrowRight, Sparkles } from "lucide-react";
+import { Bell, CheckCircle2, AlertCircle, Info, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import { markAllAsRead } from "@/actions/notification";
 
 import { formatDistanceToNow } from "date-fns";
@@ -19,9 +18,10 @@ interface Notification {
 interface NotificationCenterProps {
   notifications: any[];
   className?: string;
+  hideHeader?: boolean;
 }
 
-export function NotificationCenter({ notifications: initialNotifications, className }: NotificationCenterProps) {
+export function NotificationCenter({ notifications: initialNotifications, className, hideHeader }: NotificationCenterProps) {
   const notifications = (initialNotifications || []).map(n => ({
     ...n,
     createdAt: new Date(n.createdAt)
@@ -32,18 +32,20 @@ export function NotificationCenter({ notifications: initialNotifications, classN
   return (
     <div className={cn("bg-card border border-border rounded-sm flex flex-col h-full animate-fade-in overflow-hidden", className)}>
       {/* Widget Header */}
-      <div className="p-6 pb-2 flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Notifications</h3>
-          <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest text-xs">Feed</p>
+      {!hideHeader && (
+        <div className="p-6 pb-2 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Notifications</h3>
+            <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest text-xs">Feed</p>
+          </div>
+          <div className="size-8 rounded-sm bg-primary/5 text-primary flex items-center justify-center border border-primary/10 relative">
+            <Bell className="size-4" />
+            {unreadCount > 0 && <div className="absolute -top-0.5 -right-0.5 size-2 bg-rose-500 rounded-full border border-card animate-pulse" />}
+          </div>
         </div>
-        <div className="size-8 rounded-sm bg-primary/5 text-primary flex items-center justify-center border border-primary/10 relative">
-          <Bell className="size-4" />
-          {unreadCount > 0 && <div className="absolute -top-0.5 -right-0.5 size-2 bg-rose-500 rounded-full border border-card animate-pulse" />}
-        </div>
-      </div>
+      )}
 
-      <div className="flex-1 px-3 py-2 space-y-0.5 min-h-[140px]">
+      <div className={cn("flex-1 px-3 py-2 space-y-0.5 min-h-[140px]", hideHeader && "-mx-2")}>
         {notifications.length === 0 ? (
           <div className="py-12 text-center flex flex-col items-center gap-2 opacity-20 px-8">
             <Bell className="size-5" />

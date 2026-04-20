@@ -330,6 +330,45 @@ export async function submitLeaveRequest(formData: unknown) {
       }
     });
 
+    // Trigger notifications to Admin, Accountant, and Reporting Manager
+    try {
+      const applicant = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, managerId: true }
+      });
+      const applicantName = applicant?.name || "An employee";
+
+      const usersToNotify = await prisma.user.findMany({
+        where: {
+          AND: [
+            { id: { not: userId } },
+            {
+              OR: [
+                { role: { in: ["ADMIN", "SYSTEM_ADMIN", "ACCOUNTANT"] } },
+                { id: applicant?.managerId || undefined }
+              ]
+            }
+          ]
+        },
+        select: { id: true }
+      });
+
+      if (usersToNotify.length > 0) {
+        await prisma.notification.createMany({
+          data: usersToNotify.map(u => ({
+            userId: u.id,
+            title: `Leave Application: ${applicantName}`,
+            content: `${applicantName} has applied for ${data.duration.toLowerCase()} leave from ${new Date(data.startDate).toLocaleDateString()} to ${new Date(data.endDate).toLocaleDateString()}. Status: ${isAutoApproved ? "Auto-Approved" : "Pending"}`,
+            type: "INFO",
+            link: "/dashboard"
+          }))
+        });
+      }
+    } catch (error) {
+      console.error("Failed to send leave notifications:", error);
+    }
+
+
     if (isAutoApproved) {
       await processLeaveRequestStatus(newRequest.id, "APPROVED", approvalNote);
     } else {

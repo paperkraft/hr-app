@@ -110,7 +110,7 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
 
 
   return (
-    <div className="bg-white border border-border/60 rounded-sm overflow-hidden h-full flex flex-col animate-fade-in shadow-sm group">
+    <div className="bg-card border border-border rounded-sm overflow-hidden h-full flex flex-col animate-fade-in group">
       <div className="p-6 flex-1 flex flex-col items-center justify-center gap-6 relative overflow-hidden">
         {/* Subtle Decorative Element */}
         <div className="absolute -top-4 -right-4 opacity-[0.02] select-none pointer-events-none group-hover:rotate-12 transition-transform duration-700">
@@ -118,7 +118,7 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
         </div>
 
         <div className="flex flex-col items-center gap-1 mt-2">
-          <div className="text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.2em]">
+          <div className="text-[10px] font-black text-muted-foreground/80 uppercase tracking-[0.2em]">
             Digital Time
           </div>
           <div className="text-5xl font-bold tabular-nums tracking-tighter text-foreground">
@@ -138,7 +138,7 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
             <Button
               size="lg"
               className={cn(
-                "w-full h-12 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-all duration-300 shadow-sm relative overflow-hidden border",
+                "w-full h-12 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors duration-300 relative overflow-hidden border",
                 status === "PUNCHED_IN"
                   ? "bg-white text-amber-600 border-amber-500/20 hover:bg-amber-500/5"
                   : "bg-primary text-primary-foreground border-transparent hover:bg-primary/95"

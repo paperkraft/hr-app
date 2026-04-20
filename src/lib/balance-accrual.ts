@@ -52,16 +52,19 @@ export async function syncAllBalances() {
                  // because the next month was initialized as (CASUAL_ACCRUAL + OLD_CF)
                  // where CASUAL_ACCRUAL is currently 2.0
                  if (hasCfDiff) {
-                     const cfDiff = expectedCF - current.carriedForward;
-                     await prisma.leaveBalance.update({
-                         where: { id: next.id },
-                         data: {
-                             remainingFull: { increment: cfDiff }
-                         }
-                     });
-                     // Note: We don't need to recursively call here because the outer loop 
-                     // will process the 'next' balance in its next iteration.
-                 }
+                    const cfDiff = expectedCF - current.carriedForward;
+                    const nextBalance = await prisma.leaveBalance.findUnique({ where: { id: next.id } });
+                    if (nextBalance) {
+                        const newTotal = Math.min(3.0, Number((nextBalance.remainingFull + cfDiff).toFixed(2)));
+                        await prisma.leaveBalance.update({
+                            where: { id: next.id },
+                            data: {
+                                remainingFull: newTotal,
+                                carriedForward: expectedCF
+                            }
+                        });
+                    }
+                }
 
                  fixCount++;
              }
@@ -79,6 +82,11 @@ export async function generateAllMonthlyBalances() {
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
 
+  // Also check for NEXT month if we are in the latter half of the month
+  const checkNext = now.getDate() >= 15;
+  const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
+  const nextYear = currentMonth === 12 ? currentYear + 1 : currentYear;
+
   const users = await prisma.user.findMany({
     where: {
       role: { in: ["EMPLOYEE", "ACCOUNTANT", "ADMIN", "SYSTEM_ADMIN"] }
@@ -94,7 +102,14 @@ export async function generateAllMonthlyBalances() {
   let processedCount = 0;
   for (const user of users) {
     try {
+      // Ensure current month exists
       await ensureBalance(user.id, currentMonth, currentYear, startMonth);
+      
+      // Proactively ensure next month exists if near the transition
+      if (checkNext) {
+        await ensureBalance(user.id, nextMonth, nextYear, startMonth);
+      }
+      
       processedCount++;
     } catch (error) {
       console.error(`Failed to ensure balance for user ${user.id}:`, error);

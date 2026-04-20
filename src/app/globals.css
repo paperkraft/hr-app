@@ -192,13 +192,6 @@
 
   body {
     @apply bg-background text-foreground selection:bg-primary/20 selection:text-primary;
-    background-image:
-      radial-gradient(at 0% 0%, oklch(0.55 0.16 265 / 0.05) 0, transparent 40%),
-      radial-gradient(
-        at 100% 100%,
-        oklch(0.55 0.16 265 / 0.05) 0,
-        transparent 40%
-      );
   }
 
   html {
@@ -207,27 +200,18 @@
 }
 
 @layer utilities {
-  /* Glass Effects */
-  .glass {
-    @apply bg-card/60 backdrop-blur-md border border-white/20 shadow-sm;
-  }
-
-  .glass-dark {
-    @apply bg-card/40 backdrop-blur-lg border border-white/5 shadow-xl;
-  }
-
   /* Text Effects */
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-br from-primary to-primary/60 font-bold;
   }
 
-  /* Premium Card Styles */
+  /* Clean Card Styles — border only, no shadows */
   .premium-card {
-    @apply bg-card border border-border/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300;
+    @apply bg-card border border-border rounded-sm transition-colors duration-200;
   }
 
   .premium-card-elevated {
-    @apply bg-card border border-border/40 shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:shadow-[0_20px_50px_rgb(0,0,0,0.12)] hover:border-border/60 transition-all duration-300;
+    @apply bg-card border border-border rounded-sm transition-colors duration-200;
   }
 
   /* Animation Utilities */
@@ -283,11 +267,11 @@
 
   /* Hover Effects */
   .hover-lift {
-    @apply hover:shadow-lg hover:-translate-y-1 transition-all duration-200;
+    @apply hover:bg-muted/5 transition-colors duration-200;
   }
 
   .hover-glow {
-    @apply hover:shadow-[0_0_20px_rgba(var(--primary),0.3)] transition-shadow duration-300;
+    @apply hover:bg-primary/5 transition-colors duration-200;
   }
 
   /* Loading States */

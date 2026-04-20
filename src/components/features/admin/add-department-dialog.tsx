@@ -34,17 +34,17 @@ export function AddDepartmentDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all">
+        <Button className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors">
           <Plus className="size-3.5 mr-1.5" /> Add Department
         </Button>
       </DialogTrigger>
-      <DialogContent className="rounded-sm border-border/60 shadow-lg p-0 overflow-hidden max-w-sm">
+      <DialogContent className="rounded-sm border border-border shadow-none p-0 overflow-hidden max-w-sm">
         <DialogHeader className="px-5 py-4 border-b border-border/40">
           <DialogTitle className="text-sm font-bold tracking-tight">New Department</DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="p-5 space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">Department Name</Label>
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Department Name</Label>
             <Input
               name="name"
               required
@@ -67,7 +67,7 @@ export function AddDepartmentDialog() {
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm"
+              className="flex-1 h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm"
             >
               {loading ? <Loader2 className="size-3.5 animate-spin" /> : "Create"}
             </Button>

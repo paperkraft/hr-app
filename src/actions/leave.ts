@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { leaveApplicationSchema } from "@/lib/validations/leave";
+import { createNotification } from "@/actions/notification";
 import prisma from "@/lib/prisma";
 import { getDaysDifference } from "@/lib/utils";
 import { getServerSession } from "next-auth";
@@ -54,6 +55,7 @@ async function getCyclePendingDays(userId: string, cycleStart: Date, cycleEnd: D
 const CASUAL_ACCRUAL = 2.0;
 const SICK_ACCRUAL_SEMI = 3.0;
 const MAX_CARRY_FORWARD = 1.0;
+const MAX_TOTAL_CASUAL = 3.0;
 
 function round(val: number): number {
   return Math.round((val + Number.EPSILON) * 100) / 100;
@@ -131,7 +133,7 @@ export async function ensureBalance(userId: string, month: number, year: number,
     return await prisma.leaveBalance.create({
       data: {
         userId, month, year,
-        remainingFull: round(CASUAL_ACCRUAL + carryForwardToNew),
+        remainingFull: Math.min(MAX_TOTAL_CASUAL, round(CASUAL_ACCRUAL + carryForwardToNew)),
         remainingShort: 1,
         semiAnnualRemaining: semiAnnualToNew,
         carriedForward: 0.0,
@@ -328,8 +330,56 @@ export async function submitLeaveRequest(formData: unknown) {
       }
     });
 
+    // Trigger notifications to Admin, Accountant, and Reporting Manager
+    try {
+      const applicant = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, managerId: true }
+      });
+      const applicantName = applicant?.name || "An employee";
+
+      const usersToNotify = await prisma.user.findMany({
+        where: {
+          AND: [
+            { id: { not: userId } },
+            {
+              OR: [
+                { role: { in: ["ADMIN", "SYSTEM_ADMIN", "ACCOUNTANT"] } },
+                { id: applicant?.managerId || undefined }
+              ]
+            }
+          ]
+        },
+        select: { id: true }
+      });
+
+      if (usersToNotify.length > 0) {
+        await prisma.notification.createMany({
+          data: usersToNotify.map(u => ({
+            userId: u.id,
+            title: `Leave Application: ${applicantName}`,
+            content: `${applicantName} has applied for ${data.duration.toLowerCase()} leave from ${new Date(data.startDate).toLocaleDateString()} to ${new Date(data.endDate).toLocaleDateString()}. Status: ${isAutoApproved ? "Auto-Approved" : "Pending"}`,
+            type: "INFO",
+            link: "/dashboard"
+          }))
+        });
+      }
+    } catch (error) {
+      console.error("Failed to send leave notifications:", error);
+    }
+
+
     if (isAutoApproved) {
       await processLeaveRequestStatus(newRequest.id, "APPROVED", approvalNote);
+    } else {
+      // In case we ever disable auto-approval, notify that it's pending
+      await createNotification({
+        userId,
+        title: "Leave Request Submitted",
+        content: `Your leave request for ${new Date(data.startDate).toLocaleDateString()} is pending review.`,
+        type: "INFO",
+        link: "/dashboard/employee/leaves"
+      });
     }
 
     revalidatePath("/dashboard/employee");
@@ -530,12 +580,16 @@ async function processLeaveRequestStatus(requestId: string, status: "APPROVED" |
       }
 
       if (cfDiff !== 0) {
-        await tx.leaveBalance.update({
-          where: { id: next.id },
-          data: {
-            remainingFull: { increment: cfDiff }
-          }
-        });
+        const nextBalance = await tx.leaveBalance.findUnique({ where: { id: next.id } });
+        if (nextBalance) {
+          const newTotal = Math.min(MAX_TOTAL_CASUAL, Number((nextBalance.remainingFull + cfDiff).toFixed(2)));
+          await tx.leaveBalance.update({
+            where: { id: next.id },
+            data: {
+              remainingFull: newTotal
+            }
+          });
+        }
       }
 
       if (getCycleKey(m, y, startMonthConfig) === getCycleKey(nextM, nextY, startMonthConfig)) {
@@ -553,6 +607,19 @@ async function processLeaveRequestStatus(requestId: string, status: "APPROVED" |
   }, {
     isolationLevel: "Serializable"
   });
+
+  if (result.success) {
+    const isApproved = status === "APPROVED";
+    await createNotification({
+      userId: requestMeta.userId,
+      title: isApproved ? "Leave Request Approved" : "Leave Request Rejected",
+      content: isApproved 
+        ? `Your leave request for ${requestMeta.startDate.toLocaleDateString()} has been approved.` 
+        : `Your leave request for ${requestMeta.startDate.toLocaleDateString()} was rejected. Note: ${note || "No reason provided."}`,
+      type: isApproved ? "SUCCESS" : "ERROR",
+      link: "/dashboard/employee/leaves"
+    });
+  }
 
   revalidatePath("/dashboard", "layout");
   revalidatePath("/dashboard/employee");
@@ -694,13 +761,17 @@ export async function cancelApprovedLeave(requestId: string, note?: string) {
         const cfDiff = round(expectedCF - next.carriedForward);
 
         if (cfDiff !== 0) {
-          await tx.leaveBalance.update({
-            where: { id: next.id },
-            data: {
-              remainingFull: { increment: cfDiff },
-              carriedForward: expectedCF
-            }
-          });
+          const nextBalance = await tx.leaveBalance.findUnique({ where: { id: next.id } });
+          if (nextBalance) {
+            const newTotal = Math.min(MAX_TOTAL_CASUAL, Number((nextBalance.remainingFull + cfDiff).toFixed(2)));
+            await tx.leaveBalance.update({
+              where: { id: next.id },
+              data: {
+                remainingFull: newTotal,
+                carriedForward: expectedCF
+              }
+            });
+          }
         }
 
         // 3. Sync Semi-Annual Sick pool if still in the same cycle

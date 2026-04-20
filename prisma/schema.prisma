@@ -26,11 +26,13 @@ model User {
   leaveBalances     LeaveBalance[]
   leaveRequests     LeaveRequest[]
   allowances        Allowance[]
+  announcements     Announcement[]
   department        Department?    @relation("DepartmentMembers", fields: [departmentId], references: [id])
   manager           User?          @relation("ManagerToEmployee", fields: [managerId], references: [id], onUpdate: NoAction)
   employees         User[]         @relation("ManagerToEmployee")
   shift             Shift?         @relation(fields: [shiftId], references: [id])
   location          Location?      @relation(fields: [locationId], references: [id])
+  notifications     Notification[]
 }
 
 model Location {
@@ -57,6 +59,7 @@ model Department {
   updatedAt    DateTime @updatedAt
   teamLeader   User?    @relation("DepartmentLeader", fields: [teamLeaderId], references: [id])
   members      User[]   @relation("DepartmentMembers")
+  announcements Announcement[]
 }
 
 model Shift {
@@ -193,4 +196,45 @@ model Allowance {
   status    LeaveStatus @default(PENDING)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
+}
+
+model PublicHoliday {
+  id        String   @id @default(cuid())
+  name      String
+  date      DateTime @unique @db.Date
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Announcement {
+  id                 String               @id @default(cuid())
+  title              String
+  content            String
+  priority           AnnouncementPriority @default(INFO)
+  targetDepartmentId String?
+  isActive           Boolean              @default(true)
+  expiresAt          DateTime?
+  authorId           String
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  author             User                 @relation(fields: [authorId], references: [id])
+  targetDepartment   Department?          @relation(fields: [targetDepartmentId], references: [id])
+}
+
+enum AnnouncementPriority {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  content   String
+  type      String   @default("INFO") // INFO, SUCCESS, WARNING, ERROR
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

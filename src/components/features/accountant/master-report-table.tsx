@@ -67,7 +67,7 @@ export function MasterReportTable({
             placeholder="Search staff members..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-8 border-border/60 focus:ring-primary/10 transition-all rounded-sm text-xs bg-white"
+            className="pl-9 h-8 border-border/60 focus:ring-primary/20 transition-all rounded-sm text-xs bg-muted/20"
           />
           {searchTerm && (
             <button
@@ -90,16 +90,16 @@ export function MasterReportTable({
           <TableHeader>
             {/* Header Tier 1: Grouping */}
             <TableRow className="bg-muted/5 hover:bg-muted/5 border-b border-border/40">
-              <TableHead className="py-2.5 px-5 font-black text-[9px] uppercase tracking-widest text-muted-foreground/40 border-r border-border/20">Staff Identity</TableHead>
-              <TableHead colSpan={3} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/40 text-center border-r border-border/20 bg-primary/2">Attendance Summary</TableHead>
-              <TableHead className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/40 text-center border-r border-border/20 bg-amber-500/2">Usage</TableHead>
-              <TableHead colSpan={3} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/40 text-center border-r border-border/20 bg-emerald-500/2">Balance Frameworks</TableHead>
-              <TableHead colSpan={2} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/40 text-center border-r border-border/20 bg-rose-500/2">Payroll Deductions</TableHead>
-              <TableHead className="py-2.5 px-5 font-black text-[9px] uppercase tracking-widest text-muted-foreground/40 text-right">Adjustment</TableHead>
+              <TableHead className="py-2.5 px-5 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 border-r border-border/20">Staff Identity</TableHead>
+              <TableHead colSpan={3} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-center border-r border-border/20 bg-primary/2">Attendance Summary</TableHead>
+              <TableHead className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-center border-r border-border/20 bg-amber-500/2">Usage</TableHead>
+              <TableHead colSpan={3} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-center border-r border-border/20 bg-emerald-500/2">Balance Frameworks</TableHead>
+              <TableHead colSpan={2} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-center border-r border-border/20 bg-rose-500/2">Payroll Deductions</TableHead>
+              <TableHead className="py-2.5 px-5 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-right">Adjustment</TableHead>
             </TableRow>
 
             {/* Header Tier 2: Column Titles */}
-            <TableRow className="bg-white border-b border-border/40">
+            <TableRow className="bg-card border-b border-border/40">
               <TableHead className="py-3 px-5 text-[10px] font-bold text-foreground border-r border-border/10">Full Name</TableHead>
               <TableHead className="py-3 px-4 text-[10px] font-bold text-foreground text-center bg-primary/1">Present</TableHead>
               <TableHead className="py-3 px-4 text-[10px] font-bold text-foreground text-center bg-primary/1">Late Mark</TableHead>

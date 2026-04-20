@@ -30,11 +30,11 @@ export default async function LoginPage() {
             The all-in-one platform for attendance tracking, leave management, and complex policy compliance. Built for modern enterprises.
           </p>
 
-          <div className="flex gap-4 pt-4">
-            <div className="flex items-center gap-2 text-sm font-medium bg-background border border-border/50 px-4 py-2 rounded-full shadow-sm">
+          <div className="flex gap-3 pt-4">
+            <div className="flex items-center gap-2 text-sm font-medium bg-card border border-border px-3 py-1.5 rounded-sm">
               <ShieldCheck className="w-4 h-4 text-emerald-600" /> Secure Access
             </div>
-            <div className="flex items-center gap-2 text-sm font-medium bg-background border border-border/50 px-4 py-2 rounded-full shadow-sm">
+            <div className="flex items-center gap-2 text-sm font-medium bg-card border border-border px-3 py-1.5 rounded-sm">
               <Users className="w-4 h-4 text-blue-600" /> Role-Based Routing
             </div>
           </div>

@@ -9,6 +9,8 @@ interface TeamMember {
   startDate: Date;
   endDate: Date;
   leaveType: string;
+  duration?: string;
+  halfDayType?: string | null;
 }
 
 interface TeamOnLeaveProps {
@@ -17,22 +19,22 @@ interface TeamOnLeaveProps {
 
 export function TeamOnLeave({ members }: TeamOnLeaveProps) {
   return (
-    <div className="bg-white border border-border/60 rounded-sm p-6 space-y-5 h-full animate-fade-in shadow-sm">
+    <div className="bg-card border border-border rounded-sm p-5 space-y-5 h-full animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Team Visibility</h3>
-          <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em]">Availability Network</p>
+          <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Availability Network</p>
         </div>
-        <div className="size-8 rounded-sm bg-primary/[0.05] text-primary flex items-center justify-center border border-primary/10">
-           <Users className="size-4" />
+        <div className="size-8 rounded-sm bg-primary/5 text-primary flex items-center justify-center border border-primary/10">
+          <Users className="size-4" />
         </div>
       </div>
 
       <div className="space-y-1.5 flex-1">
         {members.length === 0 ? (
           <div className="py-8 text-center flex flex-col items-center gap-2 opacity-20">
-             <CalendarDays className="size-6" />
-             <p className="text-[10px] font-black uppercase tracking-widest">Team is fully active</p>
+            <CalendarDays className="size-6" />
+            <p className="text-[10px] font-black uppercase tracking-widest">Team is fully active</p>
           </div>
         ) : (
           members.map((member) => (
@@ -44,18 +46,25 @@ export function TeamOnLeave({ members }: TeamOnLeaveProps) {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col">
-                   <span className="text-[12px] font-bold text-foreground leading-none mb-0.5">{member.name}</span>
-                   <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-tight">{member.role || "Team Member"}</span>
+                  <span className="text-[12px] font-bold text-foreground leading-none mb-0.5">{member.name}</span>
+                  <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-tight">{member.role || "Team Member"}</span>
                 </div>
               </div>
 
               <div className="flex flex-col items-end">
-                  <span className="text-[9px] font-black text-primary uppercase tracking-widest">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] font-black text-primary uppercase tracking-widest text-right">
                     {member.leaveType}
                   </span>
-                  <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-tighter">
-                    Until {new Date(member.endDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
-                  </span>
+                  {member.duration === "HALF" && member.halfDayType && (
+                    <span className="text-[7px] font-black bg-amber-500/10 text-amber-600 px-1 rounded-[2px] border border-amber-500/10">
+                      {member.halfDayType === "FIRST_HALF" ? "1H" : "2H"}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-tighter">
+                  Until {new Date(member.endDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
+                </span>
               </div>
             </div>
           ))

@@ -92,3 +92,51 @@ export async function deleteUser(id: string) {
     return { success: false, error: "Failed to delete user: " + error.message }
   }
 }
+
+export async function getAdminUsersData() {
+  try {
+    await authorizeAdmin()
+    const users = await prisma.user.findMany({
+      where: {
+        role: { not: 'SYSTEM_ADMIN' }
+      },
+      include: {
+        manager: true,
+        department: true,
+        shift: true,
+        location: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const validManagers = await prisma.user.findMany({
+      where: {
+        role: { in: ['ADMIN', 'EMPLOYEE', 'ACCOUNTANT'] }
+      },
+      select: { id: true, name: true, email: true },
+      orderBy: { name: 'asc' }
+    });
+
+    const departments = await prisma.department.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' }
+    });
+
+    const locations = await prisma.location.findMany({
+      select: { id: true, name: true, isRemote: true },
+      orderBy: { name: 'asc' }
+    });
+
+    return {
+      success: true,
+      data: {
+        users,
+        validManagers,
+        departments,
+        locations
+      }
+    };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

@@ -72,7 +72,7 @@ export default async function EmployeeLeavesPage() {
   return (
     <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-foreground tracking-tight">My Leaves</h1>
           <p className="text-xs text-muted-foreground font-medium mt-0.5">Manage your leave applications and track balance history</p>
@@ -117,11 +117,11 @@ export default async function EmployeeLeavesPage() {
       </div>
 
       {/* Main Table Section */}
-      <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden animate-fade-in">
+      <div className="bg-card border border-border rounded-sm overflow-hidden animate-fade-in">
         <div className="px-5 py-4 border-b border-border/40 bg-muted/5 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">Leave History</h3>
-            <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Complete record of applications</p>
+            <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Complete record of applications</p>
           </div>
         </div>
 
@@ -135,11 +135,11 @@ export default async function EmployeeLeavesPage() {
             <table className="w-full border-collapse">
               <thead className="bg-muted/5 border-b border-border/40">
                 <tr>
-                  <th className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 w-[200px]">Timeline</th>
-                  <th className="py-3 px-4 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Duration</th>
-                  <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Type</th>
-                  <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Reason</th>
-                  <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Status</th>
+                  <th className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 w-[200px]">Timeline</th>
+                  <th className="py-3 px-4 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Duration</th>
+                  <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Type</th>
+                  <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Reason</th>
+                  <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/20">
@@ -172,9 +172,22 @@ export default async function EmployeeLeavesPage() {
                       {/* Duration */}
                       <td className="py-3 px-4 text-center">
                         <div className="inline-flex flex-col items-center">
-                          <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest bg-muted/20 px-2 py-0.5 rounded-sm border border-border/20 mb-0.5">
+                          <span className={cn(
+                            "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-sm border mb-0.5",
+                            leave.duration === "FULL" ? "bg-muted/20 text-muted-foreground/80 border-border/20" : 
+                            leave.duration === "HALF" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/10" : 
+                            "bg-primary/10 text-primary border-primary/10"
+                          )}>
                             {leave.duration === "FULL" ? "Full day" : leave.duration === "HALF" ? "Half day" : "Short"}
                           </span>
+                          {leave.duration === "HALF" && leave.halfDayType && (
+                            <span className={cn(
+                              "text-[8px] font-bold uppercase tracking-tight mb-1",
+                              leave.halfDayType === "FIRST_HALF" ? "text-emerald-500" : "text-amber-500"
+                            )}>
+                              {leave.halfDayType === "FIRST_HALF" ? "1st Half" : "2nd Half"}
+                            </span>
+                          )}
                           <span className="text-[9px] font-bold text-muted-foreground/40 tabular-nums">
                             {days} {days === 1 ? 'day' : 'days'}
                           </span>
@@ -187,7 +200,7 @@ export default async function EmployeeLeavesPage() {
                           <span className="text-[11px] font-bold text-foreground/70 uppercase tracking-tight">
                             {leave.leaveType === "CASUAL" ? "Casual Leave" : "Sick Leave"}
                           </span>
-                          <span className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-widest mt-0.5">
+                          <span className="text-[9px] text-muted-foreground/60 font-bold uppercase tracking-widest mt-0.5">
                             {leave.category === "MONTHLY_POLICY_1" ? "Monthly" : leave.category === "UNPAID" ? "Unpaid" : "Policy"}
                           </span>
                         </div>
@@ -196,8 +209,8 @@ export default async function EmployeeLeavesPage() {
                       {/* Reason */}
                       <td className="py-3 px-4 max-w-[200px]">
                         <div className="flex items-start gap-1.5 group/reason">
-                          <MessageSquare className="size-3 text-muted-foreground/20 mt-0.5" />
-                          <p className="text-[10px] font-medium text-muted-foreground/60 leading-snug line-clamp-2 italic" title={leave.reason || ""}>
+                          <MessageSquare className="size-3 text-muted-foreground/40 mt-0.5" />
+                          <p className="text-[10px] font-medium text-muted-foreground/80 leading-snug line-clamp-2 italic" title={leave.reason || ""}>
                             {leave.reason || "No reason specified"}
                           </p>
                         </div>

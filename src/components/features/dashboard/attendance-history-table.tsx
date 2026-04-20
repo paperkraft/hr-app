@@ -51,7 +51,7 @@ export function AttendanceHistoryTable({ logs }: AttendanceHistoryTableProps) {
             placeholder="Search dates or status..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-8 border-border/60 focus:ring-primary/10 transition-all rounded-sm text-xs bg-white"
+            className="pl-9 h-8 border-border/60 focus:ring-primary/20 transition-all rounded-sm text-xs bg-muted/20"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -71,11 +71,11 @@ export function AttendanceHistoryTable({ logs }: AttendanceHistoryTableProps) {
           <Table>
             <TableHeader className="bg-muted/5">
               <TableRow className="border-b border-border/40 hover:bg-transparent">
-                <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/40 w-[180px]">Date</TableHead>
-                <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/40">Check In</TableHead>
-                <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/40">Check Out</TableHead>
-                <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/40">Location</TableHead>
-                <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/40 text-right">Status</TableHead>
+                <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 w-[180px]">Date</TableHead>
+                <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Check In</TableHead>
+                <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Check Out</TableHead>
+                <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Location</TableHead>
+                <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 text-right">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

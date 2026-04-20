@@ -15,9 +15,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-const labelClass = "text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50"
-const inputClass = "h-9 bg-muted/5 border-border/60 rounded-sm text-xs font-medium focus:ring-primary/10"
-const selectTriggerClass = "h-9 bg-muted/5 border-border/60 rounded-sm text-xs font-medium shadow-none focus:ring-primary/10"
+const labelClass = "text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/80"
+const inputClass = "h-8 w-full bg-muted/5 border-border rounded-sm text-xs font-medium px-3 focus:ring-2 focus:ring-primary/10 focus:border-primary/40 transition-all outline-none placeholder:text-muted-foreground/30"
+const selectTriggerClass = "h-8 w-full bg-muted/5 border-border rounded-sm text-xs font-medium px-3 focus:ring-2 focus:ring-primary/10 focus:border-primary/40 transition-all outline-none shadow-none"
 
 export function AddUserDialog({
   managers,
@@ -62,24 +62,24 @@ export function AddUserDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all">
+        <Button className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors">
           <UserPlus className="size-3.5 mr-1.5" /> Add Employee
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="p-0 rounded-sm border-border/60 shadow-lg overflow-hidden max-w-[520px]">
+      <DialogContent className="p-0 rounded-sm border border-border shadow-none overflow-hidden max-w-[520px]">
         {/* Dialog Header */}
         <DialogHeader className="px-5 py-4 border-b border-border/40">
           <DialogTitle className="text-sm font-bold tracking-tight">New Employee</DialogTitle>
-          <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em] mt-0.5">
+          <p className="text-[10px] text-muted-foreground/80 font-bold tracking-widest">
             Provision a new account for the organization
           </p>
         </DialogHeader>
 
-        <form onSubmit={onSubmit} className="p-5 space-y-4">
+        <form onSubmit={onSubmit} className="p-4 space-y-2">
           {/* Identity */}
           <div>
-            <p className="text-[9px] font-black uppercase tracking-[0.12em] text-muted-foreground/30 mb-2">Identity</p>
+            <p className="text-[9px] font-black uppercase tracking-[0.12em] text-muted-foreground/60 mb-2">Identity</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className={labelClass}>Full Name</Label>
@@ -111,7 +111,7 @@ export function AddUserDialog({
 
           {/* Work Setup */}
           <div className="pt-3 border-t border-border/30">
-            <p className="text-[9px] font-black uppercase tracking-[0.12em] text-muted-foreground/30 mb-2">Work Setup</p>
+            <p className="text-[9px] font-black uppercase tracking-[0.12em] text-muted-foreground/60 mb-2">Work Setup</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className={labelClass}>Work Mode</Label>
@@ -144,9 +144,9 @@ export function AddUserDialog({
           </div>
 
           {/* Organization */}
-          <div className="pt-3 border-t border-border/30">
-            <p className="text-[9px] font-black uppercase tracking-[0.12em] text-muted-foreground/30 mb-2">Organization</p>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="pt-3 border-t border-border/30 space-y-4">
+            <p className="text-[9px] font-black uppercase tracking-[0.12em] text-muted-foreground/60 mb-2">Organization</p>
+            <div className="space-y-3">
               <div className="space-y-1.5">
                 <Label className={labelClass}>Department</Label>
                 <Select name="departmentId" defaultValue="none">
@@ -162,13 +162,13 @@ export function AddUserDialog({
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className={labelClass}>Manager</Label>
+                <Label className={labelClass}>Reporting Manager</Label>
                 <Select name="managerId" defaultValue="none">
                   <SelectTrigger className={selectTriggerClass}>
                     <SelectValue placeholder="None" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-sm shadow-lg border-border/60">
-                    <SelectItem value="none" className="text-xs">None</SelectItem>
+                  <SelectContent className="rounded-sm border border-border">
+                    <SelectItem value="none" className="text-xs">None (Top Level)</SelectItem>
                     {managers.map(m => (
                       <SelectItem key={m.id} value={m.id} className="text-xs">{m.name || m.email}</SelectItem>
                     ))}
@@ -196,9 +196,9 @@ export function AddUserDialog({
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm"
+              className="flex-1 h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm"
             >
-              {loading ? <Loader2 className="size-3.5 animate-spin" /> : <><UserPlus className="size-3.5 mr-1.5" /> Create Employee</>}
+              {loading ? <Loader2 className="size-3.5 animate-spin" /> : <><UserPlus className="size-3.5 mr-1.5" /> Create</>}
             </Button>
           </div>
         </form>

@@ -30,8 +30,8 @@ export function AccountantTabs() {
               className={cn(
                 "flex items-center gap-2 h-8 px-4 rounded-sm text-[11px] font-bold uppercase tracking-widest transition-all duration-200 whitespace-nowrap",
                 isActive
-                  ? "bg-white text-primary shadow-sm border border-border/60"
-                  : "text-muted-foreground/60 hover:text-foreground hover:bg-white/50"
+                  ? "bg-card text-primary border border-border"
+                  : "text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
               )}
             >
               <tab.icon className={cn("size-3.5", isActive ? "text-primary" : "text-muted-foreground/30")} />

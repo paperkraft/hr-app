@@ -83,8 +83,8 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
         <Label className={labelClass}>Leave Category</Label>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {[
-            { id: "MONTHLY_POLICY_1", label: "Monthly", sub: "Standard quota", color: "primary" },
-            ...(semiAnnualEnabled ? [{ id: "SEMI_ANNUAL_POLICY_2", label: "Semi-Annual", sub: "Cycle based", color: "amber-500" }] : []),
+            { id: "MONTHLY_POLICY_1", label: "Monthly", sub: "Casual / Medical", color: "primary" },
+            ...(semiAnnualEnabled ? [{ id: "SEMI_ANNUAL_POLICY_2", label: "Earned Leave", sub: "Hangout (3+ Days)", color: "amber-500" }] : []),
             { id: "UNPAID", label: "Unpaid", sub: "No balance", color: "rose-500" }
           ].map((cat) => (
             <label
@@ -93,7 +93,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
                 "relative flex flex-col p-2.5 cursor-pointer rounded-sm border transition-all",
                 selectedCategory === cat.id 
                   ? `border-${cat.color} bg-${cat.color}/5 ring-1 ring-${cat.color}/20` 
-                  : "border-border/60 bg-white hover:bg-muted/5"
+                  : "border-border/60 bg-muted/5 hover:bg-muted/10 transition-colors"
               )}
             >
               <input type="radio" value={cat.id} className="sr-only" {...register("category")} />
@@ -121,7 +121,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
                   "relative flex flex-col p-2 cursor-pointer rounded-sm border transition-all",
                   watch("leaveType") === type.id 
                     ? "border-primary bg-primary/10" 
-                    : "border-border/40 bg-white/50"
+                    : "border-border/40 bg-muted/5"
                 )}
               >
                 <input type="radio" value={type.id} className="sr-only" {...register("leaveType")} />
@@ -144,7 +144,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
                 key={type} 
                 className={cn(
                   "flex justify-center p-2 cursor-pointer rounded-sm border transition-all text-[10px] font-bold uppercase tracking-widest",
-                  selectedDuration === type ? "bg-primary text-white border-primary" : "bg-white border-border/60 hover:bg-muted/5",
+                  selectedDuration === type ? "bg-primary text-white border-primary" : "bg-muted/5 border-border/60 hover:bg-muted/10 transition-colors",
                   isDisabled && "opacity-30 cursor-not-allowed bg-muted/20"
                 )}
               >
@@ -169,7 +169,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
                 key={session.id}
                 className={cn(
                   "flex items-center gap-2 p-2 cursor-pointer rounded-sm border transition-all",
-                  selectedHalf === session.id ? `border-${session.color} bg-${session.color}/10` : "border-border/40 bg-white/50"
+                  selectedHalf === session.id ? `border-${session.color} bg-${session.color}/10` : "border-border/40 bg-muted/5"
                 )}
               >
                 <input type="radio" value={session.id} className="sr-only" {...register("halfDayType")} />
@@ -203,11 +203,11 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
         <div className="grid grid-cols-2 gap-3 p-3 bg-primary/5 border border-primary/10 rounded-sm animate-in fade-in slide-in-from-top-2">
           <div className="space-y-1.5">
             <Label className="text-[9px] font-black text-primary uppercase flex items-center gap-1"><Clock className="size-3" /> Time From</Label>
-            <Input type="time" {...register("startTime")} className="h-8 text-xs bg-white/50" />
+            <Input type="time" {...register("startTime")} className="h-8 text-xs bg-card border-border/40" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-[9px] font-black text-primary uppercase flex items-center gap-1"><Clock className="size-3" /> Time To</Label>
-            <Input type="time" {...register("endTime")} className="h-8 text-xs bg-white/50" />
+            <Input type="time" {...register("endTime")} className="h-8 text-xs bg-card border-border/40" />
           </div>
         </div>
       )}
@@ -233,7 +233,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
       {/* Submit Button */}
       <Button 
         type="submit" 
-        className="w-full h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all" 
+        className="w-full h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors" 
         disabled={isSubmitting}
       >
         {isSubmitting ? "Dispatching..." : <><Send className="size-3.5 mr-1.5" /> Submit Application</>}

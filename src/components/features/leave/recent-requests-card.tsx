@@ -16,7 +16,7 @@ interface RecentRequestsCardProps {
 
 export function RecentRequestsCard({ requests }: RecentRequestsCardProps) {
   return (
-    <Card className="shadow-sm border-border/40 hover:shadow-md transition-shadow duration-200 flex flex-col overflow-hidden">
+    <Card className="flex flex-col overflow-hidden">
       <CardHeader className="pb-3 border-b border-border/40 bg-muted/5 p-4 shrink-0 flex flex-row items-center justify-between space-y-0">
         <div className="flex items-center gap-2">
           <FileText className="w-4 h-4 text-primary" />

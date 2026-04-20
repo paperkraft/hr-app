@@ -1,4 +1,7 @@
 import { getSystemConfig, getLocations } from "@/actions/settings"
+import { getHolidays } from "@/actions/holiday"
+import { getDepartments } from "@/actions/department"
+import { getAllAnnouncementsForAdmin } from "@/actions/announcement"
 import { SettingsForm } from "@/components/features/admin/settings-form"
 import { PageContainer } from "@/components/ui"
 import { Settings2 } from "lucide-react"
@@ -8,18 +11,22 @@ export const dynamic = 'force-dynamic'
 export default async function SettingsPage() {
   const config = await getSystemConfig()
   const locations = await getLocations()
+  const holidaysResult = await getHolidays()
+  const holidays = holidaysResult.success ? holidaysResult.data : []
+
+  const deptsResult = await getDepartments()
+  const departments = deptsResult.success ? deptsResult.departments : []
+
+  const announcementsResult = await getAllAnnouncementsForAdmin()
+  const announcements = announcementsResult.success ? announcementsResult.data : []
 
   return (
-    <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">
+    <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-4">
       {/* Page Header — matches admin dashboard style */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-foreground tracking-tight">System Configuration</h1>
           <p className="text-xs text-muted-foreground font-medium mt-0.5">Manage attendance policies, locations, and leave frameworks</p>
-        </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm border border-border/60 bg-white text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest shadow-sm">
-          <Settings2 className="size-3.5 text-primary/60" />
-          Global Config
         </div>
       </div>
 
@@ -41,6 +48,9 @@ export default async function SettingsPage() {
           secondHalfStartTime: config.secondHalfStartTime ?? "13:30",
         }}
         initialLocations={locations}
+        initialHolidays={holidays || []}
+        initialDepartments={departments || []}
+        initialAnnouncements={announcements || []}
       />
     </PageContainer>
   )

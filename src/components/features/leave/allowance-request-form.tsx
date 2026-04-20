@@ -139,7 +139,7 @@ export function AllowanceRequestForm({ onSuccess }: { onSuccess?: () => void }) 
       <Button
         type="submit"
         disabled={isSubmitting}
-        className="w-full h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all"
+        className="w-full h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors"
       >
         {isSubmitting ? (
           "Processing..."

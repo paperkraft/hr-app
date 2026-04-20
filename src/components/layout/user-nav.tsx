@@ -15,8 +15,8 @@ export function UserNav({ userName }: { userName: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="flex items-center gap-2 cursor-pointer hover:bg-secondary/50 p-1.5 pr-3 rounded-full transition-all duration-200 border border-transparent hover:border-border/50 hover:shadow-sm">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground font-bold text-sm shadow-md">
+        <div className="flex items-center gap-2 cursor-pointer hover:bg-muted p-1.5 pr-3 rounded-sm transition-colors duration-150 border border-transparent hover:border-border">
+          <div className="w-7 h-7 rounded-sm bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
             {userName.charAt(0).toUpperCase()}
           </div>
           <span className="text-sm font-medium hidden sm:block text-foreground">{userName}</span>

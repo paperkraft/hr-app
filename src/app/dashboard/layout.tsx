@@ -13,10 +13,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex min-h-screen bg-[#fcfcfc] dark:bg-background text-foreground selection:bg-primary/20">
-      <Sidebar 
-        userRole={session.user.role} 
-        isTeamLeader={session.user.isTeamLeader ?? false} 
-      />
+      <Sidebar userRole={session.user.role} />
 
       <div className="flex-1 flex flex-col min-w-0">
         <Header

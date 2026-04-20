@@ -4,122 +4,18 @@ import { AllowanceRequestDialog } from "@/components/features/leave/allowance-re
 import { DashboardTabs } from "@/components/features/dashboard/dashboard-tabs";
 import { TeamOnLeave } from "@/components/features/dashboard/team-on-leave";
 import { UpcomingLeave } from "@/components/features/dashboard/upcoming-leave";
-import { NotificationCenter } from "@/components/features/dashboard/notification-center";
 import { LeaveBalanceOverview } from "@/components/features/dashboard/leave-balance-overview";
-
-import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { getTodayRange } from "@/lib/attendance-helper";
-import { ensureBalance } from "@/actions/leave";
-import { getDaysDifference } from "@/lib/utils";
-import { processAutoPunchOuts } from "@/lib/auto-punch-out";
 import { PageContainer } from "@/components/ui";
+import { UpcomingHolidays } from "@/components/features/dashboard/upcoming-holidays";
+import { CommunicationHub } from "@/components/features/dashboard/communication-hub";
+import { getEmployeeDashboardStats } from "@/actions/dashboard";
 
 export const dynamic = 'force-dynamic';
 
-async function getEmployeeData() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return null;
-
-  await processAutoPunchOuts(session.user.id);
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: { department: true }
-  });
-
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth() + 1;
-  const balances = await ensureBalance(session.user.id, currentMonth, currentYear);
-
-  const { start, end } = getTodayRange();
-  const todaysLog = await prisma.attendance.findFirst({
-    where: { userId: session.user.id, date: { gte: start, lte: end } }
-  });
-
-  let sessionStatus: "PENDING" | "PUNCHED_IN" | "PUNCHED_OUT" = "PENDING";
-  if (todaysLog) {
-    sessionStatus = todaysLog.punchOut ? "PUNCHED_OUT" : "PUNCHED_IN";
-  }
-
-  const leaveRequests = await prisma.leaveRequest.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: 'desc' }
-  });
-
-  const approvedThisYear = leaveRequests.filter(
-    (r) => r.status === "APPROVED" && new Date(r.startDate).getFullYear() === currentYear
-  );
-
-  const casualTaken = approvedThisYear
-    .filter((r) => r.category === "MONTHLY_POLICY_1" && r.leaveType === "CASUAL")
-    .reduce((acc, r) => acc + getDaysDifference(new Date(r.startDate), new Date(r.endDate)) * (r.duration === "HALF" ? 0.5 : 1), 0);
-
-  const medicalTaken = approvedThisYear
-    .filter((r) => r.category === "MONTHLY_POLICY_1" && r.leaveType === "MEDICAL")
-    .reduce((acc, r) => acc + getDaysDifference(new Date(r.startDate), new Date(r.endDate)) * (r.duration === "HALF" ? 0.5 : 1), 0);
-    
-  const semiAnnualTaken = approvedThisYear
-    .filter((r) => r.category === "SEMI_ANNUAL_POLICY_2")
-    .reduce((acc, r) => acc + getDaysDifference(new Date(r.startDate), new Date(r.endDate)), 0);
-
-  const approvalRate = leaveRequests.length > 0
-    ? Math.round((leaveRequests.filter((r) => r.status === "APPROVED").length / leaveRequests.length) * 100)
-    : 100;
-
-  const pendingCount = leaveRequests.filter(r => r.status === "PENDING").length;
-
-  const { start: today, end: tomorrow } = getTodayRange();
-  const todayAttendance = await prisma.attendance.findMany({
-    where: { date: { gte: today, lte: tomorrow } },
-    select: { userId: true }
-  });
-  const presentIds = new Set(todayAttendance.map(a => a.userId));
-
-  const onLeave = await prisma.leaveRequest.findMany({
-    where: {
-      status: "APPROVED",
-      startDate: { lte: today },
-      endDate: { gte: today },
-      user: { id: { not: session.user.id } }
-    },
-    include: { user: { include: { department: true } } },
-    take: 10
-  });
-
-  const teamOnLeave = onLeave
-    .filter(l => !presentIds.has(l.userId))
-    .slice(0, 5)
-    .map((l) => ({
-      id: l.user.id,
-      name: l.user.name || "Unknown",
-      role: l.user.department?.name || "Team Member",
-      startDate: l.startDate,
-      endDate: l.endDate,
-      leaveType: l.category === "UNPAID" ? "Unpaid" : "Paid"
-    }));
-
-  return {
-    userName: user?.name || "Employee",
-    sessionStatus,
-    autoPunchOutCount: user?.autoPunchOutCount ?? 0,
-    balances: {
-      casualTaken,
-      medicalTaken,
-      semiAnnualTaken,
-      casualRemaining: Number(balances.remainingFull),
-      medicalRemaining: Number(balances.semiAnnualRemaining),
-    },
-    stats: { approvalRate, pendingCount },
-    leaveRequests,
-    teamOnLeave
-  };
-}
-
-
 export default async function EmployeeDashboard() {
-  const data = await getEmployeeData();
-  if (!data) return null;
+  const result = await getEmployeeDashboardStats();
+  if (!result.success || !result.data) return null;
+  const data = result.data;
 
   const currentHour = new Date().getHours();
   const greeting = currentHour < 12 ? "Good morning" : currentHour < 18 ? "Good afternoon" : "Good evening";
@@ -128,7 +24,7 @@ export default async function EmployeeDashboard() {
     <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">
 
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-foreground tracking-tight">
             {greeting}, {data.userName.split(' ')[0]} 👋
@@ -137,7 +33,7 @@ export default async function EmployeeDashboard() {
             {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <AllowanceRequestDialog />
           <RequestLeaveButton />
         </div>
@@ -160,15 +56,15 @@ export default async function EmployeeDashboard() {
         {/* Leave Balance — 2×2 stat grid alongside attendance */}
         <div className="lg:col-span-7">
           <LeaveBalanceOverview
-            casual={{ 
-              taken: data.balances.casualTaken + data.balances.medicalTaken, 
-              remaining: data.balances.casualRemaining, 
-              total: 3 
+            casual={{
+              taken: data.balances.casualTaken + data.balances.medicalTaken,
+              remaining: data.balances.casualRemaining,
+              total: 3
             }}
-            sick={{ 
-              taken: data.balances.semiAnnualTaken, 
-              remaining: data.balances.medicalRemaining, 
-              total: 3 
+            sick={{
+              taken: data.balances.semiAnnualTaken,
+              remaining: data.balances.medicalRemaining,
+              total: 3
             }}
             approvalRate={data.stats.approvalRate}
             pendingCount={data.stats.pendingCount}
@@ -177,24 +73,35 @@ export default async function EmployeeDashboard() {
 
       </div>
 
-      {/* SECONDARY ROW: Upcoming Leave + Team on Leave + Notifications */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div className="lg:col-span-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <UpcomingLeave requests={data.leaveRequests.map(r => ({
-              id: r.id,
-              category: r.category === "MONTHLY_POLICY_1" ? (r.leaveType === "CASUAL" ? "Casual" : "Sick") : "Paid",
-              startDate: r.startDate,
-              endDate: r.endDate,
-              status: r.status,
-              days: Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
-            }))} />
-            <TeamOnLeave members={data.teamOnLeave} />
-          </div>
+      {/* SECONDARY ROW: Balanced Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+        {/* My Upcoming Leaves */}
+        <div className="flex flex-col">
+          <UpcomingLeave requests={data.leaveRequests.map(r => ({
+            id: r.id,
+            category: r.category === "MONTHLY_POLICY_1" ? (r.leaveType === "CASUAL" ? "Casual" : "Sick") : "Paid",
+            startDate: r.startDate,
+            endDate: r.endDate,
+            status: r.status,
+            days: Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
+          }))} />
         </div>
-        <div className="lg:col-span-4">
-          <NotificationCenter />
+
+        {/* Team Activity */}
+        <div className="flex flex-col">
+          <TeamOnLeave members={data.teamOnLeave} />
         </div>
+
+        {/* Broadcast & Feed Hub */}
+        <div className="flex flex-col space-y-5">
+          <CommunicationHub
+            announcements={data.announcements}
+            notifications={data.notifications}
+          />
+          <UpcomingHolidays holidays={data.holidays} />
+        </div>
+
       </div>
     </PageContainer>
   );

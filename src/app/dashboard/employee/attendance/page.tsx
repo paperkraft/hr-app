@@ -47,16 +47,16 @@ export default async function AttendanceHistoryPage() {
   return (
     <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-foreground tracking-tight">Attendance History</h1>
           <p className="text-xs text-muted-foreground font-medium mt-0.5">Audit log of your daily check-in and checkout sessions</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" className="h-9 px-4 border-border/60 hover:bg-muted/5 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button variant="outline" className="h-9 px-4 border-border/60 hover:bg-muted/5 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors">
             <Download className="size-3.5 mr-1.5 text-muted-foreground/60" /> Export CSV
           </Button>
-          <Button className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all">
+          <Button className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors">
             Alignment Request
           </Button>
         </div>
@@ -99,13 +99,13 @@ export default async function AttendanceHistoryPage() {
       </div>
 
       {/* Main Table Section */}
-      <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden animate-fade-in">
+      <div className="bg-card border border-border rounded-sm overflow-hidden animate-fade-in">
         <div className="px-5 py-4 border-b border-border/40 bg-muted/5 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">Session Logs</h3>
-            <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Recent operational activity registry</p>
+            <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Recent operational activity registry</p>
           </div>
-          <CalendarDays className="size-4 text-muted-foreground/20" />
+          <CalendarDays className="size-4 text-muted-foreground/80" />
         </div>
         <div className="p-0">
           <AttendanceHistoryTable logs={logs} />

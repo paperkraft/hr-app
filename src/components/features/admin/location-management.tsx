@@ -72,11 +72,11 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">Office Locations</h3>
-          <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em]">Physical offices and remote hubs</p>
+          <p className="text-[10px] text-muted-foreground/80 font-bold">Physical offices and remote hubs</p>
         </div>
         {!isAdding && (
           <Button
-            className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all"
+            className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors"
             onClick={() => setIsAdding(true)}
           >
             <Plus className="size-3.5 mr-1.5" /> Add Location
@@ -86,13 +86,13 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
 
       {/* Add / Edit Form */}
       {isAdding && (
-        <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden animate-fade-in">
+        <div className="bg-card border border-border rounded-sm overflow-hidden animate-fade-in">
           <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">
                 {editingId ? "Edit Location" : "New Location"}
               </h3>
-              <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em]">Define geofence parameters</p>
+              <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Define geofence parameters</p>
             </div>
             <Button variant="ghost" size="icon" className="size-7 rounded-sm hover:bg-muted/10" onClick={resetForm}>
               <X className="size-3.5" />
@@ -161,7 +161,7 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
             {/* GPS Coordinates (only if not remote) */}
             {!formData.isRemote && (
               <div className="p-4 border border-border/40 rounded-sm bg-muted/5 space-y-3">
-                <p className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">GPS Coordinates</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">GPS Coordinates</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="space-y-1.5">
                     <Label className={labelClass}>Latitude</Label>
@@ -194,7 +194,7 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
               <Button variant="ghost" onClick={resetForm} className="h-9 px-4 text-xs font-bold uppercase tracking-widest rounded-sm">
                 Cancel
               </Button>
-              <Button onClick={handleSave} disabled={loading} className="h-9 px-5 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all">
+              <Button onClick={handleSave} disabled={loading} className="h-9 px-5 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors">
                 {loading ? "Saving..." : <><Save className="size-3.5 mr-1.5" />{editingId ? "Update" : "Save Location"}</>}
               </Button>
             </div>
@@ -204,23 +204,23 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
 
       {/* Location Cards Grid */}
       {locations.length === 0 && !isAdding ? (
-        <div className="bg-white border border-border/60 rounded-sm py-16 flex flex-col items-center gap-2 text-center opacity-30">
+        <div className="bg-card border border-border rounded-sm py-16 flex flex-col items-center gap-2 text-center opacity-30">
           <Globe className="size-7" />
           <p className="text-[10px] font-black uppercase tracking-widest">No locations configured</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {locations.map(loc => (
-            <div key={loc.id} className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden group hover:border-border transition-colors">
+            <div key={loc.id} className="bg-card border border-border rounded-sm overflow-hidden group hover:border-border/80 transition-colors">
               {/* Card Header */}
-              <div className="px-4 py-3 border-b border-border/40 flex items-center justify-between bg-muted/5">
+              <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-muted/5">
                 <div className="flex items-center gap-2.5">
                   <div className={cn("size-7 rounded-sm flex items-center justify-center border", loc.isRemote ? "bg-sky-500/5 text-sky-600 border-sky-500/10" : "bg-primary/5 text-primary border-primary/10")}>
                     <MapPin className="size-3.5" />
                   </div>
                   <div>
                     <h4 className="text-[11px] font-bold text-foreground tracking-tight leading-none">{loc.name}</h4>
-                    <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-tight mt-0.5">
+                    <p className="text-[9px] text-muted-foreground/80 font-bold tracking-tight mt-0.5">
                       #{loc.id.slice(-4).toUpperCase()}
                     </p>
                   </div>
@@ -237,12 +237,12 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
               {/* Card Body */}
               <div className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground/60">
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground/80">
                     <Clock className="size-3" />
                     <span>{loc.startTime} — {loc.endTime}</span>
                   </div>
                   <span className={cn(
-                    "text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-sm border",
+                    "text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-sm border",
                     loc.isRemote
                       ? "bg-sky-500/5 text-sky-600 border-sky-500/10"
                       : "bg-emerald-500/5 text-emerald-600 border-emerald-500/10"
@@ -252,14 +252,14 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
                 </div>
 
                 {!loc.isRemote && (
-                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-muted/5 border border-border/40 rounded-sm">
-                    <Crosshair className="size-2.5 text-muted-foreground/30" />
-                    <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest">{loc.radiusMeters}m radius · {loc.graceTimeMinutes}min grace</span>
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-muted border border-border rounded-sm">
+                    <Crosshair className="size-2.5 text-muted-foreground/80" />
+                    <span className="text-[9px] font-bold text-muted-foreground/80 uppercase tracking-widest">{loc.radiusMeters}m radius · {loc.graceTimeMinutes}min grace</span>
                   </div>
                 )}
 
                 {loc.address && (
-                  <p className="text-[10px] text-muted-foreground/50 font-medium leading-snug line-clamp-2">
+                  <p className="text-[10px] text-muted-foreground/60 font-medium leading-snug line-clamp-2">
                     {loc.address}
                   </p>
                 )}

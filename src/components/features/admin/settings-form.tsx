@@ -9,10 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
     Clock, Timer, CheckCircle, AlertCircle, Save, Loader2,
-    ShieldAlert, CalendarRange, ListOrdered, Globe
+    ShieldAlert, CalendarRange, ListOrdered, Globe, Sparkles,
+    Megaphone
 } from "lucide-react"
 import { updateSystemConfig } from "@/actions/settings"
 import { LocationManagement } from "./location-management"
+import { HolidayManagement } from "./holiday-management"
+import { AnnouncementManagement } from "./announcement-management"
+import { AnnouncementPriority } from "@prisma/client"
 import { cn } from "@/lib/utils"
 
 interface SettingsFormProps {
@@ -33,6 +37,18 @@ interface SettingsFormProps {
         secondHalfStartTime: string;
     },
     initialLocations: any[];
+    initialHolidays: { id: string; name: string; date: Date }[];
+    initialDepartments: { id: string; name: string }[];
+    initialAnnouncements: {
+        id: string;
+        title: string;
+        content: string;
+        priority: AnnouncementPriority;
+        createdAt: Date;
+        isActive: boolean;
+        author: { name: string | null; email: string };
+        targetDepartment?: { name: string } | null;
+    }[];
 }
 
 function SectionCard({ title, description, icon: Icon, iconColor = "text-primary", iconBg = "bg-primary/5", children }: {
@@ -44,14 +60,14 @@ function SectionCard({ title, description, icon: Icon, iconColor = "text-primary
     children: React.ReactNode;
 }) {
     return (
-        <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-border/40 flex items-center gap-3">
+        <div className="bg-card border border-border rounded-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-border flex items-center gap-3">
                 <div className={cn("size-8 rounded-sm flex items-center justify-center border", iconBg, iconColor, "border-border/40")}>
                     <Icon className="size-4" />
                 </div>
                 <div>
                     <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">{title}</h3>
-                    <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em]">{description}</p>
+                    <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">{description}</p>
                 </div>
             </div>
             <div className="p-5 space-y-5">
@@ -64,7 +80,7 @@ function SectionCard({ title, description, icon: Icon, iconColor = "text-primary
 function FieldRow({ label, children, disabled }: { label: string; children: React.ReactNode; disabled?: boolean }) {
     return (
         <div className={cn("space-y-1.5", disabled && "opacity-40 pointer-events-none")}>
-            <Label className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">{label}</Label>
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">{label}</Label>
             {children}
         </div>
     )
@@ -94,7 +110,7 @@ function ToggleRow({ label, description, checked, onCheckedChange, disabled, col
     )
 }
 
-export function SettingsForm({ initialData, initialLocations }: SettingsFormProps) {
+export function SettingsForm({ initialData, initialLocations, initialHolidays, initialDepartments, initialAnnouncements }: SettingsFormProps) {
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -115,26 +131,52 @@ export function SettingsForm({ initialData, initialLocations }: SettingsFormProp
         setLoading(false)
     }
 
-    const inputClass = "h-9 bg-muted/5 border-border/60 focus:ring-primary/10 rounded-sm font-mono text-xs"
+    const inputClass = "h-8 bg-muted border-border focus:ring-primary/10 rounded-sm font-mono text-xs"
 
     return (
         <div className="space-y-6 animate-fade-in">
             <Tabs defaultValue="general" className="w-full">
-                {/* Tab Bar — TabsList with overriding classes to match design */}
-                <TabsList className="flex items-center gap-1 p-1 bg-muted/30 border border-border/60 rounded-sm w-fit mb-6 h-auto overflow-x-auto scrollbar-hide">
-                    <TabsTrigger value="general" className="flex items-center gap-1.5 px-4 py-2 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border/80 data-[state=active]:shadow-sm text-muted-foreground/60 hover:text-foreground hover:bg-white/50">
-                        <Clock className="size-3.5" /> Global Defaults
-                    </TabsTrigger>
-                    <TabsTrigger value="locations" className="flex items-center gap-1.5 px-4 py-2 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border/80 data-[state=active]:shadow-sm text-muted-foreground/60 hover:text-foreground hover:bg-white/50">
-                        <Globe className="size-3.5" /> Locations
-                    </TabsTrigger>
-                    <TabsTrigger value="attendance" className="flex items-center gap-1.5 px-4 py-2 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border/80 data-[state=active]:shadow-sm text-muted-foreground/60 hover:text-foreground hover:bg-white/50">
-                        <ShieldAlert className="size-3.5" /> Attendance Policies
-                    </TabsTrigger>
-                    <TabsTrigger value="leave" className="flex items-center gap-1.5 px-4 py-2 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border/80 data-[state=active]:shadow-sm text-muted-foreground/60 hover:text-foreground hover:bg-white/50">
-                        <CalendarRange className="size-3.5" /> Leave Frameworks
-                    </TabsTrigger>
-                </TabsList>
+                {/* Tab Bar — Matches DashboardTabs aesthetic */}
+                <div className="w-full overflow-x-auto scrollbar-hide mb-6">
+                    <TabsList className="inline-flex items-center gap-1 bg-muted/10 p-1 rounded-sm border border-border/60 min-w-max h-auto">
+                        <TabsTrigger
+                            value="general"
+                            className="flex items-center gap-2 h-8 px-4 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
+                        >
+                            <Clock className="size-3.5" /> Global Defaults
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="locations"
+                            className="flex items-center gap-2 h-8 px-4 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
+                        >
+                            <Globe className="size-3.5" /> Locations
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="attendance"
+                            className="flex items-center gap-2 h-8 px-4 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
+                        >
+                            <ShieldAlert className="size-3.5" /> Attendance Policies
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="leave"
+                            className="flex items-center gap-2 h-8 px-4 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
+                        >
+                            <CalendarRange className="size-3.5" /> Leave Frameworks
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="holidays"
+                            className="flex items-center gap-2 h-8 px-4 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
+                        >
+                            <Sparkles className="size-3.5" /> Public Holidays
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="announcements"
+                            className="flex items-center gap-2 h-8 px-4 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
+                        >
+                            <Megaphone className="size-3.5" /> Announcements
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
 
                 {/* ─── GLOBAL DEFAULTS ─── */}
                 <TabsContent value="general" className="outline-none">
@@ -178,7 +220,7 @@ export function SettingsForm({ initialData, initialLocations }: SettingsFormProp
                                     Our geofencing engine verifies every check-in against workstation parameters.
                                     Configure per-location radius under the <strong>Locations</strong> tab.
                                 </p>
-                                <div className="p-4 bg-sky-500/[0.02] border border-sky-500/10 rounded-sm">
+                                <div className="p-4 bg-sky-500/2 border border-sky-500/10 rounded-sm">
                                     <p className="text-[10px] font-black text-sky-600/60 uppercase tracking-widest mb-1">Current Mode</p>
                                     <p className="text-xs font-bold text-foreground/70">Distributed Geofence · Per-location radius</p>
                                 </div>
@@ -335,6 +377,16 @@ export function SettingsForm({ initialData, initialLocations }: SettingsFormProp
                         <SaveBar loading={loading} success={success} error={error} label="Save Leave Frameworks" />
                     </form>
                 </TabsContent>
+
+                {/* ─── PUBLIC HOLIDAYS ─── */}
+                <TabsContent value="holidays" className="outline-none">
+                    <HolidayManagement initialHolidays={initialHolidays} />
+                </TabsContent>
+
+                {/* ─── ANNOUNCEMENTS ─── */}
+                <TabsContent value="announcements" className="outline-none">
+                    <AnnouncementManagement initialAnnouncements={initialAnnouncements} departments={initialDepartments} />
+                </TabsContent>
             </Tabs>
         </div>
     )
@@ -342,7 +394,7 @@ export function SettingsForm({ initialData, initialLocations }: SettingsFormProp
 
 function SaveBar({ loading, success, error, label }: { loading: boolean; success: boolean; error: string | null; label: string }) {
     return (
-        <div className="flex items-center justify-between p-4 bg-white border border-border/60 rounded-sm shadow-sm">
+        <div className="flex items-center justify-between p-4 bg-card border border-border rounded-sm">
             <div className="flex-1">
                 {success && (
                     <div className="flex items-center gap-2 text-emerald-600 text-[10px] font-black uppercase tracking-widest">
@@ -360,7 +412,7 @@ function SaveBar({ loading, success, error, label }: { loading: boolean; success
             <Button
                 type="submit"
                 disabled={loading}
-                className="h-9 px-5 bg-primary hover:bg-primary/90 rounded-sm font-bold text-[11px] uppercase tracking-widest shadow-sm transition-all"
+                className="h-9 px-5 bg-primary hover:bg-primary/90 rounded-sm font-bold text-[11px] uppercase tracking-widest transition-colors"
             >
                 {loading ? <Loader2 className="size-3.5 animate-spin" /> : <><Save className="size-3.5 mr-1.5" />{label}</>}
             </Button>

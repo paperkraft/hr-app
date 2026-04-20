@@ -17,7 +17,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
       {/* Branding Section */}
       <div className="h-16 flex items-center px-6 border-b border-sidebar-border/50">
         <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="flex items-center justify-center w-8 h-8 rounded-sm bg-primary shadow-sm group-hover:scale-105 transition-transform duration-300">
+          <div className="flex items-center justify-center w-8 h-8 rounded-sm bg-primary group-hover:scale-105 transition-transform duration-300">
             <Activity className="w-4.5 h-4.5 text-primary-foreground" />
           </div>
           <span className="font-bold text-lg tracking-tight text-foreground group-hover:text-primary transition-colors">

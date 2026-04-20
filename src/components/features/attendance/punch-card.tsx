@@ -90,7 +90,7 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
             <Button
               size="lg"
               className={cn(
-                "w-full h-12 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-all duration-300 shadow-sm relative overflow-hidden border",
+                "w-full h-12 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors duration-300 relative overflow-hidden border",
                 status === "PUNCHED_IN"
                   ? "bg-white text-amber-600 border-amber-500/20 hover:bg-amber-500/5"
                   : "bg-primary text-primary-foreground border-transparent hover:bg-primary/95"

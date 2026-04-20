@@ -137,7 +137,7 @@ export function PageSection({
     return (
         <section
             className={cn(
-                "rounded-lg border border-border/40",
+        "rounded-sm border border-border/40",
                 !noPadding && "p-6",
                 className
             )}
@@ -190,17 +190,17 @@ export function LoadingPage() {
         <PageContainer>
             <div className="space-y-8 animate-pulse">
                 <div className="space-y-2">
-                    <div className="h-8 w-48 rounded-lg bg-muted" />
-                    <div className="h-4 w-96 rounded-lg bg-muted" />
+                    <div className="h-8 w-48 rounded-sm bg-muted" />
+                    <div className="h-4 w-96 rounded-sm bg-muted" />
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-3">
                     {[1, 2, 3].map((i) => (
-                        <div key={i} className="h-32 rounded-lg bg-muted" />
+                        <div key={i} className="h-32 rounded-sm bg-muted" />
                     ))}
                 </div>
 
-                <div className="h-96 rounded-lg bg-muted" />
+                <div className="h-96 rounded-sm bg-muted" />
             </div>
         </PageContainer>
     );

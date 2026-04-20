@@ -62,13 +62,13 @@ export default async function AdminUsersPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/40" />
           <Input
             placeholder="Search people..."
-            className="h-10 pl-9 bg-white border-border/80 focus:ring-primary/10 rounded-sm text-xs"
+            className="h-10 pl-9 bg-muted/20 border-border/80 focus:ring-primary/20 rounded-sm text-xs"
           />
         </div>
       </div>
 
       {/* People Table - Ultra Density */}
-      <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden">
+      <div className="bg-card border border-border rounded-sm overflow-hidden">
         <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full border-collapse">
             <thead className="bg-muted/5 border-b border-border/60">

@@ -117,7 +117,7 @@ export default async function EmployeeLeavesPage() {
       </div>
 
       {/* Main Table Section */}
-      <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden animate-fade-in">
+      <div className="bg-card border border-border rounded-sm overflow-hidden animate-fade-in">
         <div className="px-5 py-4 border-b border-border/40 bg-muted/5 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">Leave History</h3>

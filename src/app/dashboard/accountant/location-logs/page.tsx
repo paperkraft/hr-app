@@ -72,7 +72,7 @@ export default async function LocationLogsPage({
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm border border-border/60 bg-white text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest shadow-sm">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm border border-border bg-card text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
             <ShieldCheck className="size-3.5 text-emerald-500" />
             Geofencing Active
           </div>

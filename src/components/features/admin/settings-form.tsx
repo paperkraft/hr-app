@@ -44,7 +44,7 @@ function SectionCard({ title, description, icon: Icon, iconColor = "text-primary
     children: React.ReactNode;
 }) {
     return (
-        <div className="bg-white border border-border rounded-sm shadow-sm overflow-hidden">
+        <div className="bg-card border border-border rounded-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-border flex items-center gap-3">
                 <div className={cn("size-8 rounded-sm flex items-center justify-center border", iconBg, iconColor, "border-border/40")}>
                     <Icon className="size-4" />
@@ -122,16 +122,16 @@ export function SettingsForm({ initialData, initialLocations }: SettingsFormProp
             <Tabs defaultValue="general" className="w-full">
                 {/* Tab Bar — TabsList with overriding classes to match design */}
                 <TabsList className="flex gap-1 p-4 bg-muted border border-border/60 rounded-sm w-fit overflow-x-auto scrollbar-hide mb-4">
-                    <TabsTrigger value="general" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border/80 data-[state=active]:shadow-sm text-muted-foreground/60 hover:text-foreground hover:bg-white/50">
+                    <TabsTrigger value="general" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50">
                         <Clock className="size-4" /> Global Defaults
                     </TabsTrigger>
-                    <TabsTrigger value="locations" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border/80 data-[state=active]:shadow-sm text-muted-foreground/60 hover:text-foreground hover:bg-white/50">
+                    <TabsTrigger value="locations" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50">
                         <Globe className="size-4" /> Locations
                     </TabsTrigger>
-                    <TabsTrigger value="attendance" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border/80 data-[state=active]:shadow-sm text-muted-foreground/60 hover:text-foreground hover:bg-white/50">
+                    <TabsTrigger value="attendance" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50">
                         <ShieldAlert className="size-4" /> Attendance Policies
                     </TabsTrigger>
-                    <TabsTrigger value="leave" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border/80 data-[state=active]:shadow-sm text-muted-foreground/60 hover:text-foreground hover:bg-white/50">
+                    <TabsTrigger value="leave" className="flex items-center gap-1.5 px-4 py-4 text-[11px] font-bold rounded-sm transition-all duration-200 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-border data-[state=active]:shadow-none text-muted-foreground/60 hover:text-foreground hover:bg-muted/50">
                         <CalendarRange className="size-4" /> Leave Frameworks
                     </TabsTrigger>
                 </TabsList>
@@ -342,7 +342,7 @@ export function SettingsForm({ initialData, initialLocations }: SettingsFormProp
 
 function SaveBar({ loading, success, error, label }: { loading: boolean; success: boolean; error: string | null; label: string }) {
     return (
-        <div className="flex items-center justify-between p-4 bg-white border border-border/60 rounded-sm shadow-sm">
+        <div className="flex items-center justify-between p-4 bg-card border border-border rounded-sm">
             <div className="flex-1">
                 {success && (
                     <div className="flex items-center gap-2 text-emerald-600 text-[10px] font-black uppercase tracking-widest">
@@ -360,7 +360,7 @@ function SaveBar({ loading, success, error, label }: { loading: boolean; success
             <Button
                 type="submit"
                 disabled={loading}
-                className="h-9 px-5 bg-primary hover:bg-primary/90 rounded-sm font-bold text-[11px] uppercase tracking-widest shadow-sm transition-all"
+                className="h-9 px-5 bg-primary hover:bg-primary/90 rounded-sm font-bold text-[11px] uppercase tracking-widest transition-colors"
             >
                 {loading ? <Loader2 className="size-3.5 animate-spin" /> : <><Save className="size-3.5 mr-1.5" />{label}</>}
             </Button>

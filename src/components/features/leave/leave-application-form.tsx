@@ -233,7 +233,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
       {/* Submit Button */}
       <Button 
         type="submit" 
-        className="w-full h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all" 
+        className="w-full h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors" 
         disabled={isSubmitting}
       >
         {isSubmitting ? "Dispatching..." : <><Send className="size-3.5 mr-1.5" /> Submit Application</>}

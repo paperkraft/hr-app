@@ -24,7 +24,7 @@ export function StatWidget({
   className
 }: StatWidgetProps) {
   return (
-    <Card className={cn("shadow-sm border-border/40 overflow-hidden hover:shadow-md transition-shadow duration-200", className)}>
+    <Card className={cn("border-border/40 overflow-hidden", className)}>
       <CardContent className="p-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{title}</p>

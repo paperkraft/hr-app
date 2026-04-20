@@ -34,7 +34,7 @@ export function AddDepartmentDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all">
+        <Button className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors">
           <Plus className="size-3.5 mr-1.5" /> Add Department
         </Button>
       </DialogTrigger>
@@ -67,7 +67,7 @@ export function AddDepartmentDialog() {
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm"
+              className="flex-1 h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm"
             >
               {loading ? <Loader2 className="size-3.5 animate-spin" /> : "Create"}
             </Button>

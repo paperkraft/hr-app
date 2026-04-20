@@ -67,7 +67,7 @@ export function MasterReportTable({
             placeholder="Search staff members..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-8 border-border/60 focus:ring-primary/10 transition-all rounded-sm text-xs bg-white"
+            className="pl-9 h-8 border-border/60 focus:ring-primary/20 transition-all rounded-sm text-xs bg-muted/20"
           />
           {searchTerm && (
             <button
@@ -99,7 +99,7 @@ export function MasterReportTable({
             </TableRow>
 
             {/* Header Tier 2: Column Titles */}
-            <TableRow className="bg-white border-b border-border/40">
+            <TableRow className="bg-card border-b border-border/40">
               <TableHead className="py-3 px-5 text-[10px] font-bold text-foreground border-r border-border/10">Full Name</TableHead>
               <TableHead className="py-3 px-4 text-[10px] font-bold text-foreground text-center bg-primary/1">Present</TableHead>
               <TableHead className="py-3 px-4 text-[10px] font-bold text-foreground text-center bg-primary/1">Late Mark</TableHead>

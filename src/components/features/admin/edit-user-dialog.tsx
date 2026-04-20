@@ -197,7 +197,7 @@ export function EditUserDialog({
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm"
+              className="flex-1 h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm"
             >
               {loading ? <Loader2 className="size-3.5 animate-spin" /> : <><Save className="size-3.5 mr-1.5" /> Save Changes</>}
             </Button>

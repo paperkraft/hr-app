@@ -51,7 +51,7 @@ export function AttendanceHistoryTable({ logs }: AttendanceHistoryTableProps) {
             placeholder="Search dates or status..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-8 border-border/60 focus:ring-primary/10 transition-all rounded-sm text-xs bg-white"
+            className="pl-9 h-8 border-border/60 focus:ring-primary/20 transition-all rounded-sm text-xs bg-muted/20"
           />
         </div>
         <div className="flex items-center gap-2">

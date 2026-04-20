@@ -86,7 +86,7 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
 
       {/* Add / Edit Form */}
       {isAdding && (
-        <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden animate-fade-in">
+        <div className="bg-card border border-border rounded-sm overflow-hidden animate-fade-in">
           <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">
@@ -194,7 +194,7 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
               <Button variant="ghost" onClick={resetForm} className="h-9 px-4 text-xs font-bold uppercase tracking-widest rounded-sm">
                 Cancel
               </Button>
-              <Button onClick={handleSave} disabled={loading} className="h-9 px-5 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all">
+              <Button onClick={handleSave} disabled={loading} className="h-9 px-5 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors">
                 {loading ? "Saving..." : <><Save className="size-3.5 mr-1.5" />{editingId ? "Update" : "Save Location"}</>}
               </Button>
             </div>
@@ -204,14 +204,14 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
 
       {/* Location Cards Grid */}
       {locations.length === 0 && !isAdding ? (
-        <div className="bg-white border border-border/60 rounded-sm py-16 flex flex-col items-center gap-2 text-center opacity-30">
+        <div className="bg-card border border-border rounded-sm py-16 flex flex-col items-center gap-2 text-center opacity-30">
           <Globe className="size-7" />
           <p className="text-[10px] font-black uppercase tracking-widest">No locations configured</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {locations.map(loc => (
-            <div key={loc.id} className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden group hover:border-border transition-colors">
+            <div key={loc.id} className="bg-card border border-border rounded-sm overflow-hidden group hover:border-border/80 transition-colors">
               {/* Card Header */}
               <div className="px-4 py-3 border-b border-border/40 flex items-center justify-between bg-muted/5">
                 <div className="flex items-center gap-2.5">

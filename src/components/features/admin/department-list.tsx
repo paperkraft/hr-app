@@ -34,7 +34,7 @@ export function DepartmentList({
   }
 
   return (
-    <div className="bg-white border border-border/60 rounded-sm shadow-sm overflow-hidden animate-fade-in">
+    <div className="bg-card border border-border rounded-sm overflow-hidden animate-fade-in">
       <div className="overflow-x-auto scrollbar-hide">
         <table className="w-full border-collapse">
           <thead className="bg-muted/5 border-b border-border/40">

@@ -67,7 +67,7 @@ export function AddUserDialog({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="p-0 rounded-sm border-border/60 shadow-lg overflow-hidden max-w-[520px]">
+      <DialogContent className="p-0 rounded-sm border border-border shadow-none overflow-hidden max-w-[520px]">
         {/* Dialog Header */}
         <DialogHeader className="px-5 py-4 border-b border-border/40">
           <DialogTitle className="text-sm font-bold tracking-tight">New Employee</DialogTitle>
@@ -167,7 +167,7 @@ export function AddUserDialog({
                   <SelectTrigger className={selectTriggerClass}>
                     <SelectValue placeholder="None" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-sm shadow-lg border-border/60">
+                  <SelectContent className="rounded-sm border border-border">
                     <SelectItem value="none" className="text-xs">None (Top Level)</SelectItem>
                     {managers.map(m => (
                       <SelectItem key={m.id} value={m.id} className="text-xs">{m.name || m.email}</SelectItem>
@@ -198,7 +198,7 @@ export function AddUserDialog({
               disabled={loading}
               className="flex-1 h-9 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm"
             >
-              {loading ? <Loader2 className="size-3.5 animate-spin" /> : <><UserPlus className="size-3.5 mr-1.5" /> Create Employee</>}
+              {loading ? <Loader2 className="size-3.5 animate-spin" /> : <><UserPlus className="size-3.5 mr-1.5" /> Create</>}
             </Button>
           </div>
         </form>

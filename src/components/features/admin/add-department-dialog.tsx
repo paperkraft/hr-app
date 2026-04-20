@@ -38,13 +38,13 @@ export function AddDepartmentDialog() {
           <Plus className="size-3.5 mr-1.5" /> Add Department
         </Button>
       </DialogTrigger>
-      <DialogContent className="rounded-sm border-border/60 shadow-lg p-0 overflow-hidden max-w-sm">
+      <DialogContent className="rounded-sm border border-border shadow-none p-0 overflow-hidden max-w-sm">
         <DialogHeader className="px-5 py-4 border-b border-border/40">
           <DialogTitle className="text-sm font-bold tracking-tight">New Department</DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="p-5 space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">Department Name</Label>
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Department Name</Label>
             <Input
               name="name"
               required

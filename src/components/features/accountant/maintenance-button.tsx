@@ -29,7 +29,7 @@ export function MaintenanceButton() {
       onClick={handleTrigger}
       disabled={isPending}
       variant="outline"
-      className="bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary font-bold shadow-sm"
+      className="h-9 px-4 bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors"
     >
       {isPending ? (
         <>

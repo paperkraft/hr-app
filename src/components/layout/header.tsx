@@ -74,7 +74,7 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
 
         {/* Page Title for Desktop */}
         <div className="hidden md:flex items-center gap-3 text-sm font-medium animate-fade-in-down">
-          <span className="text-muted-foreground hover:text-foreground transition-colors cursor-default capitalize text-xs font-semibold uppercase">
+          <span className="text-muted-foreground hover:text-foreground transition-colors cursor-default capitalize text-xs font-semibold">
             {userRole.toLowerCase()}
           </span>
           <ChevronRight className="w-4 h-4 text-muted-foreground/40" />

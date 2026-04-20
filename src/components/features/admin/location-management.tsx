@@ -72,11 +72,11 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">Office Locations</h3>
-          <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em]">Physical offices and remote hubs</p>
+          <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Physical offices and remote hubs</p>
         </div>
         {!isAdding && (
           <Button
-            className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-sm transition-all"
+            className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors"
             onClick={() => setIsAdding(true)}
           >
             <Plus className="size-3.5 mr-1.5" /> Add Location
@@ -92,7 +92,7 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
               <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">
                 {editingId ? "Edit Location" : "New Location"}
               </h3>
-              <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em]">Define geofence parameters</p>
+              <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-widest">Define geofence parameters</p>
             </div>
             <Button variant="ghost" size="icon" className="size-7 rounded-sm hover:bg-muted/10" onClick={resetForm}>
               <X className="size-3.5" />
@@ -161,7 +161,7 @@ export function LocationManagement({ initialLocations }: { initialLocations: Loc
             {/* GPS Coordinates (only if not remote) */}
             {!formData.isRemote && (
               <div className="p-4 border border-border/40 rounded-sm bg-muted/5 space-y-3">
-                <p className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50">GPS Coordinates</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">GPS Coordinates</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="space-y-1.5">
                     <Label className={labelClass}>Latitude</Label>

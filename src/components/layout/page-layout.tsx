@@ -65,7 +65,7 @@ export function PageHeader({
                 </div>
 
                 {action && (
-                    <div className="flex-shrink-0 animate-fade-in-up">{action}</div>
+                    <div className="shrink-0 animate-fade-in-up">{action}</div>
                 )}
             </div>
         </div>

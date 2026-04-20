@@ -68,7 +68,7 @@ export function EditUserDialog({
           <Edit2 className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="p-0 rounded-sm border-border/60 shadow-lg overflow-hidden max-w-[520px]">
+      <DialogContent className="p-0 rounded-sm border border-border shadow-none overflow-hidden max-w-[520px]">
         {/* Dialog Header */}
         <DialogHeader className="px-5 py-4 border-b border-border">
           <DialogTitle className="text-sm font-bold tracking-tight">Update Profile</DialogTitle>
@@ -168,7 +168,7 @@ export function EditUserDialog({
                   <SelectTrigger className={selectTriggerClass}>
                     <SelectValue placeholder="None" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-sm shadow-lg border-border/60">
+                  <SelectContent className="rounded-sm border border-border">
                     <SelectItem value="none" className="text-xs">None (Top Level)</SelectItem>
                     {managers.filter(m => m.id !== user.id).map(m => (
                       <SelectItem key={m.id} value={m.id} className="text-xs">{m.name || m.email}</SelectItem>

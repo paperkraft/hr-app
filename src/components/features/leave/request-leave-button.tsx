@@ -16,7 +16,7 @@ export function RequestLeaveButton() {
           <CalendarRange className="size-3.5 mr-1.5" /> Request Leave
         </Button>
       </DialogTrigger>
-      <DialogContent className="p-0 rounded-sm border-border/60 shadow-lg overflow-hidden sm:max-w-xl group">
+      <DialogContent className="p-0 rounded-sm border border-border shadow-none overflow-hidden sm:max-w-xl group">
         <div className="flex flex-col max-h-[96vh]">
           {/* Header */}
           <div className="px-5 py-4 border-b border-border/40 bg-muted/5 shrink-0">

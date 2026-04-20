@@ -15,7 +15,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
   return (
     <aside className="w-[260px] border-r border-sidebar-border bg-sidebar flex-col hidden md:flex h-screen sticky top-0 z-10 transition-all duration-300">
       {/* Branding Section */}
-      <div className="h-16 flex items-center px-6 border-b border-sidebar-border/50">
+      <div className="h-14 flex items-center px-6 border-b border-sidebar-border">
         <Link href="/dashboard" className="flex items-center gap-3 group">
           <div className="flex items-center justify-center w-8 h-8 rounded-sm bg-primary group-hover:scale-105 transition-transform duration-300">
             <Activity className="w-4.5 h-4.5 text-primary-foreground" />

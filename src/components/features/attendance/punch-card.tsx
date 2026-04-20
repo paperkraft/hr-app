@@ -62,7 +62,7 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
   };
 
   return (
-    <div className="bg-white border border-border/60 rounded-sm overflow-hidden h-full flex flex-col animate-fade-in shadow-sm group">
+    <div className="bg-white border border-border/50 rounded-sm overflow-hidden h-full flex flex-col animate-fade-in shadow-sm group">
       <div className="p-6 flex-1 flex flex-col items-center justify-center gap-6 relative overflow-hidden">
         {/* Subtle Decorative Element */}
         <div className="absolute -top-4 -right-4 opacity-[0.02] select-none pointer-events-none group-hover:rotate-12 transition-transform duration-700">
@@ -128,7 +128,7 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
 
         {/* High-Density Warning */}
         {autoPunchOutCount >= warningThreshold && (
-          <div className="w-full bg-rose-500/[0.02] border border-rose-500/10 rounded-sm p-3.5 flex gap-3 animate-fade-in">
+          <div className="w-full bg-rose-500/2 border border-rose-500/10 rounded-sm p-3.5 flex gap-3 animate-fade-in">
             <AlertCircle className="size-4 text-rose-500 shrink-0 mt-0.5" />
             <div className="space-y-0.5">
               <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">System Warning</p>

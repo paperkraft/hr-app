@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CalendarRange, History } from "lucide-react";
+import { LayoutDashboard, CalendarDays, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { name: "Dashboard", href: "/dashboard/employee", icon: LayoutDashboard },
-  { name: "Request Leave", href: "/dashboard/employee/leaves", icon: CalendarRange },
+  { name: "Calendar", href: "/dashboard/calendar", icon: CalendarDays },
+  { name: "Request Leave", href: "/dashboard/employee/leaves", icon: CalendarDays },
   { name: "History", href: "/dashboard/employee/attendance", icon: History },
 ];
 

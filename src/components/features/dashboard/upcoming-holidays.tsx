@@ -3,6 +3,7 @@
 import { Calendar, PartyPopper, ChevronRight } from "lucide-react"
 import { format, isToday, isTomorrow, differenceInDays } from "date-fns"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 interface Holiday {
   id: string;
@@ -73,14 +74,17 @@ export function UpcomingHolidays({ holidays: initialHolidays }: UpcomingHolidays
           })
         )}
       </div>
-      
+
       {holidays.length > 0 && (
-        <div className="px-5 py-3 border-t border-border/20 bg-muted/5 group/link cursor-pointer hover:bg-muted/10 transition-colors">
+        <Link
+          href="/dashboard/calendar"
+          className="px-5 py-3 border-t border-border/20 bg-muted/5 group/link cursor-pointer hover:bg-muted/10 transition-colors block"
+        >
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">View Full Calendar</span>
             <ChevronRight className="size-3 text-muted-foreground/40 group-hover/link:text-primary group-hover/link:translate-x-0.5 transition-all" />
           </div>
-        </div>
+        </Link>
       )}
     </div>
   )

@@ -33,14 +33,14 @@ export default async function AccountantDashboard({
     <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">
 
       {/* Header Area */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-foreground tracking-tight">Payroll & Processing</h1>
           <p className="text-xs text-muted-foreground font-medium mt-0.5">
             Operational dashboard for {stats.currentMonthName} {stats.currentYear}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <MonthYearPicker currentMonth={stats.currentMonth} currentYear={stats.currentYear} />
           <FinancialSyncButton />
           <ExportLedgerButton data={reportData} month={stats.currentMonthName} />

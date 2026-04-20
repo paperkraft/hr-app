@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Menu, Activity, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/layout/user-nav";
@@ -11,6 +12,7 @@ import { usePathname } from "next/navigation";
 
 export function Header({ userName, userRole, isTeamLeader }: { userName: string; userRole: string; isTeamLeader?: boolean }) {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   const baseNav = roleNavigation[userRole] || roleNavigation.EMPLOYEE;
   const navItems = [...baseNav];
@@ -32,7 +34,7 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
     <header className="h-14 border-b border-border bg-card flex items-center justify-between px-4 md:px-6 sticky top-0 z-50 animate-fade-in">
       <div className="flex items-center gap-4">
         {/* Mobile Menu Toggle via Sheet */}
-        <Sheet>
+        <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button
               variant="ghost"
@@ -59,8 +61,9 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-medium transition-all duration-200 ${isActive
-                      ? "bg-primary/10 text-primary"
+                    onClick={() => setOpen(false)}
+                    className={`flex items-center w-full gap-3 px-3 py-2.5 rounded-sm text-sm font-medium transition-all duration-200 ${isActive
+                      ? "bg-primary/10 text-primary border border-primary/20"
                       : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
                       }`}
                   >

@@ -30,19 +30,12 @@ export default async function LocationLogsPage({
   return (
     <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-foreground tracking-tight">Location & Attendance Logs</h1>
           <p className="text-xs text-muted-foreground font-medium mt-0.5">
             Geofence verification records for {stats.monthName} {stats.year}
           </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm border border-border bg-card text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
-            <ShieldCheck className="size-3.5 text-emerald-500" />
-            Geofencing Active
-          </div>
-          <MonthYearPicker currentMonth={stats.month} currentYear={stats.year} />
         </div>
       </div>
 

@@ -52,14 +52,6 @@ export default async function AttendanceHistoryPage() {
           <h1 className="text-xl font-bold text-foreground tracking-tight">Attendance History</h1>
           <p className="text-xs text-muted-foreground font-medium mt-0.5">Audit log of your daily check-in and checkout sessions</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button variant="outline" className="h-9 px-4 border-border/60 hover:bg-muted/5 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors">
-            <Download className="size-3.5 mr-1.5 text-muted-foreground/60" /> Export CSV
-          </Button>
-          <Button className="h-9 px-4 bg-primary hover:bg-primary/90 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors">
-            Alignment Request
-          </Button>
-        </div>
       </div>
 
       {/* Stats Summary */}

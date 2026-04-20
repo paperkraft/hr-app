@@ -1,6 +1,5 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CalendarDays, Users } from "lucide-react";
-import { PageSection } from "@/components/ui";
 
 interface TeamMember {
   id: string;

@@ -52,16 +52,19 @@ export async function syncAllBalances() {
                  // because the next month was initialized as (CASUAL_ACCRUAL + OLD_CF)
                  // where CASUAL_ACCRUAL is currently 2.0
                  if (hasCfDiff) {
-                     const cfDiff = expectedCF - current.carriedForward;
-                     await prisma.leaveBalance.update({
-                         where: { id: next.id },
-                         data: {
-                             remainingFull: { increment: cfDiff }
-                         }
-                     });
-                     // Note: We don't need to recursively call here because the outer loop 
-                     // will process the 'next' balance in its next iteration.
-                 }
+                    const cfDiff = expectedCF - current.carriedForward;
+                    const nextBalance = await prisma.leaveBalance.findUnique({ where: { id: next.id } });
+                    if (nextBalance) {
+                        const newTotal = Math.min(3.0, Number((nextBalance.remainingFull + cfDiff).toFixed(2)));
+                        await prisma.leaveBalance.update({
+                            where: { id: next.id },
+                            data: {
+                                remainingFull: newTotal,
+                                carriedForward: expectedCF
+                            }
+                        });
+                    }
+                }
 
                  fixCount++;
              }

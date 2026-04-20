@@ -54,6 +54,7 @@ async function getCyclePendingDays(userId: string, cycleStart: Date, cycleEnd: D
 const CASUAL_ACCRUAL = 2.0;
 const SICK_ACCRUAL_SEMI = 3.0;
 const MAX_CARRY_FORWARD = 1.0;
+const MAX_TOTAL_CASUAL = 3.0;
 
 function round(val: number): number {
   return Math.round((val + Number.EPSILON) * 100) / 100;
@@ -131,7 +132,7 @@ export async function ensureBalance(userId: string, month: number, year: number,
     return await prisma.leaveBalance.create({
       data: {
         userId, month, year,
-        remainingFull: round(CASUAL_ACCRUAL + carryForwardToNew),
+        remainingFull: Math.min(MAX_TOTAL_CASUAL, round(CASUAL_ACCRUAL + carryForwardToNew)),
         remainingShort: 1,
         semiAnnualRemaining: semiAnnualToNew,
         carriedForward: 0.0,
@@ -530,12 +531,16 @@ async function processLeaveRequestStatus(requestId: string, status: "APPROVED" |
       }
 
       if (cfDiff !== 0) {
-        await tx.leaveBalance.update({
-          where: { id: next.id },
-          data: {
-            remainingFull: { increment: cfDiff }
-          }
-        });
+        const nextBalance = await tx.leaveBalance.findUnique({ where: { id: next.id } });
+        if (nextBalance) {
+          const newTotal = Math.min(MAX_TOTAL_CASUAL, Number((nextBalance.remainingFull + cfDiff).toFixed(2)));
+          await tx.leaveBalance.update({
+            where: { id: next.id },
+            data: {
+              remainingFull: newTotal
+            }
+          });
+        }
       }
 
       if (getCycleKey(m, y, startMonthConfig) === getCycleKey(nextM, nextY, startMonthConfig)) {
@@ -694,13 +699,17 @@ export async function cancelApprovedLeave(requestId: string, note?: string) {
         const cfDiff = round(expectedCF - next.carriedForward);
 
         if (cfDiff !== 0) {
-          await tx.leaveBalance.update({
-            where: { id: next.id },
-            data: {
-              remainingFull: { increment: cfDiff },
-              carriedForward: expectedCF
-            }
-          });
+          const nextBalance = await tx.leaveBalance.findUnique({ where: { id: next.id } });
+          if (nextBalance) {
+            const newTotal = Math.min(MAX_TOTAL_CASUAL, Number((nextBalance.remainingFull + cfDiff).toFixed(2)));
+            await tx.leaveBalance.update({
+              where: { id: next.id },
+              data: {
+                remainingFull: newTotal,
+                carriedForward: expectedCF
+              }
+            });
+          }
         }
 
         // 3. Sync Semi-Annual Sick pool if still in the same cycle

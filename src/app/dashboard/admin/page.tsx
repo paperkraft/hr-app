@@ -6,6 +6,7 @@ import { PageContainer, StatCard, StatusBadge } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { getUpcomingHolidays } from "@/actions/holiday";
 import { getAnnouncements } from "@/actions/announcement";
+import { getNotifications } from "@/actions/notification";
 import { UpcomingHolidays } from "@/components/features/dashboard/upcoming-holidays";
 import { AnnouncementWidget } from "@/components/features/dashboard/announcement-widget";
 
@@ -98,8 +99,9 @@ async function getAdminStats() {
     absentEmployees: absentEmployees.map(e => ({ id: e.id, name: e.name || e.email })),
     onLeaveEmployees: onLeaveEmployees.map(e => ({ id: e.id, name: e.name || e.email })),
     monthlyLeaveSummary,
-    holidays,
-    announcements,
+    holidays: (await getUpcomingHolidays(5)).data || [],
+    announcements: (await getAnnouncements()).data || [],
+    notifications: (await getNotifications()).data || [],
     allPendingRequests: allPendingRequests.map((req: any) => ({
       id: req.id,
       employeeName: req.user.name || req.user.email,
@@ -346,7 +348,8 @@ export default async function AdminOverviewPage() {
         {/* Right: Monthly Leave Utilization (1/3 width) */}
         <div className="space-y-6">
 
-          {/* Broadcast Center */}
+          {/* Notifications Feed */}
+          <NotificationCenter notifications={stats.notifications} />
           <AnnouncementWidget announcements={stats.announcements} />
 
           {/* Pending Requests */}

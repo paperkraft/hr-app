@@ -17,6 +17,7 @@ import { processAutoPunchOuts } from "@/lib/auto-punch-out";
 import { PageContainer } from "@/components/ui";
 import { getUpcomingHolidays } from "@/actions/holiday";
 import { getAnnouncements } from "@/actions/announcement";
+import { getNotifications } from "@/actions/notification";
 import { UpcomingHolidays } from "@/components/features/dashboard/upcoming-holidays";
 import { AnnouncementWidget } from "@/components/features/dashboard/announcement-widget";
 
@@ -118,7 +119,8 @@ async function getEmployeeData() {
     leaveRequests,
     teamOnLeave: teamOnLeave,
     holidays: (await getUpcomingHolidays(3)).data || [],
-    announcements: (await getAnnouncements(user?.departmentId || undefined)).data || []
+    announcements: (await getAnnouncements(user?.departmentId || undefined)).data || [],
+    notifications: (await getNotifications()).data || []
   };
 }
 
@@ -201,7 +203,7 @@ export default async function EmployeeDashboard() {
         <div className="lg:col-span-4 space-y-5">
           <UpcomingHolidays holidays={data.holidays} />
           <AnnouncementWidget announcements={data.announcements} />
-          <NotificationCenter />
+          <NotificationCenter notifications={data.notifications} />
         </div>
       </div>
 

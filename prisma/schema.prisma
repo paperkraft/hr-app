@@ -32,6 +32,7 @@ model User {
   employees         User[]         @relation("ManagerToEmployee")
   shift             Shift?         @relation(fields: [shiftId], references: [id])
   location          Location?      @relation(fields: [locationId], references: [id])
+  notifications     Notification[]
 }
 
 model Location {
@@ -224,4 +225,16 @@ enum AnnouncementPriority {
   INFO
   WARNING
   CRITICAL
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  content   String
+  type      String   @default("INFO") // INFO, SUCCESS, WARNING, ERROR
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { AnnouncementPriority, Announcement } from "@prisma/client";
+import { createNotification } from "./notification";
 
 export async function getAnnouncements(departmentId?: string) {
   try {
@@ -54,6 +55,27 @@ export async function createAnnouncement(data: {
         authorId: session.user.id,
       },
     });
+
+    // Notify targeted users
+    const usersToNotify = await prisma.user.findMany({
+      where: data.targetDepartmentId 
+        ? { departmentId: data.targetDepartmentId } 
+        : {},
+      select: { id: true }
+    });
+
+    if (usersToNotify.length > 0) {
+      await prisma.notification.createMany({
+        data: usersToNotify.map(u => ({
+          userId: u.id,
+          title: "New Announcement",
+          content: data.title,
+          type: data.priority === "CRITICAL" ? "WARNING" : "INFO",
+          link: "/dashboard",
+        }))
+      });
+    }
+
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/admin");
     revalidatePath("/dashboard/employee");

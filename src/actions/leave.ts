@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { leaveApplicationSchema } from "@/lib/validations/leave";
+import { createNotification } from "@/actions/notification";
 import prisma from "@/lib/prisma";
 import { getDaysDifference } from "@/lib/utils";
 import { getServerSession } from "next-auth";
@@ -331,6 +332,15 @@ export async function submitLeaveRequest(formData: unknown) {
 
     if (isAutoApproved) {
       await processLeaveRequestStatus(newRequest.id, "APPROVED", approvalNote);
+    } else {
+      // In case we ever disable auto-approval, notify that it's pending
+      await createNotification({
+        userId,
+        title: "Leave Request Submitted",
+        content: `Your leave request for ${new Date(data.startDate).toLocaleDateString()} is pending review.`,
+        type: "INFO",
+        link: "/dashboard/employee/leaves"
+      });
     }
 
     revalidatePath("/dashboard/employee");
@@ -558,6 +568,19 @@ async function processLeaveRequestStatus(requestId: string, status: "APPROVED" |
   }, {
     isolationLevel: "Serializable"
   });
+
+  if (result.success) {
+    const isApproved = status === "APPROVED";
+    await createNotification({
+      userId: requestMeta.userId,
+      title: isApproved ? "Leave Request Approved" : "Leave Request Rejected",
+      content: isApproved 
+        ? `Your leave request for ${requestMeta.startDate.toLocaleDateString()} has been approved.` 
+        : `Your leave request for ${requestMeta.startDate.toLocaleDateString()} was rejected. Note: ${note || "No reason provided."}`,
+      type: isApproved ? "SUCCESS" : "ERROR",
+      link: "/dashboard/employee/leaves"
+    });
+  }
 
   revalidatePath("/dashboard", "layout");
   revalidatePath("/dashboard/employee");

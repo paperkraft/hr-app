@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-export async function getNotifications() {
+export async function getNotifications(limit?: number) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
@@ -13,7 +13,7 @@ export async function getNotifications() {
     const notifications = await prisma.notification.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
-      take: 10,
+      ...(limit ? { take: limit } : {}),
     });
     return { success: true, data: notifications };
   } catch (error) {
@@ -30,9 +30,17 @@ export async function createNotification(data: {
   link?: string;
 }) {
   try {
+    let targetUserId = data.userId;
+
+    if (!targetUserId || targetUserId === "current") {
+      const session = await getServerSession(authOptions);
+      if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+      targetUserId = session.user.id;
+    }
+
     const notification = await prisma.notification.create({
       data: {
-        userId: data.userId,
+        userId: targetUserId,
         title: data.title,
         content: data.content,
         type: data.type || "INFO",
@@ -75,5 +83,34 @@ export async function markAllAsRead() {
   } catch (error) {
     console.error("Failed to mark all notifications as read:", error);
     return { success: false, error: "Failed to mark all as read" };
+  }
+}
+
+export async function deleteNotification(id: string) {
+  try {
+    await prisma.notification.delete({
+      where: { id },
+    });
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete notification:", error);
+    return { success: false, error: "Failed to delete notification" };
+  }
+}
+
+export async function clearAllNotifications() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+  try {
+    await prisma.notification.deleteMany({
+      where: { userId: session.user.id },
+    });
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to clear notifications:", error);
+    return { success: false, error: "Failed to clear notifications" };
   }
 }

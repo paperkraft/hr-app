@@ -64,10 +64,11 @@ export async function createAnnouncement(data: {
     });
 
     if (usersToNotify.length > 0) {
+      const priorityLabel = data.priority === "CRITICAL" ? "Critical " : "";
       await prisma.notification.createMany({
         data: usersToNotify.map(u => ({
           userId: u.id,
-          title: "New Announcement",
+          title: `${priorityLabel}New Announcement`,
           content: data.title,
           type: data.priority === "CRITICAL" ? "WARNING" : "INFO",
           link: "/dashboard",

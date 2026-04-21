@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Bell, CheckCircle2, Info, AlertTriangle, XCircle, Trash2 } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { Bell, CheckCircle2, Info, AlertTriangle, XCircle, Settings2 } from "lucide-react";
+import { useDesktopNotification } from "@/hooks/use-desktop-notification";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,24 +14,49 @@ import {
 import { Button } from "@/components/ui/button";
 import { getNotifications, markAsRead, markAllAsRead } from "@/actions/notification";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export function NotificationNav() {
+  const router = useRouter();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  const { permission, requestPermission, sendNotification } = useDesktopNotification();
+  const shownNotificationIds = useRef<Set<string>>(new Set());
+
   const fetchNotifications = async () => {
-    const result = await getNotifications();
+    const result = await getNotifications(10);
+
     if (result.success && result.data) {
-      setNotifications(result.data);
-      setUnreadCount(result.data.filter((n: any) => !n.isRead).length);
+      const newNotifications = result.data;
+      const livePermission = typeof window !== "undefined" ? (window as any).Notification?.permission : "default";
+      
+      if (livePermission === "granted") {
+        newNotifications.forEach((n: any) => {
+          if (!n.isRead && !shownNotificationIds.current.has(n.id)) {
+            sendNotification(n.title, {
+              body: n.content,
+              tag: n.id,
+              onClick: () => {
+                if (n.link) router.push(n.link);
+              },
+            });
+            shownNotificationIds.current.add(n.id);
+          }
+        });
+      }
+
+      newNotifications.forEach((n: any) => shownNotificationIds.current.add(n.id));
+      setNotifications(newNotifications);
+      setUnreadCount(newNotifications.filter((n: any) => !n.isRead).length);
     }
   };
 
   useEffect(() => {
     fetchNotifications();
-    // Refresh every minute
-    const interval = setInterval(fetchNotifications, 60000);
+    // Refresh every 15 seconds for a more "push" feel
+    const interval = setInterval(fetchNotifications, 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -77,7 +103,12 @@ export function NotificationNav() {
         collisionPadding={16}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b">
-          <DropdownMenuLabel className="p-0 font-bold text-sm">Notifications</DropdownMenuLabel>
+          <div className="flex items-center gap-2">
+            <DropdownMenuLabel className="p-0 font-bold text-sm">Notifications</DropdownMenuLabel>
+            {permission === "denied" && (
+              <span className="text-[9px] text-rose-500 font-bold uppercase">(Blocked)</span>
+            )}
+          </div>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -92,6 +123,35 @@ export function NotificationNav() {
             </Button>
           )}
         </div>
+        
+        {permission === "default" && (
+          <div className="mx-4 my-3 p-3 bg-primary/5 border border-primary/20 rounded-md">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 shrink-0 bg-primary/10 p-1.5 rounded-sm">
+                <Bell className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <div className="flex-1 space-y-1">
+                <p className="text-[11px] font-bold leading-tight text-foreground">
+                  Enable Desktop Notifications
+                </p>
+                <p className="text-[10px] text-muted-foreground leading-tight">
+                  Get real-time alerts for leave approvals and system updates.
+                </p>
+                <Button 
+                  size="sm" 
+                  className="h-7 w-full text-[10px] uppercase font-black tracking-widest mt-2 bg-primary hover:bg-primary/90"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    requestPermission();
+                  }}
+                >
+                  Enable Now
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="max-h-[350px] overflow-y-auto scrollbar-hide">
           {notifications.length === 0 ? (
             <div className="py-10 text-center flex flex-col items-center gap-2 opacity-30">
@@ -144,9 +204,15 @@ export function NotificationNav() {
           )}
         </div>
         <DropdownMenuSeparator className="m-0" />
-        <div className="px-4 py-2 text-center bg-muted/30">
+        <div className="px-4 py-3 border-t bg-muted/30 flex items-center justify-between gap-4">
+          <Link
+            href="/dashboard/notifications"
+            className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline flex items-center gap-1.5"
+          >
+            View All Notifications
+          </Link>
           <p className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest">
-            Showing last 10 notifications
+            Last 10 items
           </p>
         </div>
       </DropdownMenuContent>

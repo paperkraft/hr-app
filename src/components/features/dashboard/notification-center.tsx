@@ -95,7 +95,7 @@ export function NotificationCenter({ notifications: initialNotifications, classN
       </div>
 
       {unreadCount > 0 && (
-        <div className="p-4 pt-1">
+        <div className="pt-1">
           <button
             onClick={() => markAllAsRead()}
             className="w-full py-2.5 rounded-sm flex items-center justify-center gap-2 text-[10px] font-black text-primary bg-primary/2 border border-primary/5 hover:bg-primary/5 transition-all duration-200 uppercase tracking-widest shadow-none"

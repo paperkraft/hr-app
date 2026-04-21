@@ -16,7 +16,7 @@ export function CommunicationHub({ announcements, notifications, className }: Co
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
 
   return (
-    <div className={cn("bg-card border border-border rounded-sm", className)}>
+    <div className={cn("bg-card border border-border rounded-sm flex flex-col h-[400px]", className)}>
       <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between bg-muted/5">
         <div>
           <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Communication Hub</h3>
@@ -25,8 +25,8 @@ export function CommunicationHub({ announcements, notifications, className }: Co
         <Megaphone className="size-4 text-primary/60" />
       </div>
 
-      <div className="p-4 divide-y divide-border/20 flex-1">
-        <Tabs defaultValue="notifications" className="w-full">
+      <div className="p-4 divide-y divide-border/20 flex-1 flex flex-col overflow-hidden">
+        <Tabs defaultValue="notifications" className="w-full flex-1 flex flex-col overflow-hidden">
           <TabsList className="grid w-full grid-cols-2 bg-muted/30 p-1 h-10 rounded-sm border border-border">
             <TabsTrigger
               value="notifications"
@@ -53,18 +53,18 @@ export function CommunicationHub({ announcements, notifications, className }: Co
 
           </TabsList>
 
-          <TabsContent value="notifications" className="mt-0 ring-0 focus-visible:ring-0">
+          <TabsContent value="notifications" className="mt-0 ring-0 focus-visible:ring-0 flex-1 overflow-hidden">
             <NotificationCenter
               notifications={notifications}
-              className="border-0 shadow-none bg-transparent p-0"
+              className="border-0 shadow-none bg-transparent p-0 h-full"
               hideHeader={true}
             />
           </TabsContent>
 
-          <TabsContent value="announcements" className="mt-0 ring-0 focus-visible:ring-0">
+          <TabsContent value="announcements" className="mt-0 ring-0 focus-visible:ring-0 flex-1 overflow-hidden">
             <AnnouncementWidget
               announcements={announcements}
-              className="border-0 shadow-none bg-transparent p-0"
+              className="border-0 shadow-none bg-transparent p-0 h-full"
               hideHeader={true}
             />
           </TabsContent>

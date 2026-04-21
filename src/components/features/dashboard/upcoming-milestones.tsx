@@ -46,7 +46,7 @@ export function UpcomingMilestones({ holidays: initialHolidays, nextBirthday, ne
   if (nextAnniversary) {
     events.push({
       id: "anniv-next",
-      name: `${nextAnniversary.name}'s Anniversary (${nextAnniversary.years}y)`,
+      name: `${nextAnniversary.name}'s Work Anniversary (${nextAnniversary.years}y)`,
       date: new Date(nextAnniversary.date),
       type: "ANNIVERSARY"
     });
@@ -57,7 +57,7 @@ export function UpcomingMilestones({ holidays: initialHolidays, nextBirthday, ne
 
   const eventConfigs = {
     BIRTHDAY: { icon: Cake, color: "text-amber-500", bg: "bg-amber-500/10", label: "Birthday" },
-    ANNIVERSARY: { icon: Gift, color: "text-sky-500", bg: "bg-sky-500/10", label: "Anniversary" },
+    ANNIVERSARY: { icon: Gift, color: "text-sky-500", bg: "bg-sky-500/10", label: "Work Anniv." },
     HOLIDAY: { icon: Calendar, color: "text-rose-500", bg: "bg-rose-500/10", label: "Holiday" }
   };
 

@@ -126,22 +126,22 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
           </div>
         </div>
 
-        {status === "PUNCHED_OUT" ? (
-          <div className="flex flex-col items-center justify-center gap-3 animate-scale-in">
-            <div className="flex items-center gap-2 text-emerald-600 bg-emerald-500/5 px-6 py-2.5 rounded-sm border border-emerald-500/10">
-              <CheckCircle2 className="size-3.5" />
-              <span className="font-black text-[10px] uppercase tracking-widest leading-none">Shift Finalized</span>
+        <div className="flex flex-col items-center gap-4 w-full max-w-[240px] px-4">
+          {status === "PUNCHED_OUT" ? (
+            <div className="flex flex-col items-center justify-center gap-3 animate-scale-in w-full">
+              <div className="flex items-center gap-2 text-emerald-600 bg-emerald-500/5 px-6 py-3 rounded-sm border border-emerald-500/10 w-full justify-center">
+                <CheckCircle2 className="size-4" />
+                <span className="font-black text-[10px] uppercase tracking-widest leading-none">Shift Finalized</span>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="w-full max-w-[200px]">
+          ) : (
             <Button
               size="lg"
               className={cn(
-                "w-full h-12 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-colors duration-300 relative overflow-hidden border",
+                "w-full h-12 text-[11px] font-bold uppercase tracking-widest rounded-sm transition-all duration-300 relative overflow-hidden border shadow-sm",
                 status === "PUNCHED_IN"
-                  ? "bg-white text-amber-600 border-amber-500/20 hover:bg-amber-500/5"
-                  : "bg-primary text-primary-foreground border-transparent hover:bg-primary/95"
+                  ? "bg-amber-600 text-white border-amber-700 hover:bg-amber-700 hover:shadow-md"
+                  : "bg-primary text-primary-foreground border-transparent hover:bg-primary/95 hover:shadow-md"
               )}
               disabled={isPending}
               onClick={handleCheck}
@@ -162,17 +162,17 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
                 )}
               </div>
             </Button>
-          </div>
-        )}
+          )}
 
-        {status === "PUNCHED_IN" && !isPending && (
-          <div className="animate-fade-in flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-emerald-500/5 border border-emerald-500/10">
-            <div className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Active Session</span>
-          </div>
-        )}
+          {status === "PUNCHED_IN" && !isPending && (
+            <div className="animate-fade-in flex items-center gap-2 px-3 py-1.5 rounded-sm bg-emerald-500/10 border border-emerald-500/20">
+              <div className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Active Session</span>
+            </div>
+          )}
+        </div>
 
-        <div className="flex-1 min-h-[20px]" />
+
 
         {/* High-Density Warning */}
         {autoPunchOutCount >= warningThreshold && (

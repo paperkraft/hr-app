@@ -77,7 +77,7 @@ export default async function EmployeeDashboard() {
       </div>
 
       {/* SECONDARY ROW: Balanced Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
         {/* 1. Upcoming Events */}
         <div className="flex flex-col">
@@ -90,7 +90,9 @@ export default async function EmployeeDashboard() {
 
         {/* 2. My Upcoming Leaves */}
         <div className="flex flex-col">
-          <UpcomingLeave requests={data.leaveRequests.map(r => ({
+          <UpcomingLeave requests={data.leaveRequests
+            .filter(r => new Date(r.endDate).getTime() >= new Date().setHours(0, 0, 0, 0))
+            .map(r => ({
             id: r.id,
             category: r.category === "MONTHLY_POLICY_1" ? (r.leaveType === "CASUAL" ? "Casual" : "Sick") : "Paid",
             startDate: r.startDate,

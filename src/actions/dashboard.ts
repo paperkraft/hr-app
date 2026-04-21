@@ -43,6 +43,7 @@ export async function getAdminDashboardStats() {
   const staff = await prisma.user.findMany({
     where: { role: { in: ["EMPLOYEE", "ACCOUNTANT"] } },
     include: {
+      department: true,
       leaveRequests: {
         where: {
           status: "APPROVED",
@@ -62,7 +63,11 @@ export async function getAdminDashboardStats() {
       startDate: { lte: today },
       endDate: { gte: today }
     },
-    include: { user: true }
+    include: { 
+      user: {
+        include: { department: true }
+      }
+    }
   });
 
   const presentIds = new Set(todayAttendance.map(a => a.userId));
@@ -74,13 +79,6 @@ export async function getAdminDashboardStats() {
 
   const attendanceRate = staff.length > 0 ? Math.round((presentEmployees.length / staff.length) * 100) : 100;
 
-  const recentApprovals = await prisma.leaveRequest.findMany({
-    where: { status: "APPROVED" },
-    include: { user: true },
-    orderBy: { updatedAt: "desc" },
-    take: 15
-  });
-
   const monthlyLeaveSummary = staff.map(s => {
     let totalDays = 0;
     s.leaveRequests.forEach(req => {
@@ -89,6 +87,28 @@ export async function getAdminDashboardStats() {
     });
     return { id: s.id, name: s.name || s.email, totalDays };
   }).sort((a, b) => b.totalDays - a.totalDays);
+
+  // Milestone Calculations
+  const nextBirthday = staff
+    .filter(e => e.dateOfBirth)
+    .map(e => {
+      const dob = new Date(e.dateOfBirth!);
+      let bday = new Date(now.getFullYear(), dob.getMonth(), dob.getDate());
+      if (bday < now) bday = new Date(now.getFullYear() + 1, dob.getMonth(), dob.getDate());
+      return { name: e.name, date: bday };
+    })
+    .sort((a, b) => a.date.getTime() - b.date.getTime())[0] || null;
+
+  const nextAnniversary = staff
+    .filter(e => e.joiningDate)
+    .map(e => {
+      const jd = new Date(e.joiningDate!);
+      let anniv = new Date(now.getFullYear(), jd.getMonth(), jd.getDate());
+      if (anniv < now) anniv = new Date(now.getFullYear() + 1, jd.getMonth(), jd.getDate());
+      const years = anniv.getFullYear() - jd.getFullYear();
+      return { name: e.name, date: anniv, years };
+    })
+    .sort((a, b) => a.date.getTime() - b.date.getTime())[0] || null;
 
   return {
     success: true,
@@ -101,6 +121,18 @@ export async function getAdminDashboardStats() {
       onLeaveEmployees: onLeaveEmployees.map(e => ({ id: e.id, name: e.name || e.email })),
       monthlyLeaveSummary,
       holidays: (await getUpcomingHolidays(5)).data || [],
+      nextBirthday,
+      nextAnniversary,
+      teamOnLeave: todayLeaves.map(l => ({
+        id: l.user.id,
+        name: l.user.name || "Unknown",
+        role: l.user.department?.name || "Team Member",
+        startDate: l.startDate,
+        endDate: l.endDate,
+        duration: l.duration,
+        halfDayType: l.halfDayType,
+        leaveType: l.category === "UNPAID" ? "Unpaid" : "Paid"
+      })),
       announcements: (await getAnnouncements()).data || [],
       notifications: (await getNotifications()).data || [],
       allPendingRequests: allPendingRequests.map((req: any) => ({
@@ -114,20 +146,35 @@ export async function getAdminDashboardStats() {
         category: req.category,
         reason: req.reason || "No reason provided",
       })),
-      recentApprovals: recentApprovals.map((req: any) => ({
-        id: req.id,
-        employeeName: req.user.name || req.user.email,
-        role: req.user.role,
-        startDate: new Date(req.startDate).toISOString().split('T')[0],
-        endDate: new Date(req.endDate).toISOString().split('T')[0],
-        category: req.category,
-        duration: req.duration,
-        halfDayType: req.halfDayType,
-        systemNote: req.systemNote,
-        updatedAt: req.updatedAt
-      })),
     }
   };
+}
+
+// --- Helper: Shared Recent Approvals Logic ---
+async function fetchRecentApprovals(take: number = 20, startDate?: Date) {
+  const requests = await prisma.leaveRequest.findMany({
+    where: {
+      status: "APPROVED",
+      ...(startDate ? { updatedAt: { gte: startDate } } : {})
+    },
+    include: { user: true },
+    orderBy: { updatedAt: "desc" },
+    take
+  });
+
+  return requests.map((req: any) => ({
+    id: req.id,
+    employeeName: req.user.name || req.user.email,
+    role: req.user.role,
+    startDate: new Date(req.startDate).toISOString().split('T')[0],
+    endDate: new Date(req.endDate).toISOString().split('T')[0],
+    category: req.category,
+    duration: req.duration,
+    halfDayType: req.halfDayType,
+    leaveType: req.leaveType,
+    systemNote: req.systemNote,
+    updatedAt: req.updatedAt
+  }));
 }
 
 // --- Employee Dashboard Stats ---
@@ -423,33 +470,13 @@ export async function getAccountantDashboardStats(reqMonth?: number, reqYear?: n
     };
   });
 
-  const recentApprovals = await prisma.leaveRequest.findMany({
-    where: {
-      status: "APPROVED",
-      updatedAt: { gte: startOfMonth }
-    },
-    include: { user: true },
-    orderBy: { updatedAt: "desc" },
-    take: 20
-  });
+  const recentApprovals = await fetchRecentApprovals(20, startOfMonth);
 
   return {
     success: true,
     data: {
       reportData,
-      recentApprovals: recentApprovals.map((req: any) => ({
-        id: req.id,
-        employeeName: `${req.user.name || req.user.email}`,
-        role: req.user.role,
-        startDate: new Date(req.startDate).toISOString().split('T')[0],
-        endDate: new Date(req.endDate).toISOString().split('T')[0],
-        category: req.category,
-        duration: req.duration,
-        halfDayType: req.halfDayType,
-        leaveType: req.leaveType,
-        systemNote: req.systemNote,
-        updatedAt: req.updatedAt
-      })),
+      recentApprovals,
       stats: {
         totalStaff: users.length,
         totalLates: totalLatesSystemWide,

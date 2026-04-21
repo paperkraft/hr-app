@@ -1,6 +1,6 @@
 import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from "@/components/ui/table";
 import { Users, Clock, FileText, IndianRupee, MapPin, CalendarDays } from "lucide-react";
-import { CancelLeaveButton } from "@/components/features/leave/cancel-leave-button";
+import { RecentApprovalsTable } from "@/components/features/dashboard/recent-approvals-table";
 import { ExportLedgerButton } from "@/components/features/accountant/export-ledger-button";
 import { MasterReportTable } from "@/components/features/accountant/master-report-table";
 import { MonthYearPicker } from "@/components/features/accountant/month-year-picker";
@@ -118,91 +118,11 @@ export default async function AccountantDashboard({
           </div>
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-sm overflow-hidden animate-fade-in">
-          <div className="px-5 py-4 border-b border-border/40 bg-muted/5 flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-0.5">History & Recent Approvals</h3>
-              <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Aduit log for current cycle</p>
-            </div>
-            <CalendarDays className="size-4 text-muted-foreground/20" />
-          </div>
-          <div className="overflow-x-auto scrollbar-hide">
-            <Table>
-              <TableHeader className="bg-muted/5">
-                <TableRow className="border-b border-border/40 hover:bg-transparent">
-                  <TableHead className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Employee</TableHead>
-                  <TableHead className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Period & Type</TableHead>
-                  <TableHead className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Policy Branch</TableHead>
-                  <TableHead className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">System Note</TableHead>
-                  <TableHead className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Date</TableHead>
-                  <TableHead className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentApprovals.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="py-16 text-center text-[10px] text-muted-foreground/30 font-black uppercase tracking-widest">No recent records</TableCell>
-                  </TableRow>
-                ) : (
-                  recentApprovals.map((req: any) => (
-                    <TableRow key={req.id} className="hover:bg-muted/5 transition-colors border-b border-border/10 last:border-0 group">
-                      <TableCell className="py-3 px-5">
-                        <div className="flex items-center gap-2.5">
-                          <div className="size-7 rounded-sm bg-muted text-foreground/40 flex items-center justify-center font-bold text-[9px] border border-border/40 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
-                            {req.employeeName.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="text-[11px] font-bold text-foreground leading-none">{req.employeeName}</div>
-                            <div className="text-[9px] text-muted-foreground/40 font-bold uppercase mt-0.5">{req.role}</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-3 px-4">
-                        <div className="flex flex-col">
-                          <span className="text-[11px] font-bold text-foreground/70 leading-none">
-                            {req.startDate === req.endDate ? req.startDate : `${req.startDate} — ${req.endDate}`}
-                          </span>
-                          <span className="text-[9px] text-muted-foreground/40 font-black uppercase mt-1">
-                            {req.duration} SESSION
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-3 px-4">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-[10px] font-black text-foreground/60 uppercase tracking-tight">
-                            {req.category.replace(/_/g, ' ')}
-                          </span>
-                          <span className="text-[8px] text-muted-foreground/40 font-black uppercase">{req.leaveType || 'General'}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-3 px-4">
-                        {req.systemNote ? (
-                          <div className="flex items-center gap-1.5 overflow-hidden max-w-[140px]">
-                            <div className="size-1 bg-emerald-500 rounded-full shrink-0" />
-                            <span className="text-[10px] text-muted-foreground/60 font-medium truncate italic" title={req.systemNote}>"{req.systemNote}"</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1.5">
-                            <div className="size-1 bg-sky-500 rounded-full shrink-0" />
-                            <span className="text-[10px] text-muted-foreground/60 font-medium">Manual Log</span>
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="py-3 px-5 text-right">
-                        <span className="text-[10px] font-bold text-muted-foreground/40 tabular-nums">
-                          {new Date(req.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                        </span>
-                      </TableCell>
-                      <TableCell className="py-3 px-5 text-right">
-                        <CancelLeaveButton requestId={req.id} employeeName={req.employeeName} />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
+        <RecentApprovalsTable 
+          data={recentApprovals} 
+          title="History & Recent Approvals" 
+          subtitle="Audit log for current cycle"
+        />
       )}
     </PageContainer>
   );

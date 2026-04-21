@@ -138,7 +138,18 @@ export async function getEmployeeDashboardStats() {
   await processAutoPunchOuts(session.user.id);
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    include: { department: true, leaveBalances: true }
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      autoPunchOutCount: true,
+      departmentId: true,
+      dateOfBirth: true,
+      joiningDate: true,
+      department: true,
+      leaveBalances: true,
+    }
   });
 
   if (!user) return { success: false, error: "User profile not found." };
@@ -202,7 +213,6 @@ export async function getEmployeeDashboardStats() {
         OR: [
           { departmentId: user?.departmentId },
           { managerId: session.user.id },
-          { managerId: user?.managerId }
         ]
       }
     },
@@ -231,6 +241,33 @@ export async function getEmployeeDashboardStats() {
       leaveType: l.category === "UNPAID" ? "Unpaid" : "Paid"
     }));
 
+  const allEmps = await prisma.user.findMany({
+    where: { role: { in: ["EMPLOYEE", "ACCOUNTANT"] } },
+    select: { name: true, dateOfBirth: true, joiningDate: true }
+  });
+
+  const now = new Date();
+  const nextBirthday = allEmps
+    .filter(e => e.dateOfBirth)
+    .map(e => {
+      const dob = new Date(e.dateOfBirth!);
+      let bday = new Date(now.getFullYear(), dob.getMonth(), dob.getDate());
+      if (bday < now) bday = new Date(now.getFullYear() + 1, dob.getMonth(), dob.getDate());
+      return { name: e.name, date: bday };
+    })
+    .sort((a, b) => a.date.getTime() - b.date.getTime())[0] || null;
+
+  const nextAnniversary = allEmps
+    .filter(e => e.joiningDate)
+    .map(e => {
+      const jd = new Date(e.joiningDate!);
+      let anniv = new Date(now.getFullYear(), jd.getMonth(), jd.getDate());
+      if (anniv < now) anniv = new Date(now.getFullYear() + 1, jd.getMonth(), jd.getDate());
+      const years = anniv.getFullYear() - jd.getFullYear();
+      return { name: e.name, date: anniv, years };
+    })
+    .sort((a, b) => a.date.getTime() - b.date.getTime())[0] || null;
+
   return {
     success: true,
     data: {
@@ -242,9 +279,20 @@ export async function getEmployeeDashboardStats() {
         medicalTaken,
         semiAnnualTaken,
         casualRemaining: Number(balances.remainingFull || 0),
-        medicalRemaining: Number(balances.semiAnnualRemaining || 0),
+        earnedRemaining: Number(balances.semiAnnualRemaining || 0),
+        casualYearlyTaken: casualTaken,
+        sickYearlyTaken: medicalTaken,
+        earnedYearlyTaken: semiAnnualTaken,
+        casualYearlyTotal: 12,
+        sickYearlyTotal: 12,
+        earnedYearlyTotal: 3, // Per cycle
       },
-      stats: { approvalRate, pendingCount },
+      stats: { 
+        approvalRate, 
+        pendingCount,
+        nextBirthday,
+        nextAnniversary
+      },
       leaveRequests,
       teamOnLeave: teamOnLeave,
       holidays: (await getUpcomingHolidays(3)).data || [],

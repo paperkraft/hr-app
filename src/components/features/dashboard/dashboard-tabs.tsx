@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 const tabs = [
   { name: "Dashboard", href: "/dashboard/employee", icon: LayoutDashboard },
   { name: "Calendar", href: "/dashboard/calendar", icon: CalendarDays },
-  { name: "Request Leave", href: "/dashboard/employee/leaves", icon: CalendarDays },
-  { name: "History", href: "/dashboard/employee/attendance", icon: History },
+  { name: "My Leaves", href: "/dashboard/employee/leaves", icon: CalendarDays },
+  { name: "Attendance", href: "/dashboard/employee/attendance", icon: History },
 ];
 
 export function DashboardTabs() {

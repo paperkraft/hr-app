@@ -6,7 +6,7 @@ import { TeamOnLeave } from "@/components/features/dashboard/team-on-leave";
 import { UpcomingLeave } from "@/components/features/dashboard/upcoming-leave";
 import { LeaveBalanceOverview } from "@/components/features/dashboard/leave-balance-overview";
 import { PageContainer } from "@/components/ui";
-import { UpcomingHolidays } from "@/components/features/dashboard/upcoming-holidays";
+import { UpcomingMilestones } from "@/components/features/dashboard/upcoming-milestones";
 import { CommunicationHub } from "@/components/features/dashboard/communication-hub";
 import { getEmployeeDashboardStats } from "@/actions/dashboard";
 
@@ -57,17 +57,20 @@ export default async function EmployeeDashboard() {
         <div className="lg:col-span-7">
           <LeaveBalanceOverview
             casual={{
-              taken: data.balances.casualTaken + data.balances.medicalTaken,
-              remaining: data.balances.casualRemaining,
-              total: 3
+              remaining: data.balances.casualRemaining
             }}
-            sick={{
-              taken: data.balances.semiAnnualTaken,
-              remaining: data.balances.medicalRemaining,
-              total: 3
+            casualYearly={{
+              taken: data.balances.casualYearlyTaken,
+              total: data.balances.casualYearlyTotal
             }}
-            approvalRate={data.stats.approvalRate}
-            pendingCount={data.stats.pendingCount}
+            sickYearly={{
+              taken: data.balances.sickYearlyTaken,
+              total: data.balances.sickYearlyTotal
+            }}
+            earned={{
+              remaining: data.balances.earnedRemaining,
+              total: data.balances.earnedYearlyTotal
+            }}
           />
         </div>
 
@@ -99,7 +102,11 @@ export default async function EmployeeDashboard() {
             announcements={data.announcements}
             notifications={data.notifications}
           />
-          <UpcomingHolidays holidays={data.holidays} />
+          <UpcomingMilestones
+            holidays={data.holidays}
+            nextBirthday={data.stats.nextBirthday}
+            nextAnniversary={data.stats.nextAnniversary}
+          />
         </div>
 
       </div>

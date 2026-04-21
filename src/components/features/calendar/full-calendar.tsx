@@ -261,7 +261,7 @@ export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnounc
               <div key={day} className="py-2 text-center">
                 <span className={cn(
                   "text-[9px] font-black uppercase tracking-widest",
-                  dIdx === 0 || dIdx === 6 ? "text-rose-500/80" : "text-muted-foreground/60"
+                  dIdx === 0 ? "text-rose-500/80" : "text-muted-foreground/60"
                 )}>
                   {day.slice(0, 3)}
                 </span>
@@ -277,6 +277,8 @@ export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnounc
               const isTodayDay = isToday(day);
               const isSelected = isSameDay(day, selectedDate);
               const isSunday = day.getDay() === 0;
+              const isHoliday = events.some(e => e.type === "HOLIDAY");
+              const isSpecialDay = isSunday || isHoliday;
 
               return (
                 <div
@@ -287,7 +289,7 @@ export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnounc
                     !isSelectedMonth && "bg-muted/10 opacity-30 cursor-default pointer-events-none",
                     isSelectedMonth && "hover:bg-primary/2",
                     isSelected && isSelectedMonth && "bg-primary/4 ring-1 ring-inset ring-primary/20 z-1",
-                    isSunday && isSelectedMonth && !isSelected && "bg-rose-500/1"
+                    isSpecialDay && isSelectedMonth && !isSelected && "bg-rose-500/1"
                   )}
                 >
                   <div className="flex flex-col h-full gap-1">
@@ -298,7 +300,7 @@ export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnounc
                           ? "rounded-sm bg-primary text-primary-foreground scale-110 shadow-sm"
                           : isSelected
                             ? "text-primary scale-110"
-                            : isSunday
+                            : isSpecialDay
                               ? "text-rose-500/80"
                               : "text-muted-foreground/80"
                       )}>

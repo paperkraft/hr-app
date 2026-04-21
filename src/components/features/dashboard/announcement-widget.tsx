@@ -43,6 +43,7 @@ export function AnnouncementWidget({ announcements: initialAnnouncements, classN
 
   return (
     <div className={cn("bg-card border border-border rounded-sm overflow-hidden flex flex-col", className)}>
+      {/* Widget Header */}
       {!hideHeader && (
         <div className="px-4 py-3 border-b border-border/40 flex items-center justify-between">
           <div>
@@ -58,7 +59,7 @@ export function AnnouncementWidget({ announcements: initialAnnouncements, classN
         </div>
       )}
 
-      <div className={cn("flex-1 divide-y divide-border/20 overflow-y-auto scrollbar-hide max-h-[280px]", hideHeader && "-mx-5")}>
+      <div className={cn("flex-1 overflow-y-auto space-y-0.5 scrollbar-hide min-h-[140px]", hideHeader && "-mx-2")}>
         {announcements.length === 0 ? (
           <div className="py-12 text-center flex flex-col items-center gap-2 opacity-20 px-8">
             <MessageSquare className="size-5" />
@@ -67,20 +68,29 @@ export function AnnouncementWidget({ announcements: initialAnnouncements, classN
         ) : (
           announcements.map((a) => (
             <div key={a.id} className={cn(
-              "px-5 py-3.5 transition-colors group relative",
+              "p-3 flex items-start gap-3 hover:bg-muted/5 transition-all duration-200 rounded-sm cursor-pointer group/item",
               a.priority === "CRITICAL" ? "bg-rose-500/2" : "hover:bg-muted/5"
             )}>
+
               <div className="flex items-start gap-3">
                 <div className={cn(
-                  "size-7 rounded-sm border flex items-center justify-center shrink-0",
+                  "size-8 p-2 rounded-sm shrink-0 border transition-colors",
                   priorityColors[a.priority],
                   borderColors[a.priority]
                 )}>
                   <PriorityIcon p={a.priority} />
                 </div>
-                <div className="min-w-0 flex-1">
+
+                <div className="flex-1 min-w-0">
+                  <h4 className={cn(
+                    "text-[11px] font-bold mt-0.5 leading-tight group-hover/item:text-primary transition-colors",
+                    a.priority === "CRITICAL" ? "text-rose-600" : "text-foreground"
+                  )}>{a.title}</h4>
+                  <p className="text-[10px] text-muted-foreground leading-snug line-clamp-1 pr-2">
+                    {a.content}
+                  </p>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 tabular-nums">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/80 tabular-nums">
                       {format(a.createdAt, "MMM dd")}
                     </span>
                     {a.targetDepartment && (
@@ -89,13 +99,6 @@ export function AnnouncementWidget({ announcements: initialAnnouncements, classN
                       </span>
                     )}
                   </div>
-                  <h4 className={cn(
-                    "text-[11px] font-bold mt-0.5 leading-tight",
-                    a.priority === "CRITICAL" ? "text-rose-600" : "text-foreground"
-                  )}>{a.title}</h4>
-                  <p className="text-[10px] text-muted-foreground/60 mt-0.5 line-clamp-1 leading-relaxed">
-                    {a.content}
-                  </p>
                 </div>
               </div>
             </div>

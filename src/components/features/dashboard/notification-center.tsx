@@ -45,7 +45,7 @@ export function NotificationCenter({ notifications: initialNotifications, classN
         </div>
       )}
 
-      <div className={cn("flex-1 px-2 py-2 space-y-0.5 min-h-[140px]", hideHeader && "-mx-2")}>
+      <div className={cn("flex-1 overflow-y-auto space-y-0.5 scrollbar-hide min-h-[140px]", hideHeader && "-mx-2")}>
         {notifications.length === 0 ? (
           <div className="py-12 text-center flex flex-col items-center gap-2 opacity-20 px-8">
             <Bell className="size-5" />
@@ -61,16 +61,16 @@ export function NotificationCenter({ notifications: initialNotifications, classN
               )}
             >
               <div className={cn(
-                "p-2 rounded-sm shrink-0 border transition-colors",
+                "size-8 p-2 rounded-sm shrink-0 border transition-colors",
                 notif.type === "SUCCESS" && "bg-emerald-500/5 text-emerald-600 border-emerald-500/10",
                 notif.type === "WARNING" && "bg-amber-500/5 text-amber-600 border-amber-500/10",
                 notif.type === "INFO" && "bg-sky-500/5 text-sky-600 border-sky-500/10",
                 notif.type === "ERROR" && "bg-rose-500/5 text-rose-600 border-rose-500/10",
               )}>
-                {notif.type === "SUCCESS" && <CheckCircle2 className="size-3" />}
-                {notif.type === "WARNING" && <AlertCircle className="size-3" />}
-                {notif.type === "INFO" && <Info className="size-3" />}
-                {notif.type === "ERROR" && <ArrowRight className="size-3 rotate-45" />}
+                {notif.type === "SUCCESS" && <CheckCircle2 className="size-3.5" />}
+                {notif.type === "WARNING" && <AlertCircle className="size-3.5" />}
+                {notif.type === "INFO" && <Info className="size-3.5" />}
+                {notif.type === "ERROR" && <ArrowRight className="size-3.5 rotate-45" />}
               </div>
 
               <div className="flex-1 min-w-0">
@@ -80,11 +80,11 @@ export function NotificationCenter({ notifications: initialNotifications, classN
                   </p>
                   {!notif.isRead && <div className="size-1 rounded-full bg-primary" />}
                 </div>
-                <p className="text-[10px] text-muted-foreground leading-snug line-clamp-1 pr-2">
+                <p className="text-[10px] text-muted-foreground leading-snug line-clamp-1 pr-2" title={notif.content}>
                   {notif.content}
                 </p>
-                <div className="flex items-center gap-1.5 mt-1 opacity-40">
-                  <span className="text-[9px] text-muted-foreground font-black uppercase tracking-tight">
+                <div className="flex items-center gap-1.5 mt-1 opacity-50">
+                  <span className="text-[9px] text-muted-foreground font-bold">
                     {formatDistanceToNow(notif.createdAt, { addSuffix: true }).toUpperCase()}
                   </span>
                 </div>
@@ -94,15 +94,16 @@ export function NotificationCenter({ notifications: initialNotifications, classN
         )}
       </div>
 
-      <div className="p-4 pt-1">
-        <button
-          onClick={() => markAllAsRead()}
-          className="w-full py-2.5 rounded-sm flex items-center justify-center gap-2 text-[10px] font-black text-primary bg-primary/2 border border-primary/5 hover:bg-primary/5 transition-all duration-200 uppercase tracking-widest shadow-none"
-        >
-          Dismiss All
-          <ArrowRight className="size-3" />
-        </button>
-      </div>
+      {unreadCount > 0 && (
+        <div className="p-4 pt-1">
+          <button
+            onClick={() => markAllAsRead()}
+            className="w-full py-2.5 rounded-sm flex items-center justify-center gap-2 text-[10px] font-black text-primary bg-primary/2 border border-primary/5 hover:bg-primary/5 transition-all duration-200 uppercase tracking-widest shadow-none"
+          >
+            Mark as Read
+          </button>
+        </div>
+      )}
     </div>
   );
 }

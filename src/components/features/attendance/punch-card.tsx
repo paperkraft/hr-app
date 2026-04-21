@@ -47,7 +47,7 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
         // Helper to get location with multiple attempts for better accuracy
         const getHighAccuracyPos = async (maxAttempts = 3): Promise<GeolocationPosition> => {
           let lastResult: GeolocationPosition | null = null;
-          
+
           for (let i = 0; i < maxAttempts; i++) {
             try {
               const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -57,11 +57,11 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
                   maximumAge: 0
                 });
               });
-              
+
               lastResult = pos;
               // If accuracy is better than 80 meters, it's likely a solid native GPS/Wi-Fi lock
               if (pos.coords.accuracy <= 80) return pos;
-              
+
               // If not precise enough, wait a bit for hardware to warm up and try again
               await new Promise(r => setTimeout(r, 1000));
             } catch (err) {
@@ -72,7 +72,7 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
         };
 
         const position = await getHighAccuracyPos();
-        
+
         // Log accuracy for monitoring
         console.log(`[GEO] Captured location with accuracy: ${position.coords.accuracy}m`);
 
@@ -82,13 +82,13 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
         };
       } catch (err: any) {
         let errorMsg = "Please enable location services to continue.";
-        
+
         if (err.code === 1) { // PERMISSION_DENIED
           errorMsg = "Location access denied. Please enable it in browser settings.";
         } else if (err.code === 3) { // TIMEOUT
           errorMsg = "Location request timed out. Please ensure GPS is active and try again.";
         }
-        
+
         toast.error(errorMsg, {
           description: "Required for attendance verification.",
           duration: 5000
@@ -121,7 +121,7 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
           <div className="text-[10px] font-black text-muted-foreground/80 uppercase tracking-[0.2em]">
             Digital Time
           </div>
-          <div className="text-5xl font-bold tabular-nums tracking-tighter text-foreground">
+          <div className="text-5xl text-[#444] font-bold tabular-nums tracking-tighter">
             {currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--"}
           </div>
         </div>

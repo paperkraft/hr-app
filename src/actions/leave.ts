@@ -354,11 +354,15 @@ export async function submitLeaveRequest(formData: unknown) {
       });
 
       if (usersToNotify.length > 0) {
+        const startStr = new Date(data.startDate).toLocaleDateString();
+        const endStr = new Date(data.endDate).toLocaleDateString();
+        const dateRange = startStr === endStr ? `on ${startStr}` : `from ${startStr} to ${endStr}`;
+
         await prisma.notification.createMany({
           data: usersToNotify.map(u => ({
             userId: u.id,
             title: `Leave Application: ${applicantName}`,
-            content: `${applicantName} has applied for ${data.duration.toLowerCase()} leave from ${new Date(data.startDate).toLocaleDateString()} to ${new Date(data.endDate).toLocaleDateString()}. Status: ${isAutoApproved ? "Auto-Approved" : "Pending"}`,
+            content: `${applicantName} has applied for ${data.duration.toLowerCase()} leave ${dateRange}.`,
             type: "INFO",
             link: "/dashboard"
           }))
@@ -610,12 +614,16 @@ async function processLeaveRequestStatus(requestId: string, status: "APPROVED" |
 
   if (result.success) {
     const isApproved = status === "APPROVED";
+    const startStr = new Date(requestMeta.startDate).toLocaleDateString();
+    const endStr = new Date(requestMeta.endDate).toLocaleDateString();
+    const dateRange = startStr === endStr ? `on ${startStr}` : `from ${startStr} to ${endStr}`;
+
     await createNotification({
       userId: requestMeta.userId,
       title: isApproved ? "Leave Request Approved" : "Leave Request Rejected",
       content: isApproved 
-        ? `Your leave request for ${requestMeta.startDate.toLocaleDateString()} has been approved.` 
-        : `Your leave request for ${requestMeta.startDate.toLocaleDateString()} was rejected. Note: ${note || "No reason provided."}`,
+        ? `Your leave request ${dateRange} has been approved.` 
+        : `Your leave request ${dateRange} was rejected. Note: ${note || "No reason provided."}`,
       type: isApproved ? "SUCCESS" : "ERROR",
       link: "/dashboard/employee/leaves"
     });
@@ -796,10 +804,14 @@ export async function cancelApprovedLeave(requestId: string, note?: string) {
     revalidatePath("/dashboard/employee/leaves");
 
     if (result.success) {
+      const startStr = new Date(request.startDate).toLocaleDateString();
+      const endStr = new Date(request.endDate).toLocaleDateString();
+      const dateRange = startStr === endStr ? `on ${startStr}` : `from ${startStr} to ${endStr}`;
+
       await createNotification({
         userId: request.userId,
         title: "Leave Cancelled",
-        content: `Your approved leave for ${request.startDate.toLocaleDateString()} has been cancelled by an administrator. Note: ${note || "No reason provided."}`,
+        content: `Your approved leave ${dateRange} has been cancelled by an administrator. Note: ${note || "No reason provided."}`,
         type: "WARNING",
         link: "/dashboard/employee/leaves"
       });

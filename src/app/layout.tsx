@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SigmaHRMS | Premium Workforce Management",
+  title: "Sigma",
   description: "Advanced human resources and attendance tracking for modern distributed teams.",
   manifest: "/manifest.json",
   themeColor: "#0f172a",

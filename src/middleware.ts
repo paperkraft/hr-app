@@ -15,7 +15,7 @@ export default withAuth(
         case "ADMIN":
           return NextResponse.redirect(new URL("/dashboard/admin", req.url));
         case "ACCOUNTANT":
-          return NextResponse.redirect(new URL("/dashboard/accountant", req.url));
+          return NextResponse.redirect(new URL("/dashboard/employee", req.url));
         case "EMPLOYEE":
         default:
           return NextResponse.redirect(new URL("/dashboard/employee", req.url));

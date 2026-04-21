@@ -19,6 +19,7 @@ export const roleNavigation: Record<string, NavItem[]> = {
     { title: "My Attendance", href: "/dashboard/employee/attendance", icon: Activity },
     { title: "Payroll & Processing", href: "/dashboard/accountant", icon: Calculator },
     { title: "Location Status", href: "/dashboard/accountant/location-logs", icon: MapPin },
+    { title: "Configuration", href: "/dashboard/accountant/settings", icon: Settings },
   ],
   ADMIN: [
     { title: "System Overview", href: "/dashboard/admin", icon: LayoutDashboard },

@@ -49,8 +49,8 @@ export async function updateSystemConfig(data: {
 }) {
   const session = await getServerSession(authOptions)
   
-  if (!session || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
-    return { error: "Unauthorized access only for administrators." }
+  if (!session || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN" && session.user.role !== "ACCOUNTANT")) {
+    return { error: "Unauthorized access only for administrators and accountants." }
   }
 
   try {
@@ -75,6 +75,7 @@ export async function updateSystemConfig(data: {
     })
     
     revalidatePath("/dashboard/admin/settings")
+    revalidatePath("/dashboard/accountant/settings")
     return { success: true, data: updated }
   } catch (error) {
     console.error("Failed to update system config:", error)
@@ -102,7 +103,7 @@ export async function upsertLocation(data: {
   isRemote: boolean;
 }) {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
+  if (!session || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN" && session.user.role !== "ACCOUNTANT")) {
     return { error: "Unauthorized" }
   }
 
@@ -123,6 +124,7 @@ export async function upsertLocation(data: {
         }
       })
       revalidatePath("/dashboard/admin/settings")
+      revalidatePath("/dashboard/accountant/settings")
       return { success: true, data: updated }
     } else {
       const created = await prisma.location.create({
@@ -139,6 +141,7 @@ export async function upsertLocation(data: {
         }
       })
       revalidatePath("/dashboard/admin/settings")
+      revalidatePath("/dashboard/accountant/settings")
       return { success: true, data: created }
     }
   } catch (error: any) {

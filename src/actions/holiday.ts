@@ -24,6 +24,7 @@ export async function addHoliday(name: string, date: Date) {
       },
     });
     revalidatePath("/dashboard/admin/settings");
+    revalidatePath("/dashboard/accountant/settings");
     revalidatePath("/dashboard/admin");
     revalidatePath("/dashboard/employee");
     return { success: true, data: holiday };
@@ -39,6 +40,7 @@ export async function deleteHoliday(id: string) {
       where: { id },
     });
     revalidatePath("/dashboard/admin/settings");
+    revalidatePath("/dashboard/accountant/settings");
     revalidatePath("/dashboard/admin");
     revalidatePath("/dashboard/employee");
     return { success: true };

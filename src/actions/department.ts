@@ -7,8 +7,8 @@ import { authOptions } from "@/lib/auth"
 
 async function authorizeAdmin() {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
-    throw new Error("Unauthorized. Admin access required.")
+  if (!session || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN" && session.user.role !== "ACCOUNTANT")) {
+    throw new Error("Unauthorized. Admin or Accountant access required.")
   }
 }
 

@@ -4,8 +4,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { AnnouncementPriority, Announcement } from "@prisma/client";
-import { createNotification } from "./notification";
+import { AnnouncementPriority } from "@prisma/client";
 
 export async function getAnnouncements(departmentId?: string) {
   try {
@@ -77,6 +76,8 @@ export async function createAnnouncement(data: {
     }
 
     revalidatePath("/dashboard");
+    revalidatePath("/dashboard/admin/settings");
+    revalidatePath("/dashboard/accountant/settings");
     revalidatePath("/dashboard/admin");
     revalidatePath("/dashboard/employee");
     return { success: true, data: announcement };
@@ -92,6 +93,8 @@ export async function deleteAnnouncement(id: string) {
       where: { id },
     });
     revalidatePath("/dashboard");
+    revalidatePath("/dashboard/admin/settings");
+    revalidatePath("/dashboard/accountant/settings");
     return { success: true };
   } catch (error) {
     console.error("Failed to delete announcement:", error);
@@ -106,6 +109,8 @@ export async function toggleAnnouncementActive(id: string, isActive: boolean) {
       data: { isActive },
     });
     revalidatePath("/dashboard");
+    revalidatePath("/dashboard/admin/settings");
+    revalidatePath("/dashboard/accountant/settings");
     return { success: true };
   } catch (error) {
     console.error("Failed to toggle announcement:", error);

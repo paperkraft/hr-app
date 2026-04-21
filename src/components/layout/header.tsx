@@ -22,7 +22,7 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
     if (pathname.includes("/attendance")) return "My Attendance";
     if (pathname.includes("/leaves")) return "Leave Management";
     if (pathname.includes("/admin/users")) return "Employee Directory";
-    if (pathname.includes("/admin/settings")) return "System Configuration";
+    if (pathname.includes("/settings")) return "System Configuration";
     if (pathname.includes("/admin/departments")) return "Departments";
     if (pathname.includes("/admin")) return "Admin Overview";
     if (pathname.includes("/accountant")) return "Payroll & Processing";

@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+import { getTodayRange } from "@/lib/attendance-helper";
+
 export async function getNotifications(limit?: number) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return { success: false, error: "Unauthorized" };
@@ -15,7 +17,34 @@ export async function getNotifications(limit?: number) {
       orderBy: { createdAt: "desc" },
       ...(limit ? { take: limit } : {}),
     });
-    return { success: true, data: notifications };
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: { 
+        location: true,
+        shift: true 
+      }
+    });
+
+    const config = await prisma.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
+    const startTime = user?.shift?.startTime || user?.location?.startTime || config?.defaultOfficeStartTime || "09:00";
+    const endTime = user?.shift?.endTime || user?.location?.endTime || config?.defaultOfficeEndTime || "18:00";
+
+    const { start, end } = getTodayRange();
+    const todaysLog = await prisma.attendance.findFirst({
+      where: { userId: session.user.id, date: { gte: start, lte: end } }
+    });
+
+    return { 
+      success: true, 
+      data: notifications as any[],
+      attendance: {
+        startTime,
+        endTime,
+        hasPunchedIn: !!todaysLog,
+        hasPunchedOut: !!todaysLog?.punchOut
+      }
+    };
   } catch (error) {
     console.error("Failed to fetch notifications:", error);
     return { success: false, error: "Failed to fetch notifications", data: [] };

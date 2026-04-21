@@ -24,7 +24,7 @@ export function NotificationNav() {
 
   const { permission, requestPermission, sendNotification } = useDesktopNotification();
   const shownNotificationIds = useRef<Set<string>>(new Set());
-
+  const remindersSentToday = useRef<Set<string>>(new Set());
   const fetchNotifications = async () => {
     const result = await getNotifications(10);
 
@@ -32,6 +32,7 @@ export function NotificationNav() {
       const newNotifications = result.data;
       const livePermission = typeof window !== "undefined" ? (window as any).Notification?.permission : "default";
       
+      // 1. Process standard notifications
       if (livePermission === "granted") {
         newNotifications.forEach((n: any) => {
           if (!n.isRead && !shownNotificationIds.current.has(n.id)) {
@@ -45,6 +46,47 @@ export function NotificationNav() {
             shownNotificationIds.current.add(n.id);
           }
         });
+      }
+
+      // 2. Attendance Reminders (Check-In / Check-Out)
+      if (result.attendance && livePermission === "granted") {
+        const { startTime, endTime, hasPunchedIn, hasPunchedOut } = result.attendance;
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+
+        const parseTime = (timeStr: string) => {
+          const [h, m] = timeStr.split(':').map(Number);
+          const d = new Date(now);
+          d.setHours(h, m, 0, 0);
+          return d;
+        };
+
+        const start = parseTime(startTime);
+        const end = parseTime(endTime);
+
+        // Check-In Reminder (10 min before start)
+        const checkInWindowStart = new Date(start.getTime() - 10 * 60000);
+        const checkInKey = `checkin-${todayStr}`;
+        if (!hasPunchedIn && now >= checkInWindowStart && now < start && !remindersSentToday.current.has(checkInKey)) {
+          sendNotification("Attendance Reminder", {
+            body: `Your shift starts at ${startTime}. Don't forget to check in!`,
+            tag: checkInKey,
+            onClick: () => router.push("/dashboard/employee"),
+          });
+          remindersSentToday.current.add(checkInKey);
+        }
+
+        // Check-Out Reminder (10 min before end)
+        const checkOutWindowStart = new Date(end.getTime() - 10 * 60000);
+        const checkOutKey = `checkout-${todayStr}`;
+        if (hasPunchedIn && !hasPunchedOut && now >= checkOutWindowStart && now < end && !remindersSentToday.current.has(checkOutKey)) {
+          sendNotification("Attendance Reminder", {
+            body: `Your shift ends at ${endTime}. Don't forget to check out!`,
+            tag: checkOutKey,
+            onClick: () => router.push("/dashboard/employee"),
+          });
+          remindersSentToday.current.add(checkOutKey);
+        }
       }
 
       newNotifications.forEach((n: any) => shownNotificationIds.current.add(n.id));

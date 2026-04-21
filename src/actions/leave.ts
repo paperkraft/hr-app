@@ -794,6 +794,17 @@ export async function cancelApprovedLeave(requestId: string, note?: string) {
     revalidatePath("/dashboard/admin");
     revalidatePath("/dashboard/accountant");
     revalidatePath("/dashboard/employee/leaves");
+
+    if (result.success) {
+      await createNotification({
+        userId: request.userId,
+        title: "Leave Cancelled",
+        content: `Your approved leave for ${request.startDate.toLocaleDateString()} has been cancelled by an administrator. Note: ${note || "No reason provided."}`,
+        type: "WARNING",
+        link: "/dashboard/employee/leaves"
+      });
+    }
+
     return result;
 
   } catch (error: any) {

@@ -16,7 +16,7 @@ export function CommunicationHub({ announcements, notifications, className }: Co
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
 
   return (
-    <div className={cn("bg-card border border-border rounded-sm flex flex-col h-[400px]", className)}>
+    <div className={cn("bg-card border border-border rounded-sm flex flex-col h-[430px]", className)}>
       <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between bg-muted/5">
         <div>
           <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Communication Hub</h3>

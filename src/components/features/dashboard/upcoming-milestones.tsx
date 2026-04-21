@@ -33,7 +33,7 @@ export function UpcomingMilestones({ holidays: initialHolidays, nextBirthday, ne
     date: new Date(h.date),
     type: "HOLIDAY" as EventType
   }));
-  
+
   if (nextBirthday) {
     events.push({
       id: "bday-next",
@@ -42,7 +42,7 @@ export function UpcomingMilestones({ holidays: initialHolidays, nextBirthday, ne
       type: "BIRTHDAY"
     });
   }
-  
+
   if (nextAnniversary) {
     events.push({
       id: "anniv-next",
@@ -53,7 +53,7 @@ export function UpcomingMilestones({ holidays: initialHolidays, nextBirthday, ne
   }
 
   // Sort events by date
-  const sortedEvents = events.sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 5);
+  const sortedEvents = events.sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 10);
 
   const eventConfigs = {
     BIRTHDAY: { icon: Cake, color: "text-amber-500", bg: "bg-amber-500/10", label: "Birthday" },
@@ -62,7 +62,7 @@ export function UpcomingMilestones({ holidays: initialHolidays, nextBirthday, ne
   };
 
   return (
-    <div className="bg-card border border-border rounded-sm overflow-hidden flex flex-col h-full">
+    <div className="bg-card border border-border rounded-sm overflow-hidden flex flex-col h-[430px]">
       <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between bg-muted/5">
         <div>
           <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Upcoming Events</h3>
@@ -71,7 +71,7 @@ export function UpcomingMilestones({ holidays: initialHolidays, nextBirthday, ne
         <PartyPopper className="size-4 text-primary/60" />
       </div>
 
-      <div className="divide-y divide-border/20 flex-1">
+      <div className="divide-y divide-border/20 flex-1 overflow-y-auto scrollbar-hide">
         {sortedEvents.length === 0 ? (
           <div className="py-12 text-center flex flex-col items-center gap-2 opacity-20">
             <Calendar className="size-6" />

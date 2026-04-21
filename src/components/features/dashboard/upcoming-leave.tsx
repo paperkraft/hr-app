@@ -15,10 +15,10 @@ interface UpcomingLeaveProps {
 }
 
 export function UpcomingLeave({ requests }: UpcomingLeaveProps) {
-  const activeRequests = requests.filter(r => r.status !== "CANCELLED").slice(0, 3);
+  const activeRequests = requests.filter(r => r.status === "PENDING" || r.status === "APPROVED").slice(0, 10);
 
   return (
-    <div className="bg-card border border-border rounded-sm p-5 space-y-5 h-full animate-fade-in">
+    <div className="bg-card border border-border rounded-sm p-4 space-y-4 h-[430px] flex flex-col animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Upcoming Leave</h3>
@@ -29,7 +29,7 @@ export function UpcomingLeave({ requests }: UpcomingLeaveProps) {
         </div>
       </div>
 
-      <div className="space-y-2 max-h-[300px] overflow-y-auto scrollbar-hide">
+      <div className="space-y-2 flex-1 overflow-y-auto scrollbar-hide">
         {activeRequests.length === 0 ? (
           <div className="py-8 text-center flex flex-col items-center gap-2 opacity-20">
             <CalendarDays className="size-6" />

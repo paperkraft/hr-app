@@ -32,6 +32,10 @@ export async function createUser(data: any) {
         workMode: (data.workMode as WorkMode) || "OFFICE",
         dateOfBirth: data.dateOfBirth || null,
         joiningDate: data.joiningDate || null,
+        phoneNumber: data.phoneNumber || null,
+        emergencyContactName: data.emergencyContactName || null,
+        emergencyContactPhone: data.emergencyContactPhone || null,
+        emergencyContactRelation: data.emergencyContactRelation || null,
       }
     })
 
@@ -61,6 +65,10 @@ export async function updateUser(id: string, data: any) {
       workMode: (data.workMode as WorkMode) || "OFFICE",
       dateOfBirth: data.dateOfBirth || null,
       joiningDate: data.joiningDate || null,
+      phoneNumber: data.phoneNumber || null,
+      emergencyContactName: data.emergencyContactName || null,
+      emergencyContactPhone: data.emergencyContactPhone || null,
+      emergencyContactRelation: data.emergencyContactRelation || null,
     }
 
     if (data.password) {
@@ -94,6 +102,66 @@ export async function deleteUser(id: string) {
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete user: " + error.message }
+  }
+}
+
+export async function updateSelfProfile(data: { 
+  phoneNumber?: string; 
+  emergencyContactName?: string; 
+  emergencyContactPhone?: string; 
+  emergencyContactRelation?: string;
+  password?: string; 
+  dateOfBirth?: Date; 
+}) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) throw new Error("Unauthorized")
+
+    const updateData: any = {}
+    if (data.phoneNumber !== undefined) updateData.phoneNumber = data.phoneNumber
+    if (data.emergencyContactName !== undefined) updateData.emergencyContactName = data.emergencyContactName
+    if (data.emergencyContactPhone !== undefined) updateData.emergencyContactPhone = data.emergencyContactPhone
+    if (data.emergencyContactRelation !== undefined) updateData.emergencyContactRelation = data.emergencyContactRelation
+    if (data.dateOfBirth) updateData.dateOfBirth = data.dateOfBirth
+    if (data.password) {
+      updateData.password = await bcrypt.hash(data.password, 10)
+    }
+
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: updateData
+    })
+
+    revalidatePath("/")
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}
+
+export async function getUserProfile() {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) throw new Error("Unauthorized")
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        dateOfBirth: true,
+        joiningDate: true,
+        phoneNumber: true,
+        emergencyContactName: true,
+        emergencyContactPhone: true,
+        emergencyContactRelation: true,
+      }
+    })
+
+    return { success: true, data: user }
+  } catch (error: any) {
+    return { success: false, error: error.message }
   }
 }
 

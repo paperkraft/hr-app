@@ -22,8 +22,12 @@ model User {
   updatedAt         DateTime       @updatedAt
   autoPunchOutCount Int            @default(0)
   dateOfBirth       DateTime?      @db.Date
-  joiningDate       DateTime?      @db.Date
-  attendances       Attendance[]
+  joiningDate              DateTime?      @db.Date
+  phoneNumber              String?
+  emergencyContactName     String?
+  emergencyContactPhone    String?
+  emergencyContactRelation String?
+  attendances              Attendance[]
   ledDepartment     Department?    @relation("DepartmentLeader")
   leaveBalances     LeaveBalance[]
   leaveRequests     LeaveRequest[]

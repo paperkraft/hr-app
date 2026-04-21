@@ -8,16 +8,16 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { ensureBalance } from "./leave"
 
-async function authorizeAdmin() {
+async function authorizeUserManagement() {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN")) {
-    throw new Error("Unauthorized. Admin access required.")
+  if (!session || (session.user.role !== "ADMIN" && session.user.role !== "SYSTEM_ADMIN" && session.user.role !== "ACCOUNTANT")) {
+    throw new Error("Unauthorized. Required appropriate permissions.")
   }
 }
 
 export async function createUser(data: any) {
   try {
-    await authorizeAdmin()
+    await authorizeUserManagement()
     const hashedPassword = await bcrypt.hash(data.password, 10)
     const user = await prisma.user.create({
       data: {
@@ -30,6 +30,8 @@ export async function createUser(data: any) {
         shiftId: data.shiftId || null,
         locationId: data.locationId || null,
         workMode: (data.workMode as WorkMode) || "OFFICE",
+        dateOfBirth: data.dateOfBirth || null,
+        joiningDate: data.joiningDate || null,
       }
     })
 
@@ -47,7 +49,7 @@ export async function createUser(data: any) {
 
 export async function updateUser(id: string, data: any) {
   try {
-    await authorizeAdmin()
+    await authorizeUserManagement()
     const updateData: any = {
       name: data.name,
       email: data.email,
@@ -57,6 +59,8 @@ export async function updateUser(id: string, data: any) {
       shiftId: data.shiftId || null,
       locationId: data.locationId || null,
       workMode: (data.workMode as WorkMode) || "OFFICE",
+      dateOfBirth: data.dateOfBirth || null,
+      joiningDate: data.joiningDate || null,
     }
 
     if (data.password) {
@@ -76,7 +80,7 @@ export async function updateUser(id: string, data: any) {
 
 export async function deleteUser(id: string) {
   try {
-    await authorizeAdmin()
+    await authorizeUserManagement()
     // Prevent self-deletion
     const session = await getServerSession(authOptions)
     if (session?.user.id === id) {
@@ -95,7 +99,7 @@ export async function deleteUser(id: string) {
 
 export async function getAdminUsersData() {
   try {
-    await authorizeAdmin()
+    await authorizeUserManagement()
     const users = await prisma.user.findMany({
       where: {
         role: { not: 'SYSTEM_ADMIN' }

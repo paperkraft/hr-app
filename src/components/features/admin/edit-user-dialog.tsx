@@ -49,6 +49,8 @@ export function EditUserDialog({
       departmentId: formData.get("departmentId") === "none" ? null : formData.get("departmentId"),
       locationId: formData.get("locationId") === "none" ? null : formData.get("locationId"),
       workMode: formData.get("workMode"),
+      dateOfBirth: formData.get("dateOfBirth") ? new Date(formData.get("dateOfBirth") as string) : null,
+      joiningDate: formData.get("joiningDate") ? new Date(formData.get("joiningDate") as string) : null,
     }
 
     const res = await updateUser(user.id, data as any)
@@ -106,6 +108,14 @@ export function EditUserDialog({
                     <SelectItem value="ADMIN" className="text-xs">Admin</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className={labelClass}>Date of Birth</Label>
+                <Input type="date" name="dateOfBirth" defaultValue={user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : ""} className={inputClass} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className={labelClass}>Joining Date</Label>
+                <Input type="date" name="joiningDate" defaultValue={user.joiningDate ? new Date(user.joiningDate).toISOString().split('T')[0] : ""} className={inputClass} />
               </div>
             </div>
           </div>

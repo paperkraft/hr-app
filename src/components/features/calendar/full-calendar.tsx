@@ -16,7 +16,7 @@ import {
   isToday,
   startOfDay
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, User, Palmtree, MapPin, Megaphone, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, User, Palmtree, MapPin, Megaphone, Clock, Cake } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +29,7 @@ import {
 interface Event {
   id: string;
   title: string;
-  type: "HOLIDAY" | "LEAVE" | "ANNOUNCEMENT";
+  type: "HOLIDAY" | "BIRTHDAY" | "ANNOUNCEMENT";
   date?: Date;
   startDate?: Date;
   endDate?: Date;
@@ -39,16 +39,16 @@ interface Event {
 
 interface FullCalendarProps {
   initialHolidays: any[];
-  initialLeaves: any[];
+  initialBirthdays: any[];
   initialAnnouncements: any[];
   className?: string;
 }
 
-export function FullCalendar({ initialHolidays, initialLeaves, initialAnnouncements, className }: FullCalendarProps) {
+export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnouncements, className }: FullCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const holidays = initialHolidays.map(h => ({ ...h, date: new Date(h.date) }));
-  const leaves = initialLeaves.map(l => ({ ...l, startDate: new Date(l.startDate), endDate: new Date(l.endDate) }));
+  const birthdays = (initialBirthdays || []).map(b => ({ ...b, date: new Date(b.date) }));
   const announcements = initialAnnouncements.map(a => ({ ...a, date: new Date(a.date) }));
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
@@ -67,13 +67,9 @@ export function FullCalendar({ initialHolidays, initialLeaves, initialAnnounceme
   const getDayEvents = (day: Date) => {
     const dayHolidays = holidays.filter(h => isSameDay(h.date, day));
     const dayAnnouncements = announcements.filter(a => isSameDay(a.date, day));
-    const dayLeaves = leaves.filter(l => {
-      const dayStart = startOfDay(day);
-      const leaveStart = startOfDay(new Date(l.startDate));
-      const leaveEnd = startOfDay(new Date(l.endDate));
-      return dayStart >= leaveStart && dayStart <= leaveEnd;
-    });
-    return [...dayHolidays, ...dayAnnouncements, ...dayLeaves];
+    const dayBirthdays = birthdays.filter(b => isSameDay(b.date, day));
+    
+    return [...dayHolidays, ...dayAnnouncements, ...dayBirthdays];
   };
 
   return (
@@ -148,20 +144,20 @@ export function FullCalendar({ initialHolidays, initialLeaves, initialAnnounceme
               <div
                 key={idx}
                 className={cn(
-                  "h-full p-4 transition-all relative group overflow-hidden border-border/50",
+                  "h-full p-2 transition-all relative group overflow-hidden border-border/50",
                   !isSelectedMonth && "bg-muted/10 opacity-30",
                   isSelectedMonth && (isHoliday || isSunday) && "bg-rose-500/5",
                   isSelectedMonth && !isHoliday && !isSunday && "hover:bg-muted/5",
                   isWeekendDay && isSelectedMonth && !isHoliday && !isSunday && "bg-muted/5"
                 )}
               >
-                <div className="flex flex-col md:flex-row md:items-start md:gap-2 h-full">
+                <div className="flex flex-col h-full">
                   {/* Date Number Container */}
-                  <div className="flex items-center justify-center md:justify-start shrink-0">
+                  <div className="flex items-center justify-between mb-1">
                     <span className={cn(
                       "text-[10px] font-bold tabular-nums",
                       isTodayDay
-                        ? "size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center -ml-1 -mt-1 md:-ml-0.5 md:-mt-0.5"
+                        ? "size-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center"
                         : (isHoliday || isSunday)
                           ? "text-rose-600"
                           : "text-muted-foreground/80"
@@ -171,72 +167,24 @@ export function FullCalendar({ initialHolidays, initialLeaves, initialAnnounceme
                   </div>
 
                   {/* Events Container */}
-                  <div className="flex-1 min-w-0 mt-1 md:mt-0 flex justify-center md:block">
-                    {/* Desktop View */}
-                    <div className="hidden md:block space-y-1 overflow-y-auto max-h-[100px] scrollbar-hide">
-                      {events.map((event, eIdx) => (
-                        <div
-                          key={eIdx}
-                          className={cn(
-                            "px-2 py-1 rounded-sm text-[9px] font-bold truncate transition-all flex items-center gap-1.5 border",
-                            event.type === "HOLIDAY" && "bg-rose-500/10 text-rose-600 border-rose-500/20",
-                            event.type === "ANNOUNCEMENT" && "bg-blue-500/10 text-blue-600 border-blue-500/20",
-                            event.type === "LEAVE" && (
-                              event.status === "PENDING"
-                                ? "bg-amber-500/5 text-amber-600/70 border-amber-500/20 border-dashed"
-                                : "bg-amber-500/10 text-amber-600 border-amber-500/20"
-                            )
-                          )}
-                          title={`${event.title}${event.status === "PENDING" ? " (Pending)" : ""}`}
-                        >
-                          {event.type === "HOLIDAY" && <Palmtree className="size-2.5 shrink-0" />}
-                          {event.type === "ANNOUNCEMENT" && <Megaphone className="size-2.5 shrink-0" />}
-                          {event.type === "LEAVE" && (
-                            event.status === "PENDING"
-                              ? <Clock className="size-2.5 shrink-0 animate-pulse" />
-                              : <User className="size-2.5 shrink-0" />
-                          )}
-                          <span className="truncate flex-1 min-w-0">{event.title}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Mobile View */}
-                    <div className="flex md:hidden flex-wrap gap-1">
-                      {events.length > 0 && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="flex gap-0.5">
-                              {events.map((event, eIdx) => (
-                                <div
-                                  key={eIdx}
-                                  className={cn(
-                                    "size-1.5 rounded-full shrink-0",
-                                    event.type === "HOLIDAY" && "bg-rose-600",
-                                    event.type === "ANNOUNCEMENT" && "bg-blue-600",
-                                    event.type === "LEAVE" && (event.status === "PENDING" ? "bg-amber-600 opacity-40 ring-1 ring-amber-600 ring-offset-1" : "bg-amber-600")
-                                  )}
-                                />
-                              ))}
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent className="flex flex-col gap-1.5 p-3" side="top">
-                            {events.map((event, eIdx) => (
-                              <div key={eIdx} className="flex items-center gap-2 text-[10px] font-bold">
-                                <div className={cn(
-                                  "size-1.5 rounded-full",
-                                  event.type === "HOLIDAY" && "bg-rose-600",
-                                  event.type === "ANNOUNCEMENT" && "bg-blue-600",
-                                  event.type === "LEAVE" && "bg-amber-600"
-                                )} />
-                                <span className="opacity-80 font-black uppercase tracking-widest text-[8px]">{event.type}</span>
-                                <span className="text-white">{event.title}</span>
-                              </div>
-                            ))}
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </div>
+                  <div className="flex-1 min-w-0 flex flex-col gap-0.5 overflow-y-auto scrollbar-hide">
+                    {events.map((event, eIdx) => (
+                      <div
+                        key={eIdx}
+                        className="flex items-center gap-1.5 px-1 py-0.5 group/event cursor-default"
+                        title={event.title}
+                      >
+                        <div className={cn(
+                          "size-1.5 rounded-full shrink-0",
+                          event.type === "HOLIDAY" && "bg-rose-500",
+                          event.type === "ANNOUNCEMENT" && "bg-blue-500",
+                          event.type === "BIRTHDAY" && "bg-amber-500"
+                        )} />
+                        <span className="text-[9px] font-medium text-foreground/80 truncate group-hover/event:text-foreground transition-colors hidden md:block">
+                          {event.title}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -256,7 +204,7 @@ export function FullCalendar({ initialHolidays, initialLeaves, initialAnnounceme
           </div>
           <div className="flex items-center gap-2">
             <div className="size-2 rounded-full bg-amber-500" />
-            <span className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest">Staff Leave</span>
+            <span className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest">Employee Birthday</span>
           </div>
         </div>
       </div>

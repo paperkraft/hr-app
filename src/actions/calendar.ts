@@ -37,35 +37,31 @@ export async function getCalendarEvents(month?: number, year?: number) {
       },
     });
 
-    // Build the visibility filter for leaves
-    let leaveWhereClause: any = {
-      status: { in: ["APPROVED", "PENDING"] },
-      startDate: { lte: end },
-      endDate: { gte: start },
-    };
-
-    // Apply role-based filtering
-    if (currentUserRole !== "ADMIN" && currentUserRole !== "SYSTEM_ADMIN" && currentUserRole !== "ACCOUNTANT") {
-      leaveWhereClause.OR = [
-        { userId: currentUserId }, // Always see self
-        { user: { managerId: currentUserId } }, // See direct reports
-        { user: { department: { teamLeaderId: currentUserId } } } // See department members if Team Leader
-      ];
-    }
-
-    console.log(`[Calendar] Query:`, JSON.stringify(leaveWhereClause, null, 2));
-
-    // Fetch Leaves based on permissions
-    const leaves = await prisma.leaveRequest.findMany({
-      where: leaveWhereClause,
-      include: {
-        user: {
-          select: { name: true, role: true }
-        }
+    // Fetch Birthdays
+    const employees = await prisma.user.findMany({
+      where: {
+        dateOfBirth: { not: null }
+      },
+      select: {
+        id: true,
+        name: true,
+        dateOfBirth: true
       }
     });
 
-    console.log(`[Calendar] Found ${leaves.length} leaves`);
+    const birthdays = employees.map(emp => {
+      const dob = new Date(emp.dateOfBirth!);
+      // Adjust year to the target year so it appears on the calendar
+      const eventDate = new Date(targetYear, dob.getMonth(), dob.getDate());
+      return {
+        id: `bday-${emp.id}`,
+        title: `${emp.name}'s Birthday`,
+        date: eventDate,
+        type: "BIRTHDAY"
+      };
+    });
+
+    console.log(`[Calendar] Found ${birthdays.length} birthdays`);
 
     // Fetch Announcements
     const announcements = await prisma.announcement.findMany({
@@ -87,15 +83,7 @@ export async function getCalendarEvents(month?: number, year?: number) {
           date: h.date,
           type: "HOLIDAY"
         })),
-        leaves: leaves.map(l => ({
-          id: l.id,
-          title: l.userId === currentUserId ? "Me on Leave" : `${l.user.name} on Leave`,
-          startDate: l.startDate,
-          endDate: l.endDate,
-          category: l.category,
-          status: l.status,
-          type: "LEAVE"
-        })),
+        birthdays,
         announcements: announcements.map(a => ({
           id: a.id,
           title: a.title,

@@ -21,6 +21,8 @@ model User {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   autoPunchOutCount Int            @default(0)
+  dateOfBirth       DateTime?      @db.Date
+  joiningDate       DateTime?      @db.Date
   attendances       Attendance[]
   ledDepartment     Department?    @relation("DepartmentLeader")
   leaveBalances     LeaveBalance[]

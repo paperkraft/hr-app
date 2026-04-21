@@ -47,6 +47,8 @@ export function AddUserDialog({
       departmentId: formData.get("departmentId") === "none" ? null : formData.get("departmentId"),
       locationId: formData.get("locationId") === "none" ? null : formData.get("locationId"),
       workMode: formData.get("workMode"),
+      dateOfBirth: formData.get("dateOfBirth") ? new Date(formData.get("dateOfBirth") as string) : null,
+      joiningDate: formData.get("joiningDate") ? new Date(formData.get("joiningDate") as string) : null,
     }
 
     const res = await createUser(data as any)
@@ -105,6 +107,14 @@ export function AddUserDialog({
                     <SelectItem value="ADMIN" className="text-xs">Admin</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className={labelClass}>Date of Birth</Label>
+                <Input type="date" name="dateOfBirth" className={inputClass} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className={labelClass}>Joining Date</Label>
+                <Input type="date" name="joiningDate" className={inputClass} />
               </div>
             </div>
           </div>

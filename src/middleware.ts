@@ -39,7 +39,11 @@ export default withAuth(
       return NextResponse.redirect(new URL("/dashboard/employee", req.url));
     }
 
-    if (path.startsWith("/dashboard/admin") && !isAdmin) {
+    if (path.startsWith("/dashboard/admin")) {
+      if (isAdmin) return NextResponse.next();
+      if (token?.role === "ACCOUNTANT" && path.startsWith("/dashboard/admin/users")) {
+        return NextResponse.next();
+      }
       return NextResponse.redirect(new URL("/dashboard/employee", req.url));
     }
   },

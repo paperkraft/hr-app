@@ -19,14 +19,18 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
 
   // Helper to get descriptive page title
   const getPageTitle = () => {
+    if (pathname.includes("/notifications")) return "Notification Center";
+    if (pathname.includes("/calendar")) return "Company Calendar";
     if (pathname.includes("/attendance")) return "My Attendance";
-    if (pathname.includes("/leaves")) return "Leave Management";
+    if (pathname.includes("/leaves")) return "My Leaves";
     if (pathname.includes("/admin/users")) return "Employee Directory";
-    if (pathname.includes("/settings")) return "System Configuration";
-    if (pathname.includes("/admin/departments")) return "Departments";
+    if (pathname.includes("/admin/settings")) return "Configuration";
+    if (pathname.includes("/admin/departments")) return "Department Management";
     if (pathname.includes("/admin")) return "Admin Overview";
+    if (pathname.includes("/location-logs")) return "Location Status";
+    if (pathname.includes("/accountant/settings")) return "Configuration";
     if (pathname.includes("/accountant")) return "Payroll & Processing";
-    if (pathname === "/dashboard/employee") return "My Space";
+    if (pathname === "/dashboard/employee") return "My Workspace";
     return "HR Workspace";
   };
 
@@ -78,8 +82,8 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
 
         {/* Page Title for Desktop */}
         <div className="hidden md:flex items-center gap-3 text-sm font-medium animate-fade-in-down">
-          <span className="text-muted-foreground hover:text-foreground transition-colors cursor-default capitalize text-xs font-semibold">
-            {userRole.toLowerCase()}
+          <span className="text-muted-foreground hover:text-foreground transition-colors cursor-default capitalize text-[10px] font-black uppercase tracking-widest bg-muted/60 px-2 py-0.5 rounded-sm border border-border/40">
+            {userRole.replace('_', ' ').toLowerCase()}
           </span>
           <ChevronRight className="w-4 h-4 text-muted-foreground/40" />
           <span className="text-foreground font-semibold">{getPageTitle()}</span>

@@ -122,7 +122,11 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
             Digital Time
           </div>
           <div className="text-5xl text-[#444] font-bold tabular-nums tracking-tighter">
-            {currentTime ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--"}
+            {currentTime ? (
+              <span className="flex items-baseline gap-1">
+                {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+              </span>
+            ) : "--:--"}
           </div>
         </div>
 

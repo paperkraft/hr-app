@@ -21,7 +21,7 @@ export default async function EmployeeDashboard() {
   const greeting = currentHour < 12 ? "Good morning" : currentHour < 18 ? "Good afternoon" : "Good evening";
 
   return (
-    <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-6">
+    <PageContainer maxWidth="full" className="py-8 animate-fade-in space-y-4">
 
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -43,7 +43,7 @@ export default async function EmployeeDashboard() {
       <DashboardTabs />
 
       {/* TOP PRIORITY ROW: Check In/Out + Leave Stat Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Check In/Out — Primary daily action, first and prominent */}
         <div className="lg:col-span-5">
           <AttendanceCard
@@ -77,9 +77,18 @@ export default async function EmployeeDashboard() {
       </div>
 
       {/* SECONDARY ROW: Balanced Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
 
-        {/* My Upcoming Leaves */}
+        {/* 1. Upcoming Events */}
+        <div className="flex flex-col">
+          <UpcomingMilestones
+            holidays={data.holidays}
+            nextBirthday={data.stats.nextBirthday}
+            nextAnniversary={data.stats.nextAnniversary}
+          />
+        </div>
+
+        {/* 2. My Upcoming Leaves */}
         <div className="flex flex-col">
           <UpcomingLeave requests={data.leaveRequests.map(r => ({
             id: r.id,
@@ -91,22 +100,17 @@ export default async function EmployeeDashboard() {
           }))} />
         </div>
 
-        {/* Team Activity */}
+        {/* 3. Broadcast & Feed Hub */}
         <div className="flex flex-col">
-          <TeamOnLeave members={data.teamOnLeave} />
-        </div>
-
-        {/* Broadcast & Feed Hub */}
-        <div className="flex flex-col space-y-5">
           <CommunicationHub
             announcements={data.announcements}
             notifications={data.notifications}
           />
-          <UpcomingMilestones
-            holidays={data.holidays}
-            nextBirthday={data.stats.nextBirthday}
-            nextAnniversary={data.stats.nextAnniversary}
-          />
+        </div>
+
+        {/* 4. Team Activity */}
+        <div className="flex flex-col">
+          <TeamOnLeave members={data.teamOnLeave} />
         </div>
 
       </div>

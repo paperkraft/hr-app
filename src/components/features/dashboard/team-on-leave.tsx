@@ -52,9 +52,6 @@ export function TeamOnLeave({ members }: TeamOnLeaveProps) {
 
               <div className="flex flex-col items-end">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] font-black text-primary uppercase tracking-widest text-right">
-                    {member.leaveType}
-                  </span>
                   {member.duration === "HALF" && member.halfDayType && (
                     <span className="text-[7px] font-black bg-amber-500/10 text-amber-600 px-1 rounded-[2px] border border-amber-500/10">
                       {member.halfDayType === "FIRST_HALF" ? "1H" : "2H"}

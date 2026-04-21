@@ -44,7 +44,7 @@ export function AnnouncementWidget({ announcements: initialAnnouncements, classN
   return (
     <div className={cn("bg-card border border-border rounded-sm overflow-hidden flex flex-col", className)}>
       {!hideHeader && (
-        <div className="px-5 py-3 border-b border-border/40 flex items-center justify-between">
+        <div className="px-4 py-3 border-b border-border/40 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Notice Board</h3>
             <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest text-xs">Broadcasts</p>

@@ -16,7 +16,7 @@ export function CommunicationHub({ announcements, notifications, className }: Co
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
 
   return (
-    <div className={cn("bg-card border border-border rounded-sm p-5", className)}>
+    <div className={cn("bg-card border border-border rounded-sm p-4", className)}>
       <Tabs defaultValue="notifications" className="w-full">
         <TabsList className="grid w-full grid-cols-2 bg-muted/30 p-1 h-10 rounded-sm border border-border/40 mb-4">
           <TabsTrigger

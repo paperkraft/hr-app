@@ -33,7 +33,7 @@ export function NotificationCenter({ notifications: initialNotifications, classN
     <div className={cn("bg-card border border-border rounded-sm flex flex-col h-full animate-fade-in overflow-hidden", className)}>
       {/* Widget Header */}
       {!hideHeader && (
-        <div className="p-6 pb-2 flex items-center justify-between">
+        <div className="p-4 pb-2 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Notifications</h3>
             <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest text-xs">Feed</p>
@@ -45,7 +45,7 @@ export function NotificationCenter({ notifications: initialNotifications, classN
         </div>
       )}
 
-      <div className={cn("flex-1 px-3 py-2 space-y-0.5 min-h-[140px]", hideHeader && "-mx-2")}>
+      <div className={cn("flex-1 px-2 py-2 space-y-0.5 min-h-[140px]", hideHeader && "-mx-2")}>
         {notifications.length === 0 ? (
           <div className="py-12 text-center flex flex-col items-center gap-2 opacity-20 px-8">
             <Bell className="size-5" />

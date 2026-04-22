@@ -104,12 +104,12 @@ export function NotificationList() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex bg-muted/40 p-1 rounded-sm border border-border/40">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <div className="flex bg-muted/40 p-1 rounded-sm border border-border/40 w-full sm:w-auto">
             <Button
               variant={filter === "all" ? "secondary" : "ghost"}
               size="sm"
-              className={cn("h-7 text-[10px] uppercase font-black tracking-widest rounded-sm", filter === "all" && "shadow-sm")}
+              className={cn("h-7 flex-1 sm:flex-none text-[10px] uppercase font-black tracking-widest rounded-sm", filter === "all" && "shadow-sm")}
               onClick={() => setFilter("all")}
             >
               All
@@ -117,33 +117,35 @@ export function NotificationList() {
             <Button
               variant={filter === "unread" ? "secondary" : "ghost"}
               size="sm"
-              className={cn("h-7 text-[10px] uppercase font-black tracking-widest rounded-sm", filter === "unread" && "shadow-sm")}
+              className={cn("h-7 flex-1 sm:flex-none text-[10px] uppercase font-black tracking-widest rounded-sm", filter === "unread" && "shadow-sm")}
               onClick={() => setFilter("unread")}
             >
               Unread {unreadCount > 0 && `(${unreadCount})`}
             </Button>
           </div>
-          <div className="w-px h-6 bg-border/40 mx-1" />
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 text-[10px] uppercase font-black tracking-widest gap-2 bg-primary/2 hover:bg-primary/5 hover:text-primary transition-colors border-primary/10"
-            onClick={handleMarkAllRead}
-            disabled={unreadCount === 0}
-          >
-            <CheckCheck className="h-3.5 w-3.5" />
-            Mark all read
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            className="h-9 text-[10px] uppercase font-black tracking-widest gap-2 opacity-80 hover:opacity-100 transition-all"
-            onClick={handleClearAll}
-            disabled={notifications.length === 0}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            Clear All
-          </Button>
+          <div className="hidden sm:block w-px h-6 bg-border/40 mx-1" />
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 flex-1 sm:flex-none text-[10px] uppercase font-black tracking-widest gap-2 bg-primary/2 hover:bg-primary/5 hover:text-primary transition-colors border-primary/10 px-4"
+              onClick={handleMarkAllRead}
+              disabled={unreadCount === 0}
+            >
+              <CheckCheck className="h-3.5 w-3.5" />
+              <span className="sm:inline">Mark all read</span>
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="h-9 flex-1 sm:flex-none text-[10px] uppercase font-black tracking-widest gap-2 opacity-80 hover:opacity-100 transition-all px-4"
+              onClick={handleClearAll}
+              disabled={notifications.length === 0}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span className="sm:inline">Clear All</span>
+            </Button>
+          </div>
         </div>
       </div>
 

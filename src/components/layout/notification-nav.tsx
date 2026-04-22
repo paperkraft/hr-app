@@ -39,6 +39,7 @@ export function NotificationNav() {
             sendNotification(n.title, {
               body: n.content,
               tag: n.id,
+              data: { link: n.link },
               onClick: () => {
                 if (n.link) router.push(n.link);
               },
@@ -71,6 +72,7 @@ export function NotificationNav() {
           sendNotification("Attendance Reminder", {
             body: `Your shift starts at ${startTime}. Don't forget to check in!`,
             tag: checkInKey,
+            data: { link: "/dashboard/employee" },
             onClick: () => router.push("/dashboard/employee"),
           });
           remindersSentToday.current.add(checkInKey);
@@ -83,6 +85,7 @@ export function NotificationNav() {
           sendNotification("Attendance Reminder", {
             body: `Your shift ends at ${endTime}. Don't forget to check out!`,
             tag: checkOutKey,
+            data: { link: "/dashboard/employee" },
             onClick: () => router.push("/dashboard/employee"),
           });
           remindersSentToday.current.add(checkOutKey);

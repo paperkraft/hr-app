@@ -44,7 +44,9 @@ export async function createUser(data: any) {
     const currentYear = new Date().getFullYear();
     await ensureBalance(user.id, currentMonth, currentYear);
 
+
     revalidatePath("/dashboard/admin/users")
+    revalidatePath("/dashboard/accountant/users")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to create user: " + error.message }
@@ -79,7 +81,9 @@ export async function updateUser(id: string, data: any) {
       where: { id },
       data: updateData
     })
+
     revalidatePath("/dashboard/admin/users")
+    revalidatePath("/dashboard/accountant/users")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to update user: " + error.message }
@@ -98,7 +102,9 @@ export async function deleteUser(id: string) {
     await prisma.user.delete({
       where: { id }
     })
+
     revalidatePath("/dashboard/admin/users")
+    revalidatePath("/dashboard/accountant/users")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete user: " + error.message }

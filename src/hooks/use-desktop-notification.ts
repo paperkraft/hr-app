@@ -31,17 +31,33 @@ export function useDesktopNotification() {
   }, []);
 
   const sendNotification = useCallback(
-    (title: string, options?: NotificationOptions & { onClick?: () => void }) => {
+    async (title: string, options?: NotificationOptions & { onClick?: () => void }) => {
       if (
-        typeof window !== "undefined" &&
-        "Notification" in window &&
-        Notification.permission === "granted"
+        typeof window === "undefined" ||
+        !("Notification" in window) ||
+        Notification.permission !== "granted"
       ) {
-        const notification = new Notification(title, {
-          icon: "/favicon.ico",
-          ...options,
-        });
+        return;
+      }
 
+      const defaultOptions = {
+        icon: "/favicon.ico",
+        badge: "/favicon.ico",
+        ...options,
+      };
+
+      try {
+        // Try Service Worker first (preferred for PWAs and Chrome)
+        if ("serviceWorker" in navigator) {
+          const registration = await navigator.serviceWorker.ready;
+          if (registration && "showNotification" in registration) {
+            await registration.showNotification(title, defaultOptions);
+            return;
+          }
+        }
+
+        // Fallback to traditional Notification API
+        const notification = new Notification(title, defaultOptions);
         if (options?.onClick) {
           notification.onclick = (e) => {
             e.preventDefault();
@@ -50,8 +66,17 @@ export function useDesktopNotification() {
             notification.close();
           };
         }
-
         return notification;
+      } catch (error) {
+        console.error("Failed to send notification:", error);
+        
+        // Final fallback: try traditional Notification if SW failed
+        try {
+          const notification = new Notification(title, defaultOptions);
+          return notification;
+        } catch (innerError) {
+          console.error("All notification methods failed:", innerError);
+        }
       }
     },
     []

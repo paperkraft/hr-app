@@ -78,10 +78,10 @@ export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnounc
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className={cn("flex flex-col lg:flex-row bg-card border border-border rounded-sm overflow-hidden h-[calc(100vh-280px)] min-h-[600px] animate-in fade-in duration-500", className)}>
+      <div className={cn("flex flex-col lg:flex-row bg-card border border-border rounded-sm overflow-hidden h-[calc(100vh-280px)] lg:h-[calc(100vh-280px)] min-h-[600px] lg:min-h-[600px] animate-in fade-in duration-500", className)}>
 
         {/* SIDEBAR: Event List */}
-        <div className="w-full lg:w-72 border-b lg:border-b-0 lg:border-r border-border flex flex-col shrink-0 bg-muted/5">
+        <div className="w-full lg:w-72 border-t lg:border-t-0 lg:border-r border-border flex flex-col shrink-0 bg-muted/5 order-2 lg:order-1">
           <div className="p-4 border-b border-border bg-background/50 flex items-center justify-between">
             <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
               <CalendarIcon className="size-3" />
@@ -94,8 +94,8 @@ export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnounc
 
           <div className="flex-1 overflow-y-auto scrollbar-hide">
             <div className="p-3 space-y-4">
-              {/* Selected Day View */}
-              <div className="space-y-2">
+              {/* Selected Day View - Hidden on mobile */}
+              <div className="hidden lg:block space-y-2">
                 <div className="flex items-center justify-between px-1">
                   <span className="text-[10px] font-black uppercase tracking-tighter text-foreground/70">
                     {format(selectedDate, "EEE, MMM d")}
@@ -204,7 +204,7 @@ export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnounc
         </div>
 
         {/* MAIN CALENDAR GRID */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 order-1 lg:order-2">
           {/* Header */}
           <div className="p-3 border-b border-border flex items-center justify-between bg-background/80 backdrop-blur-md sticky top-0 z-10">
             <div className="flex items-center gap-4">
@@ -320,7 +320,7 @@ export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnounc
                             event.type === "BIRTHDAY" && "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.4)]",
                             event.type === "ANNOUNCEMENT" && "bg-indigo-500 shadow-[0_0_4px_rgba(99,102,241,0.4)]"
                           )} title={event.type} />
-                          <span className="text-[9px] font-medium text-foreground/70 truncate hidden xl:block uppercase tracking-tight">
+                          <span className="text-[9px] font-medium text-foreground/70 truncate hidden md:block uppercase tracking-tight">
                             {event.title}
                           </span>
                         </div>

@@ -21,17 +21,18 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "SigmaHRMS",
   },
   icons: {
-    apple: "/icon-512.png",
+    apple: "/app-logo.svg",
   }
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0f172a",
+  themeColor: "#ffffff",
 };
+
 
 export default function RootLayout({
   children,

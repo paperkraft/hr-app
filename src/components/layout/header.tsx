@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, Activity, ChevronRight } from "lucide-react";
+import { Menu, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/layout/user-nav";
 import { NotificationNav } from "@/components/layout/notification-nav";
@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { roleNavigation } from "@/config/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 export function Header({ userName, userRole, isTeamLeader }: { userName: string; userRole: string; isTeamLeader?: boolean }) {
   const pathname = usePathname();
@@ -52,9 +53,15 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
           <SheetContent side="left" className="w-64 p-0 flex flex-col">
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
             <div className="h-14 flex items-center px-5 border-b border-border">
-              <Activity className="w-5 h-5 text-primary mr-2" />
-              <span className="font-bold text-base tracking-tight">Sigma HRMS</span>
+              <Image 
+                src="/logo.svg" 
+                alt="Sigma HRMS" 
+                width={120} 
+                height={40} 
+                className="h-7 w-auto"
+              />
             </div>
+
             <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4 px-2">
                 Main Menu

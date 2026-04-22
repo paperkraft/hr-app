@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export function PWAInstallPrompt() {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
@@ -68,16 +69,23 @@ export function PWAInstallPrompt() {
 
         <div className="relative flex items-center justify-between gap-4 p-4 bg-card/90 backdrop-blur-xl border border-primary/20 rounded-2xl shadow-2xl">
           <div className="flex items-center gap-4">
-            <div className="shrink-0 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
-              <Download className="w-6 h-6 text-primary" />
+            <div className="shrink-0 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 overflow-hidden p-2">
+              <Image 
+                src="/logo.svg" 
+                alt="Logo" 
+                width={32} 
+                height={32} 
+                className="w-full h-auto object-contain"
+              />
             </div>
             <div className="flex flex-col">
-              <h3 className="text-sm font-semibold text-foreground">Install Sigma HRMS</h3>
+              <h3 className="text-sm font-semibold text-foreground">Install App</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Add to your home screen for a better experience.
+                Add Sigma HRMS to your home screen.
               </p>
             </div>
           </div>
+
 
           <div className="flex items-center gap-2">
             <Button

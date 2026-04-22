@@ -1,8 +1,9 @@
-import { Activity, ShieldCheck, Users } from "lucide-react";
+import { ShieldCheck, Users } from "lucide-react";
 import { LoginForm } from "@/components/features/auth/login-form";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import Image from "next/image";
 
 export default async function LoginPage() {
   const session = await getServerSession(authOptions);
@@ -17,8 +18,14 @@ export default async function LoginPage() {
       {/* Left Column: Branding (Hidden on small mobile screens) */}
       <div className="hidden md:flex flex-col justify-between w-1/2 bg-primary/5 p-10 lg:p-16 border-r border-border/50">
         <div className="flex items-center gap-2 text-primary">
-          <Activity className="w-8 h-8" />
-          <span className="font-bold text-2xl tracking-tight">Sigma HRMS</span>
+          <Image 
+            src="/logo.svg" 
+            alt="Sigma HRMS" 
+            width={180} 
+            height={60} 
+            className="h-10 w-auto"
+            priority
+          />
         </div>
 
         <div className="max-w-md space-y-6">
@@ -49,8 +56,13 @@ export default async function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-8 sm:p-12 lg:p-16">
         {/* Mobile Logo (Visible only on small screens) */}
         <div className="absolute top-8 left-8 md:hidden flex items-center gap-2 text-primary">
-          <Activity className="w-6 h-6" />
-          <span className="font-bold text-xl tracking-tight">Sigma HRMS</span>
+          <Image 
+            src="/logo.svg" 
+            alt="Sigma HRMS" 
+            width={120} 
+            height={40} 
+            className="h-8 w-auto"
+          />
         </div>
 
         <LoginForm />
@@ -58,4 +70,4 @@ export default async function LoginPage() {
 
     </div>
   );
-}
+}

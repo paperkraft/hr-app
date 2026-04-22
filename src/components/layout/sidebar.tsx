@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { roleNavigation } from "@/config/navigation";
-import { Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 export function Sidebar({ userRole }: { userRole: string }) {
   const pathname = usePathname();
@@ -17,12 +17,14 @@ export function Sidebar({ userRole }: { userRole: string }) {
       {/* Branding Section */}
       <div className="h-14 flex items-center px-6 border-b border-sidebar-border">
         <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="flex items-center justify-center w-8 h-8 rounded-sm bg-primary group-hover:scale-105 transition-transform duration-300">
-            <Activity className="w-4.5 h-4.5 text-primary-foreground" />
-          </div>
-          <span className="font-bold text-lg tracking-tight text-foreground group-hover:text-primary transition-colors">
-            Sigma <span className="text-primary/70">HRMS</span>
-          </span>
+          <Image 
+            src="/logo.svg" 
+            alt="Sigma HRMS" 
+            width={160} 
+            height={50} 
+            className="h-9 w-auto"
+            priority
+          />
         </Link>
       </div>
 

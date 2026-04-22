@@ -25,40 +25,39 @@ export function PWAPreloader() {
   return (
     <div
       className={cn(
-        "fixed inset-0 z-9999 flex flex-col items-center justify-center bg-[#0f172a] transition-opacity duration-500 ease-in-out",
+        "fixed inset-0 z-9999 flex flex-col items-center justify-center bg-white transition-opacity duration-500 ease-in-out",
         isVisible ? "opacity-100" : "opacity-0 pointer-events-none"
       )}
     >
       <div className="relative flex flex-col items-center animate-scale-in">
-        <div className="relative size-32 mb-8 group">
-          <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse-soft" />
+        <div className="relative w-56 h-32 mb-8 group">
+          <div className="absolute inset-0 bg-primary/5 rounded-full blur-3xl animate-pulse-soft" />
           <Image
-            src="/icon-512.png"
+            src="/app-logo.svg"
             alt="Sigma Logo"
-            width={512}
-            height={512}
-            className="size-full object-contain relative z-10"
+            width={400}
+            height={400}
+            className="w-full h-full object-contain relative z-10"
             priority
           />
         </div>
 
         <div className="flex flex-col items-center gap-2">
-          <h1 className="text-2xl font-black text-white tracking-[0.2em] uppercase">
-            Sigma
-          </h1>
           <div className="flex items-center gap-1.5">
-            <div className="size-1 rounded-full bg-emerald-500 animate-bounce [animation-delay:-0.3s]" />
-            <div className="size-1 rounded-full bg-emerald-500 animate-bounce [animation-delay:-0.15s]" />
-            <div className="size-1 rounded-full bg-emerald-500 animate-bounce" />
+            <div className="size-1 rounded-full bg-primary/40 animate-bounce [animation-delay:-0.3s]" />
+            <div className="size-1 rounded-full bg-primary/40 animate-bounce [animation-delay:-0.15s]" />
+            <div className="size-1 rounded-full bg-primary/40 animate-bounce" />
           </div>
         </div>
+
       </div>
 
       <div className="absolute bottom-12 left-0 right-0 flex justify-center">
-        <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">
+        <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
           initializing workspace
         </p>
       </div>
     </div>
+
   );
 }

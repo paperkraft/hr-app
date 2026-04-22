@@ -6,6 +6,8 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { cn } from "@/lib/utils";
 
+import { PWAInstallPrompt } from "@/components/layout/pwa-install-prompt";
+
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
@@ -43,6 +45,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground overflow-x-hidden">
         {children}
+        <PWAInstallPrompt />
         <Toaster position="top-center" richColors />
         <script
           dangerouslySetInnerHTML={{

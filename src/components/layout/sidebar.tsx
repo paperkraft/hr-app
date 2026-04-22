@@ -53,7 +53,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
       <SidebarContent className="custom-scrollbar pt-2">
         {navGroups.map((group) => (
           <SidebarGroup key={group.title}>
-            <SidebarGroupLabel className="px-3 text-[10px] font-black uppercase tracking-widest text-sidebar-foreground/40 group-data-[collapsible=icon]:hidden">
+            <SidebarGroupLabel className="px-3 text-[10px] font-black uppercase tracking-widest text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden">
               {group.title}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -70,13 +70,13 @@ export function Sidebar({ userRole }: { userRole: string }) {
                           "transition-all duration-200 group-data-[collapsible=icon]:justify-center",
                           isActive
                             ? "bg-primary/5 text-primary font-bold"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-foreground"
+                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-primary"
                         )}
                       >
                         <Link href={item.href} className="flex items-center w-full group-data-[collapsible=icon]:justify-center">
                           <item.icon className={cn(
                             "size-4 shrink-0 transition-all duration-200",
-                            isActive ? "text-primary" : "text-sidebar-foreground/40 group-hover/menu-button:text-primary/50"
+                            isActive ? "text-primary" : "text-sidebar-foreground group-hover/menu-button:text-primary"
                           )} />
                           <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                           {isActive && (

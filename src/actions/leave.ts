@@ -621,8 +621,8 @@ async function processLeaveRequestStatus(requestId: string, status: "APPROVED" |
     await createNotification({
       userId: requestMeta.userId,
       title: isApproved ? "Leave Request Approved" : "Leave Request Rejected",
-      content: isApproved 
-        ? `Your leave request ${dateRange} has been approved.` 
+      content: isApproved
+        ? `Your leave request ${dateRange} has been approved.`
         : `Your leave request ${dateRange} was rejected. Note: ${note || "No reason provided."}`,
       type: isApproved ? "SUCCESS" : "ERROR",
       link: "/dashboard/employee/leaves"
@@ -722,7 +722,7 @@ export async function cancelApprovedLeave(requestId: string, note?: string) {
         where: { id: requestId },
         data: {
           status: "REJECTED",
-          managerNote: `CANCELLED: ${note || "Cancelled by administrator."}`
+          managerNote: `CANCELLED by ${session.user.name || "Administration"}: ${note || "No reason provided."}`
         }
       });
 
@@ -811,7 +811,7 @@ export async function cancelApprovedLeave(requestId: string, note?: string) {
       await createNotification({
         userId: request.userId,
         title: "Leave Cancelled",
-        content: `Your approved leave ${dateRange} has been cancelled by an administrator. Note: ${note || "No reason provided."}`,
+        content: `Your approved leave ${dateRange} has been cancelled by ${session.user.name || "Administration"}. Note: ${note || "No reason provided."}`,
         type: "WARNING",
         link: "/dashboard/employee/leaves"
       });

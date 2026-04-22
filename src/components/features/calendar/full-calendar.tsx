@@ -82,7 +82,7 @@ export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnounc
 
         {/* SIDEBAR: Event List */}
         <div className="w-full lg:w-72 border-t lg:border-t-0 lg:border-r border-border flex flex-col shrink-0 bg-muted/5 order-2 lg:order-1">
-          <div className="p-4 border-b border-border bg-background/50 flex items-center justify-between">
+          <div className="p-4 py-4.5 h-14 border-b border-border bg-background/50 flex items-center justify-between">
             <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
               <CalendarIcon className="size-3" />
               Schedule
@@ -206,7 +206,7 @@ export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnounc
         {/* MAIN CALENDAR GRID */}
         <div className="flex-1 flex flex-col min-w-0 order-1 lg:order-2">
           {/* Header */}
-          <div className="p-3 border-b border-border flex items-center justify-between bg-background/80 backdrop-blur-md sticky top-0 z-10">
+          <div className="h-14 px-5 border-b border-border flex items-center justify-between bg-background/80 backdrop-blur-md sticky top-0 z-10">
             <div className="flex items-center gap-4">
               <div className="flex flex-col">
                 <h2 className="text-sm font-black text-foreground tracking-tight leading-none">

@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import { cn } from "@/lib/utils";
 
 import { PWAInstallPrompt } from "@/components/layout/pwa-install-prompt";
+import { PWAPreloader } from "@/components/layout/pwa-preloader";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -20,9 +21,12 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "SigmaHRMS",
   },
+  icons: {
+    apple: "/icon-512.png",
+  }
 };
 
 export const viewport: Viewport = {
@@ -44,6 +48,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground overflow-x-hidden">
+        <PWAPreloader />
         {children}
         <PWAInstallPrompt />
         <Toaster position="top-center" richColors />

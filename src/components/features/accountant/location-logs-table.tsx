@@ -6,6 +6,8 @@ import { Input } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { revertPunchOutAction } from "@/actions/attendance";
+import { toast } from "sonner";
 
 interface AttendanceLog {
   id: string;
@@ -13,8 +15,10 @@ interface AttendanceLog {
   date: Date;
   punchIn: Date;
   punchOut: Date | null;
-  lat: number | null;
-  lng: number | null;
+  punchInLat: number | null;
+  punchInLng: number | null;
+  punchOutLat: number | null;
+  punchOutLng: number | null;
   isOutsideOffice: boolean;
   ipAddress: string | null;
 }
@@ -72,14 +76,15 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
               <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Date</th>
               <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Entry / Exit</th>
               <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Status</th>
-              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">GPS Coordinates</th>
-              <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Map</th>
+              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">IN Coordinates</th>
+              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">OUT Coordinates</th>
+              <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Map Views</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/20">
             {filteredData.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-16 text-center">
+                <td colSpan={8} className="py-16 text-center">
                   <div className="flex flex-col items-center gap-2 opacity-20">
                     <MapPin className="size-7" />
                     <p className="text-[10px] font-black uppercase tracking-widest">No records found</p>
@@ -145,29 +150,73 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
                     )}
                   </td>
 
-                  {/* GPS — plain text */}
+                  {/* GPS — IN / OUT */}
                   <td className="py-3 px-4">
-                    {log.lat && log.lng ? (
+                    {log.punchInLat && log.punchInLng ? (
                       <span className="text-[10px] font-mono font-bold text-foreground/60 tabular-nums">
-                        {log.lat.toFixed(5)}, {log.lng.toFixed(5)}
+                        {log.punchInLat.toFixed(5)}, {log.punchInLng.toFixed(5)}
                       </span>
                     ) : (
                       <span className="text-[9px] text-muted-foreground/30 font-bold uppercase tracking-tighter">—</span>
                     )}
                   </td>
 
-                  {/* Map link */}
-                  <td className="py-3 px-5 text-right">
-                    {log.lat && log.lng && (
-                      <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${log.lat},${log.lng}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[10px] font-bold text-primary/50 hover:text-primary transition-colors uppercase tracking-widest"
-                      >
-                        <ExternalLink className="size-3" /> View
-                      </a>
+                  <td className="py-3 px-4">
+                    {log.punchOutLat && log.punchOutLng ? (
+                      <span className="text-[10px] font-mono font-bold text-foreground/60 tabular-nums">
+                        {log.punchOutLat.toFixed(5)}, {log.punchOutLng.toFixed(5)}
+                      </span>
+                    ) : (
+                      <span className="text-[9px] text-muted-foreground/30 font-bold uppercase tracking-tighter">—</span>
                     )}
+                  </td>
+
+                  {/* Map links & Revert Action */}
+                  <td className="py-3 px-5 text-right">
+                    <div className="flex flex-col items-end gap-2">
+                       <div className="flex items-center gap-2">
+                        {log.punchInLat && log.punchInLng && (
+                          <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${log.punchInLat},${log.punchInLng}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600/70 hover:text-emerald-600 transition-colors uppercase tracking-widest"
+                          >
+                            <ExternalLink className="size-2.5" /> IN
+                          </a>
+                        )}
+                        {log.punchOutLat && log.punchOutLng && (
+                          <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${log.punchOutLat},${log.punchOutLng}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-0.5 text-[9px] font-bold text-primary/50 hover:text-primary transition-colors uppercase tracking-widest"
+                          >
+                            <ExternalLink className="size-2.5" /> OUT
+                          </a>
+                        )}
+                       </div>
+                      {log.punchOut && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            if (confirm(`Are you sure you want to revert check-out for ${log.userName}? This will restore their session to active status.`)) {
+                              const res = await revertPunchOutAction(log.id);
+                              if (res.success) {
+                                toast.success("Check-out reverted successfully");
+                              } else {
+                                toast.error(res.error || "Failed to revert");
+                              }
+                            }
+                          }}
+                          className="h-7 px-2 text-[9px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-600 hover:bg-rose-500/5 border border-transparent hover:border-rose-500/20 rounded-sm transition-all"
+                        >
+                          <Clock className="size-3 mr-1" />
+                          Undo Checkout
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))

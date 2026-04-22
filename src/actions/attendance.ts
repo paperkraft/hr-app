@@ -81,8 +81,8 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
           date: start, 
           punchIn: punchInTime,
           isLate,
-          lat: coords?.lat,
-          lng: coords?.lng,
+          punchInLat: coords?.lat,
+          punchInLng: coords?.lng,
           ipAddress,
           isOutsideOffice
         }
@@ -111,9 +111,9 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
         data: {
           punchOut: punchOutTime,
           isLateSpecialCase: isSpecialCase,
-          lat: coords?.lat ?? existingLog.lat,
-          lng: coords?.lng ?? existingLog.lng,
-          ipAddress: ipAddress ?? existingLog.ipAddress,
+          punchOutLat: coords?.lat,
+          punchOutLng: coords?.lng,
+          ipAddress: ipAddress ?? (existingLog as any).ipAddress,
           isOutsideOffice: isOutsideOffice || existingLog.isOutsideOffice 
         }
       })
@@ -124,5 +124,46 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
   } catch (error: any) {
     console.error("Punch Error:", error);
     return { success: false, error: "Failed to process punch: " + error.message }
+  }
+}
+
+export async function revertPunchOutAction(attendanceId: string) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" }
+
+    // Role check: Only Accountant, Admin, or System Admin can revert
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    if (!currentUser || !["ACCOUNTANT", "ADMIN", "SYSTEM_ADMIN"].includes(currentUser.role)) {
+      return { success: false, error: "Insufficient permissions to revert check-out" };
+    }
+
+    const log = await prisma.attendance.findUnique({
+      where: { id: attendanceId }
+    });
+
+    if (!log) return { success: false, error: "Attendance log not found" };
+    if (!log.punchOut) return { success: false, error: "User is already punched in" };
+
+    await prisma.attendance.update({
+      where: { id: attendanceId },
+      data: {
+        punchOut: null,
+        punchOutLat: null,
+        punchOutLng: null,
+        isLateSpecialCase: false, // Reset special case if checkout is reverted
+        isAutoPunchOut: false     // Also reset auto-checkout flag if present
+      }
+    });
+
+    revalidatePath("/dashboard", "layout");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Revert Error:", error);
+    return { success: false, error: "Failed to revert check-out: " + error.message };
   }
 }

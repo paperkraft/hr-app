@@ -87,8 +87,10 @@ model Attendance {
   punchOut          DateTime?
   isLate            Boolean   @default(false)
   isLateSpecialCase Boolean   @default(false)
-  lat               Float?
-  lng               Float?
+  punchInLat        Float?
+  punchInLng        Float?
+  punchOutLat       Float?
+  punchOutLng       Float?
   ipAddress         String?
   isOutsideOffice   Boolean   @default(false)
   isAutoPunchOut    Boolean   @default(false)

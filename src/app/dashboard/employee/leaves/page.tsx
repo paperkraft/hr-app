@@ -2,11 +2,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { RequestLeaveButton } from "@/components/features/leave/request-leave-button";
+import { LeaveHistoryTable } from "@/components/features/leave/leave-history-table";
 import {
   PageContainer,
   StatCard,
 } from "@/components/ui";
-import { CalendarRange, History, Clock4, AlertCircle, Calendar, MessageSquare } from "lucide-react";
+import { CalendarRange, History, Clock4, AlertCircle } from "lucide-react";
 import { ensureBalance } from "@/actions/leave";
 import { cn } from "@/lib/utils";
 
@@ -125,123 +126,9 @@ export default async function EmployeeLeavesPage() {
           </div>
         </div>
 
-        {data.leaves.length === 0 ? (
-          <div className="py-20 text-center flex flex-col items-center gap-2 opacity-20">
-            <Calendar className="size-7" />
-            <p className="text-[10px] font-black uppercase tracking-widest">No history found</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto scrollbar-hide">
-            <table className="w-full border-collapse">
-              <thead className="bg-muted/5 border-b border-border/40">
-                <tr>
-                  <th className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 w-[200px]">Timeline</th>
-                  <th className="py-3 px-4 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Duration</th>
-                  <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Type</th>
-                  <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Reason</th>
-                  <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/20">
-                {data.leaves.map((leave) => {
-                  const start = new Date(leave.startDate);
-                  const end = new Date(leave.endDate);
-                  const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-
-                  return (
-                    <tr key={leave.id} className="hover:bg-muted/5 transition-colors group">
-                      {/* Timeline */}
-                      <td className="py-3 px-5">
-                        <div className="flex items-center gap-2.5">
-                          <div className="size-7 rounded-sm bg-primary/5 text-primary flex items-center justify-center border border-primary/10">
-                            <CalendarRange className="size-3.5" />
-                          </div>
-                          <div>
-                            <p className="text-[11px] font-bold text-foreground leading-none">
-                              {start.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            </p>
-                            {start.getTime() !== end.getTime() && (
-                              <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-tight mt-0.5">
-                                — {end.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Duration */}
-                      <td className="py-3 px-4 text-center">
-                        <div className="inline-flex flex-col items-center">
-                          <span className={cn(
-                            "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-sm border mb-0.5",
-                            leave.duration === "FULL" ? "bg-muted/20 text-muted-foreground/80 border-border/20" : 
-                            leave.duration === "HALF" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/10" : 
-                            "bg-primary/10 text-primary border-primary/10"
-                          )}>
-                            {leave.duration === "FULL" ? "Full day" : leave.duration === "HALF" ? "Half day" : "Short"}
-                          </span>
-                          {leave.duration === "HALF" && leave.halfDayType && (
-                            <span className={cn(
-                              "text-[8px] font-bold uppercase tracking-tight mb-1",
-                              leave.halfDayType === "FIRST_HALF" ? "text-emerald-500" : "text-amber-500"
-                            )}>
-                              {leave.halfDayType === "FIRST_HALF" ? "1st Half" : "2nd Half"}
-                            </span>
-                          )}
-                          <span className="text-[9px] font-bold text-muted-foreground/40 tabular-nums">
-                            {days} {days === 1 ? 'day' : 'days'}
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* Type */}
-                      <td className="py-3 px-4">
-                        <div className="flex flex-col">
-                          <span className="text-[11px] font-bold text-foreground/70 uppercase tracking-tight">
-                            {leave.leaveType === "CASUAL" ? "Casual Leave" : "Sick Leave"}
-                          </span>
-                          <span className="text-[9px] text-muted-foreground/60 font-bold uppercase tracking-widest mt-0.5">
-                            {leave.category === "MONTHLY_POLICY_1" ? "Monthly" : leave.category === "UNPAID" ? "Unpaid" : "Policy"}
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* Reason */}
-                      <td className="py-3 px-4 max-w-[200px]">
-                        <div className="flex items-start gap-1.5 group/reason">
-                          <MessageSquare className="size-3 text-muted-foreground/40 mt-0.5" />
-                          <p className="text-[10px] font-medium text-muted-foreground/80 leading-snug line-clamp-2 italic" title={leave.reason || ""}>
-                            {leave.reason || "No reason specified"}
-                          </p>
-                        </div>
-                      </td>
-
-                      {/* Status - Plain text with dot */}
-                      <td className="py-3 px-5 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <div className={cn(
-                            "size-1.5 rounded-full",
-                            leave.status === "APPROVED" && "bg-emerald-500",
-                            leave.status === "REJECTED" && "bg-rose-500",
-                            leave.status === "PENDING" && "bg-amber-500 animate-pulse"
-                          )} />
-                          <span className={cn(
-                            "text-[9px] font-black uppercase tracking-widest",
-                            leave.status === "APPROVED" && "text-emerald-600",
-                            leave.status === "REJECTED" && "text-rose-600",
-                            leave.status === "PENDING" && "text-amber-600"
-                          )}>
-                            {leave.status}
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <div className="p-0">
+          <LeaveHistoryTable leaves={data.leaves} />
+        </div>
       </div>
     </PageContainer>
   );

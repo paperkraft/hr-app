@@ -5,56 +5,94 @@ import { usePathname } from "next/navigation";
 import { roleNavigation } from "@/config/navigation";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import {
+  Sidebar as SidebarRoot,
+  SidebarContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+} from "@/components/ui/sidebar";
 
 export function Sidebar({ userRole }: { userRole: string }) {
   const pathname = usePathname();
 
-  const baseNav = roleNavigation[userRole] || roleNavigation.EMPLOYEE;
-  const navItems = [...baseNav];
+  const navGroups = roleNavigation[userRole] || roleNavigation.EMPLOYEE;
 
   return (
-    <aside className="w-[260px] border-r border-sidebar-border bg-sidebar flex-col hidden md:flex h-screen sticky top-0 z-10 transition-all duration-300">
-      {/* Branding Section */}
-      <div className="h-14 flex items-center px-6 border-b border-sidebar-border">
-        <Link href="/dashboard" className="flex items-center gap-3 group">
-          <Image 
-            src="/logo.svg" 
-            alt="Sigma HRMS" 
-            width={160} 
-            height={50} 
-            className="h-9 w-auto"
-            priority
-          />
+    <SidebarRoot collapsible="icon">
+      <SidebarHeader className="h-14 border-b border-sidebar-border p-0 flex items-center justify-center overflow-hidden">
+        <Link href="/dashboard" className="flex items-center group-data-[collapsible=icon]:justify-center w-full transition-all duration-200">
+          <div className="flex items-center min-w-0">
+            <Image
+              src="/logo.svg"
+              alt="Sigma HRMS"
+              width={160}
+              height={50}
+              className="h-9 w-auto shrink-0 group-data-[collapsible=icon]:hidden px-6"
+              priority
+            />
+            <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-8 h-8">
+              <Image
+                src="/app-logo.svg"
+                alt="S"
+                width={32}
+                height={32}
+                className="h-7 w-auto"
+                priority
+              />
+            </div>
+          </div>
         </Link>
-      </div>
+      </SidebarHeader>
 
-      {/* Main Navigation */}
-      <nav className="flex-1 overflow-y-auto pt-4 px-3 space-y-0.5 custom-scrollbar">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-sm text-[12px] font-bold transition-all duration-200 group",
-                isActive
-                  ? "bg-primary/5 text-primary border border-primary/10"
-                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-foreground"
-              )}
-            >
-              <item.icon className={cn(
-                "size-4 transition-all duration-200",
-                isActive ? "text-primary opacity-100" : "text-sidebar-foreground/40 group-hover:text-primary/50"
-              )} />
-              <span className="tracking-tight">{item.title}</span>
-              {isActive && (
-                <div className="ml-auto w-1 h-1 rounded-full bg-primary" />
-              )}
-            </Link>
-          );
-        })}
-      </nav>
-    </aside>
+      <SidebarContent className="custom-scrollbar pt-2">
+        {navGroups.map((group) => (
+          <SidebarGroup key={group.title}>
+            <SidebarGroupLabel className="px-3 text-[10px] font-black uppercase tracking-widest text-sidebar-foreground/40 group-data-[collapsible=icon]:hidden">
+              {group.title}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={item.title}
+                        className={cn(
+                          "transition-all duration-200 group-data-[collapsible=icon]:justify-center",
+                          isActive
+                            ? "bg-primary/5 text-primary font-bold"
+                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-foreground"
+                        )}
+                      >
+                        <Link href={item.href} className="flex items-center w-full group-data-[collapsible=icon]:justify-center">
+                          <item.icon className={cn(
+                            "size-4 shrink-0 transition-all duration-200",
+                            isActive ? "text-primary" : "text-sidebar-foreground/40 group-hover/menu-button:text-primary/50"
+                          )} />
+                          <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                          {isActive && (
+                            <div className="ml-auto w-1 h-1 rounded-full bg-primary group-data-[collapsible=icon]:hidden" />
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
+      </SidebarContent>
+      <SidebarRail />
+    </SidebarRoot>
   );
 }

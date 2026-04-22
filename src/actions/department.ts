@@ -45,6 +45,7 @@ export async function updateDepartmentLeader(departmentId: string, leaderId: str
       }
     })
     revalidatePath("/dashboard/admin/departments")
+    revalidatePath("/dashboard/accountant/department")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to update department leader: " + error.message }
@@ -58,6 +59,7 @@ export async function createDepartment(name: string) {
       data: { name }
     })
     revalidatePath("/dashboard/admin/departments")
+    revalidatePath("/dashboard/accountant/department")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to create department: " + error.message }
@@ -71,6 +73,7 @@ export async function deleteDepartment(id: string) {
       where: { id }
     })
     revalidatePath("/dashboard/admin/departments")
+    revalidatePath("/dashboard/accountant/department")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete department: " + error.message }

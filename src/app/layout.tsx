@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { PWAInstallPrompt } from "@/components/layout/pwa-install-prompt";
 import { PWAPreloader } from "@/components/layout/pwa-preloader";
@@ -50,7 +51,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground overflow-x-hidden">
         <PWAPreloader />
-        {children}
+        <TooltipProvider>
+          {children}
+        </TooltipProvider>
         <PWAInstallPrompt />
         <Toaster position="top-center" richColors />
         <script

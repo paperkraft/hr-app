@@ -6,6 +6,7 @@
     "dev": "next dev",
     "dev:https": "next dev --experimental-https ",
     "build": "next build",
+    "build:standalone": "npm run build && node scripts/prepare-standalone.js",
     "start": "next start",
     "seed": "tsx prisma/seed.ts"
   },

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Bell, CheckCircle2, Info, AlertTriangle, XCircle, Settings2 } from "lucide-react";
 import { useDesktopNotification } from "@/hooks/use-desktop-notification";
+import { useWebPushSubscription } from "@/hooks/use-web-push-subscription";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +24,9 @@ export function NotificationNav() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   const { permission, requestPermission, sendNotification } = useDesktopNotification();
+  const { subscribe, isSubscribing } = useWebPushSubscription();
   const shownNotificationIds = useRef<Set<string>>(new Set());
+
   const remindersSentToday = useRef<Set<string>>(new Set());
   const fetchNotifications = async () => {
     const result = await getNotifications(10);
@@ -100,10 +103,23 @@ export function NotificationNav() {
 
   useEffect(() => {
     fetchNotifications();
-    // Refresh every 15 seconds for a more "push" feel
-    const interval = setInterval(fetchNotifications, 15000);
+    
+    // Refresh every 60 seconds (optimized from 15s)
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchNotifications();
+      }
+    }, 60000);
+
     return () => clearInterval(interval);
   }, []);
+
+  // Auto-subscribe to push if permission is already granted
+  useEffect(() => {
+    if (permission === "granted") {
+      subscribe();
+    }
+  }, [permission, subscribe]);
 
   const handleMarkAsRead = async (id: string) => {
     await markAsRead(id);
@@ -185,12 +201,17 @@ export function NotificationNav() {
                 <Button 
                   size="sm" 
                   className="h-7 w-full text-[10px] uppercase font-black tracking-widest mt-2 bg-primary hover:bg-primary/90"
-                  onClick={(e) => {
+                  disabled={isSubscribing}
+                  onClick={async (e) => {
                     e.preventDefault();
-                    requestPermission();
+                    const result = await requestPermission();
+                    if (result === "granted") {
+                      await subscribe();
+                      fetchNotifications();
+                    }
                   }}
                 >
-                  Enable Now
+                  {isSubscribing ? "Setting up..." : "Enable Now"}
                 </Button>
               </div>
             </div>

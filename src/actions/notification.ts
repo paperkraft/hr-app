@@ -6,6 +6,15 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 import { getTodayRange } from "@/lib/attendance-helper";
+import webpush from "web-push";
+
+// Configure web-push
+webpush.setVapidDetails(
+  "mailto:admin@sigma-hr.com",
+  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "",
+  process.env.VAPID_PRIVATE_KEY || ""
+);
+
 
 export async function getNotifications(limit?: number) {
   const session = await getServerSession(authOptions);
@@ -77,6 +86,41 @@ export async function createNotification(data: {
       },
     });
     revalidatePath("/dashboard");
+
+    // 2. Send Web Push Notification
+    try {
+      const subscriptions = await prisma.pushSubscription.findMany({
+        where: { userId: targetUserId }
+      });
+
+      const payload = JSON.stringify({
+        title: data.title,
+        content: data.content,
+        link: data.link || "/dashboard"
+      });
+
+      subscriptions.forEach(sub => {
+        webpush.sendNotification(
+          {
+            endpoint: sub.endpoint,
+            keys: {
+              p256dh: sub.p256dh,
+              auth: sub.auth
+            }
+          },
+          payload
+        ).catch(err => {
+          console.error("Push Error (410 means expired):", err.statusCode);
+          if (err.statusCode === 410 || err.statusCode === 404) {
+            // Remove invalid subscription
+            prisma.pushSubscription.delete({ where: { id: sub.id } }).catch(() => {});
+          }
+        });
+      });
+    } catch (pushError) {
+      console.error("Failed to process web push:", pushError);
+    }
+
     return { success: true, data: notification };
   } catch (error) {
     console.error("Failed to create notification:", error);

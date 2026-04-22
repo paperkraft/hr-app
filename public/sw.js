@@ -11,6 +11,25 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(fetch(event.request));
 });
 
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+
+  try {
+    const data = event.data.json();
+    const options = {
+      body: data.content,
+      data: {
+        link: data.link || "/dashboard/notifications",
+      },
+      vibrate: [100, 50, 100],
+    };
+
+    event.waitUntil(self.registration.showNotification(data.title, options));
+  } catch (error) {
+    console.error("Error showing push notification:", error);
+  }
+});
+
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 

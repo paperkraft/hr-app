@@ -39,22 +39,29 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
 
     // 2. Geofencing Logic based on Work Mode
     let isOutsideOffice = false;
-    
-    if (user.workMode === "OFFICE") {
-      // For strictly on-site mode, check against their assigned location
+    const GEOFENCE_TOLERANCE = 5; // 5 meters buffer for GPS jitter
+
+    if (user.workMode === "OFFICE" || user.workMode === "HYBRID") {
+      // Check against their assigned location
       if (user.location && !user.location.isRemote && user.location.lat != null && user.location.lng != null) {
         if (coords) {
           const distance = getDistanceInMeters(coords.lat, coords.lng, user.location.lat, user.location.lng);
-          if (distance > user.location.radiusMeters) {
+          
+          // Enhanced logging for debugging
+          console.log(`[GEOFENCE] Verification - User: ${user.name}, Mode: ${user.workMode}, Dist: ${distance.toFixed(2)}m, Radius: ${user.location.radiusMeters}m (Threshold: ${user.location.radiusMeters + GEOFENCE_TOLERANCE}m)`);
+
+          if (distance > (user.location.radiusMeters + GEOFENCE_TOLERANCE)) {
             isOutsideOffice = true;
           }
         } else {
-          // If in OFFICE mode but no coords provided, mark as outside
-          isOutsideOffice = true;
+          // For strictly OFFICE workers, missing coordinates is an automatic outside-office flag
+          if (user.workMode === "OFFICE") {
+            isOutsideOffice = true;
+          }
         }
       }
-    } else if (user.workMode === "REMOTE" || user.workMode === "HYBRID") {
-      // Remote & Hybrid employees are never "outside office" in the penalty sense
+    } else if (user.workMode === "REMOTE") {
+      // Remote employees are never "outside office" in the penalty sense
       isOutsideOffice = false;
     }
 

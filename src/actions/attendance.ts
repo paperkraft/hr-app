@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache"
 import { getTodayRange } from "@/lib/attendance-helper"
 import { headers } from "next/headers"
 import { getDistanceInMeters } from "@/lib/geofencing"
+import { createNotification } from "./notification"
 
 export async function punchInOutAction(coords?: { lat: number; lng: number }) {
   try {
@@ -154,6 +155,14 @@ export async function revertPunchOutAction(attendanceId: string) {
     });
 
     if (!log) return { success: false, error: "Attendance log not found" };
+
+    // Date check: Only today's check-outs can be reverted
+    const { start, end } = getTodayRange();
+    const logDate = new Date(log.date);
+    if (logDate < start || logDate > end) {
+      return { success: false, error: "You can only revert check-outs for today's logs. Past records cannot be modified." };
+    }
+
     if (!log.punchOut) return { success: false, error: "User is already punched in" };
 
     await prisma.attendance.update({
@@ -166,6 +175,18 @@ export async function revertPunchOutAction(attendanceId: string) {
         isAutoPunchOut: false     // Also reset auto-checkout flag if present
       }
     });
+
+    // 4. Create Notification for the User
+    try {
+      await createNotification({
+        userId: log.userId,
+        title: "Check-out Reverted",
+        content: `Your check-out for today has been reverted by ${session.user.name || "Administration"}. Your session is now active again.`,
+        type: "WARNING"
+      });
+    } catch (notifError) {
+      console.error("Failed to notify user about revert:", notifError);
+    }
 
     revalidatePath("/dashboard", "layout");
     return { success: true };

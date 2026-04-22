@@ -6,7 +6,7 @@ import { Input } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { revertPunchOutAction } from "@/actions/attendance";
+import { RevertCheckoutButton } from "./revert-checkout-button";
 import { toast } from "sonner";
 
 interface AttendanceLog {
@@ -196,25 +196,8 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
                           </a>
                         )}
                        </div>
-                      {log.punchOut && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={async () => {
-                            if (confirm(`Are you sure you want to revert check-out for ${log.userName}? This will restore their session to active status.`)) {
-                              const res = await revertPunchOutAction(log.id);
-                              if (res.success) {
-                                toast.success("Check-out reverted successfully");
-                              } else {
-                                toast.error(res.error || "Failed to revert");
-                              }
-                            }
-                          }}
-                          className="h-7 px-2 text-[9px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-600 hover:bg-rose-500/5 border border-transparent hover:border-rose-500/20 rounded-sm transition-all"
-                        >
-                          <Clock className="size-3 mr-1" />
-                          Undo Checkout
-                        </Button>
+                      {log.punchOut && format(new Date(log.date), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") && (
+                        <RevertCheckoutButton logId={log.id} userName={log.userName} />
                       )}
                     </div>
                   </td>

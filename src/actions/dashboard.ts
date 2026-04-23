@@ -9,13 +9,9 @@ import { processAutoPunchOuts } from "@/lib/auto-punch-out"
 import { getUpcomingHolidays } from "./holiday"
 import { getAnnouncements } from "./announcement"
 import { getNotifications } from "./notification"
+import { getDaysDifference } from "@/lib/utils"
 
-// --- Helper for Duration ---
-function getDaysDifference(start: Date, end: Date) {
-  const startUtc = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
-  const endUtc = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
-  return Math.floor((endUtc - startUtc) / (1000 * 60 * 60 * 24)) + 1;
-}
+// --- Admin Dashboard Stats ---
 
 // --- Admin Dashboard Stats ---
 export async function getAdminDashboardStats() {

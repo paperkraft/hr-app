@@ -356,7 +356,7 @@ export async function submitLeaveRequest(formData: unknown) {
             }
           ]
         },
-        select: { id: true }
+        select: { id: true, role: true }
       });
 
       if (usersToNotify.length > 0) {
@@ -365,13 +365,22 @@ export async function submitLeaveRequest(formData: unknown) {
         const dateRange = startStr === endStr ? `on ${startStr}` : `from ${startStr} to ${endStr}`;
 
         await prisma.notification.createMany({
-          data: usersToNotify.map(u => ({
-            userId: u.id,
-            title: `Leave Application: ${applicantName}`,
-            content: `${applicantName} has applied for ${data.duration.toLowerCase()} leave ${dateRange}.`,
-            type: "INFO",
-            link: "/dashboard"
-          }))
+          data: usersToNotify.map(u => {
+            let link = "/dashboard";
+            if (u.role === "ACCOUNTANT") {
+              link = "/dashboard/accountant?tab=approvals";
+            } else if (u.role === "ADMIN" || u.role === "SYSTEM_ADMIN") {
+              link = "/dashboard/admin";
+            }
+
+            return {
+              userId: u.id,
+              title: `Leave Application: ${applicantName}`,
+              content: `${applicantName} has applied for ${data.duration.toLowerCase()} leave ${dateRange}.`,
+              type: "INFO",
+              link
+            };
+          })
         });
       }
     } catch (error) {

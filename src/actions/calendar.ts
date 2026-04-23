@@ -38,7 +38,7 @@ export async function getCalendarEvents(month?: number, year?: number) {
     });
 
     // Fetch Birthdays
-    const employees = await prisma.user.findMany({
+    const birthdayEmployees = await prisma.user.findMany({
       where: {
         dateOfBirth: { not: null }
       },
@@ -49,7 +49,7 @@ export async function getCalendarEvents(month?: number, year?: number) {
       }
     });
 
-    const birthdays = employees.map(emp => {
+    const birthdays = birthdayEmployees.map(emp => {
       const dob = new Date(emp.dateOfBirth!);
       // Adjust year to the target year so it appears on the calendar
       const eventDate = new Date(targetYear, dob.getMonth(), dob.getDate());
@@ -61,7 +61,38 @@ export async function getCalendarEvents(month?: number, year?: number) {
       };
     });
 
-    console.log(`[Calendar] Found ${birthdays.length} birthdays`);
+    // Fetch Anniversaries
+    const anniversaryEmployees = await prisma.user.findMany({
+      where: {
+        joiningDate: { not: null }
+      },
+      select: {
+        id: true,
+        name: true,
+        joiningDate: true
+      }
+    });
+
+    const anniversaries = anniversaryEmployees.map(emp => {
+      const joiningDate = new Date(emp.joiningDate!);
+      // Adjust year to the target year so it appears on the calendar
+      const eventDate = new Date(targetYear, joiningDate.getMonth(), joiningDate.getDate());
+      
+      // Calculate years of service
+      const years = targetYear - joiningDate.getFullYear();
+      
+      // Only show if they've completed at least 1 year
+      if (years <= 0) return null;
+
+      return {
+        id: `anniv-${emp.id}`,
+        title: `${emp.name}'s ${years}${getOrdinal(years)} Anniversary`,
+        date: eventDate,
+        type: "ANNIVERSARY"
+      };
+    }).filter((a): a is any => a !== null);
+
+    console.log(`[Calendar] Found ${birthdays.length} birthdays and ${anniversaries.length} anniversaries`);
 
     // Fetch Announcements
     const announcements = await prisma.announcement.findMany({
@@ -84,6 +115,7 @@ export async function getCalendarEvents(month?: number, year?: number) {
           type: "HOLIDAY"
         })),
         birthdays,
+        anniversaries,
         announcements: announcements.map(a => ({
           id: a.id,
           title: a.title,
@@ -96,4 +128,10 @@ export async function getCalendarEvents(month?: number, year?: number) {
     console.error("Failed to fetch calendar events:", error);
     return { success: false, error: "Failed to load calendar" };
   }
+}
+
+function getOrdinal(n: number) {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
 }

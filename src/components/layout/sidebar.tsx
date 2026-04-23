@@ -16,10 +16,12 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  useSidebar
 } from "@/components/ui/sidebar";
 
 export function Sidebar({ userRole }: { userRole: string }) {
   const pathname = usePathname();
+  const { setOpenMobile, isMobile } = useSidebar();
 
   const navGroups = roleNavigation[userRole] || roleNavigation.EMPLOYEE;
 
@@ -73,7 +75,13 @@ export function Sidebar({ userRole }: { userRole: string }) {
                             : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-primary"
                         )}
                       >
-                        <Link href={item.href} className="flex items-center w-full group-data-[collapsible=icon]:justify-center">
+                        <Link 
+                          href={item.href} 
+                          className="flex items-center w-full group-data-[collapsible=icon]:justify-center"
+                          onClick={() => {
+                            if (isMobile) setOpenMobile(false);
+                          }}
+                        >
                           <item.icon className={cn(
                             "size-4 shrink-0 transition-all duration-200",
                             isActive ? "text-primary" : "text-sidebar-foreground group-hover/menu-button:text-primary"

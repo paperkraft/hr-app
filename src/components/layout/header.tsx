@@ -3,11 +3,13 @@
 import { ChevronRight } from "lucide-react";
 import { UserNav } from "@/components/layout/user-nav";
 import { NotificationNav } from "@/components/layout/notification-nav";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 
 export function Header({ userName, userRole, isTeamLeader }: { userName: string; userRole: string; isTeamLeader?: boolean }) {
   const pathname = usePathname();
+
+  const { toggleSidebar } = useSidebar();
 
   // Helper to get descriptive page title
   const getPageTitle = () => {
@@ -41,8 +43,11 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
           <span className="text-foreground font-semibold">{getPageTitle()}</span>
         </div>
 
-        {/* Mobile Page Title */}
-        <div className="md:hidden flex items-center gap-2 text-sm font-semibold truncate max-w-[150px]">
+        {/* Mobile Page Title - Now clickable to toggle sidebar */}
+        <div 
+          className="md:hidden flex items-center gap-2 text-sm font-semibold truncate max-w-[180px] cursor-pointer active:opacity-70 transition-opacity"
+          onClick={() => toggleSidebar()}
+        >
           <span className="text-foreground truncate">{getPageTitle()}</span>
         </div>
       </div>

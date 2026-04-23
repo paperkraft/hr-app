@@ -18,7 +18,7 @@ export default async function CalendarPage() {
     );
   }
 
-  const { holidays, birthdays, announcements } = result.data!;
+  const { holidays, birthdays, announcements, anniversaries } = result.data!;
 
   return (
     <PageContainer maxWidth="full">
@@ -26,16 +26,17 @@ export default async function CalendarPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">Company Calendar</h1>
-            <p className="text-xs text-muted-foreground font-medium mt-0.5">Global view of holidays and birthdays</p>
+            <p className="text-xs text-muted-foreground font-medium mt-0.5">Global view of holidays, birthdays and anniversaries</p>
           </div>
         </div>
-
+ 
         <DashboardTabs />
-
+ 
         <div className="flex-1">
           <FullCalendar
             initialHolidays={holidays}
             initialBirthdays={birthdays}
+            initialAnniversaries={anniversaries}
             initialAnnouncements={announcements}
           />
         </div>

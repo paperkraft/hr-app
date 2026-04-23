@@ -29,7 +29,7 @@ import {
 interface Event {
   id: string;
   title: string;
-  type: "HOLIDAY" | "BIRTHDAY" | "ANNOUNCEMENT";
+  type: "HOLIDAY" | "BIRTHDAY" | "ANNOUNCEMENT" | "ANNIVERSARY";
   date: Date;
   description?: string;
 }
@@ -37,19 +37,21 @@ interface Event {
 interface FullCalendarProps {
   initialHolidays: any[];
   initialBirthdays: any[];
+  initialAnniversaries: any[];
   initialAnnouncements: any[];
   className?: string;
 }
 
-export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnouncements, className }: FullCalendarProps) {
+export function FullCalendar({ initialHolidays, initialBirthdays, initialAnniversaries, initialAnnouncements, className }: FullCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const holidays = useMemo(() => initialHolidays.map(h => ({ ...h, date: new Date(h.date), type: "HOLIDAY" })), [initialHolidays]);
   const birthdays = useMemo(() => (initialBirthdays || []).map(b => ({ ...b, date: new Date(b.date), type: "BIRTHDAY" })), [initialBirthdays]);
+  const anniversaries = useMemo(() => (initialAnniversaries || []).map(a => ({ ...a, date: new Date(a.date), type: "ANNIVERSARY" })), [initialAnniversaries]);
   const announcements = useMemo(() => initialAnnouncements.map(a => ({ ...a, date: new Date(a.date), type: "ANNOUNCEMENT" })), [initialAnnouncements]);
 
-  const allEvents = useMemo(() => [...holidays, ...birthdays, ...announcements], [holidays, birthdays, announcements]);
+  const allEvents = useMemo(() => [...holidays, ...birthdays, ...anniversaries, ...announcements], [holidays, birthdays, anniversaries, announcements]);
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
@@ -114,6 +116,7 @@ export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnounc
                             "size-1.5 rounded-full",
                             event.type === "HOLIDAY" && "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]",
                             event.type === "BIRTHDAY" && "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]",
+                            event.type === "ANNIVERSARY" && "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]",
                             event.type === "ANNOUNCEMENT" && "bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]"
                           )} />
                           <span className="text-[11px] font-bold text-foreground leading-tight">{event.title}</span>
@@ -123,6 +126,7 @@ export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnounc
                             "text-[9px] font-black uppercase tracking-widest",
                             event.type === "HOLIDAY" && "text-rose-500/70",
                             event.type === "BIRTHDAY" && "text-amber-500/70",
+                            event.type === "ANNIVERSARY" && "text-emerald-500/70",
                             event.type === "ANNOUNCEMENT" && "text-indigo-500/70"
                           )}>
                             {event.type}
@@ -171,6 +175,7 @@ export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnounc
                             "size-1 rounded-full",
                             event.type === "HOLIDAY" && "bg-rose-500",
                             event.type === "BIRTHDAY" && "bg-amber-500",
+                            event.type === "ANNIVERSARY" && "bg-emerald-500",
                             event.type === "ANNOUNCEMENT" && "bg-indigo-500"
                           )} />
                           <span className="text-[8px] font-bold uppercase tracking-tight text-muted-foreground/80">{event.type}</span>
@@ -196,7 +201,11 @@ export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnounc
               <div className="size-1.5 rounded-full bg-amber-500" />
               <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tight">Birthday</span>
             </div>
-            <div className="flex items-center gap-1.5 col-span-2">
+            <div className="flex items-center gap-1.5">
+              <div className="size-1.5 rounded-full bg-emerald-500" />
+              <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tight">Anniversary</span>
+            </div>
+            <div className="flex items-center gap-1.5">
               <div className="size-1.5 rounded-full bg-indigo-500" />
               <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tight">Announcement</span>
             </div>
@@ -318,6 +327,7 @@ export function FullCalendar({ initialHolidays, initialBirthdays, initialAnnounc
                             "size-1.5 rounded-full shrink-0",
                             event.type === "HOLIDAY" && "bg-rose-500 shadow-[0_0_4px_rgba(244,63,94,0.4)]",
                             event.type === "BIRTHDAY" && "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.4)]",
+                            event.type === "ANNIVERSARY" && "bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.4)]",
                             event.type === "ANNOUNCEMENT" && "bg-indigo-500 shadow-[0_0_4px_rgba(99,102,241,0.4)]"
                           )} title={event.type} />
                           <span className="text-[9px] font-medium text-foreground/70 truncate hidden md:block uppercase tracking-tight">

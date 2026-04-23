@@ -160,7 +160,7 @@ export function NotificationNav() {
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="w-80 max-w-[calc(100vw-32px)] p-0 animate-scale-in"
+        className="w-80 max-w-[calc(100vw-32px)] p-0 animate-scale-in shadow-2xl border-border/60"
         collisionPadding={16}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b">

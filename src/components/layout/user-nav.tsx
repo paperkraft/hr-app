@@ -48,7 +48,7 @@ export function UserNav({ userName }: { userName: string }) {
             <span className="text-sm font-medium hidden sm:block text-foreground">{userName}</span>
           </div>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 animate-scale-in">
+        <DropdownMenuContent align="end" className="w-56 animate-scale-in shadow-2xl border-border/60">
           <DropdownMenuLabel className="font-semibold">My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem 

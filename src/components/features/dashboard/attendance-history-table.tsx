@@ -96,7 +96,7 @@ export function AttendanceHistoryTable({ logs }: AttendanceHistoryTableProps) {
                   </TableCell>
                   <TableCell className="py-3 px-4">
                     <div className="flex items-center gap-1.5 tabular-nums">
-                      <Clock className="size-3 text-muted-foreground/20" />
+                      <Clock className="size-3 text-muted-foreground" />
                       <span className="text-[11px] font-bold text-foreground/60">
                         {log.punchIn ? new Date(log.punchIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "--:--"}
                       </span>
@@ -104,7 +104,7 @@ export function AttendanceHistoryTable({ logs }: AttendanceHistoryTableProps) {
                   </TableCell>
                   <TableCell className="py-3 px-4">
                     <div className="flex items-center gap-1.5 tabular-nums">
-                      <Clock className="size-3 text-muted-foreground/20" />
+                      <Clock className="size-3 text-muted-foreground" />
                       <span className="text-[11px] font-bold text-foreground/60">
                         {log.punchOut ? new Date(log.punchOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "--:--"}
                       </span>

@@ -86,7 +86,15 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
                 {filteredLeaves.map((leave) => {
                   const start = new Date(leave.startDate);
                   const end = new Date(leave.endDate);
-                  const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                  const days = (() => {
+                    let count = 0;
+                    let cur = new Date(start);
+                    while (cur <= end) {
+                      if (cur.getDay() !== 0) count++;
+                      cur.setDate(cur.getDate() + 1);
+                    }
+                    return count;
+                  })();
 
                   return (
                     <TableRow key={leave.id} className="hover:bg-muted/5 transition-colors border-b border-border/10 group last:border-0">

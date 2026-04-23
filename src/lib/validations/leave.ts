@@ -36,6 +36,20 @@ export const leaveApplicationSchema = z.object({
   message: "End date cannot be before start date.",
   path: ["endDate"],
 }).refine((data) => {
+  // Block starting on a Sunday
+  const start = new Date(data.startDate);
+  return start.getDay() !== 0;
+}, {
+  message: "Leave applications cannot start on a Sunday.",
+  path: ["startDate"],
+}).refine((data) => {
+  // Block ending on a Sunday
+  const end = new Date(data.endDate);
+  return end.getDay() !== 0;
+}, {
+  message: "Leave applications cannot end on a Sunday.",
+  path: ["endDate"],
+}).refine((data) => {
   // Business Logic Enforcement: Semi-Annual leaves are only FULL days.
   if (data.category === "SEMI_ANNUAL_POLICY_2" && data.duration !== "FULL") {
     return false;

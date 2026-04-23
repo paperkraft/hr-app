@@ -39,7 +39,7 @@ export function RecentApprovalsTable({ data, title = "Recent Approvals", subtitl
         <Table>
           <TableHeader className="bg-muted/5 border-b border-border/40">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Employee</TableHead>
+              <TableHead className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 md:sticky md:left-0 md:bg-card md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Employee</TableHead>
               <TableHead className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Period</TableHead>
               <TableHead className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Branch</TableHead>
               <TableHead className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">System Note</TableHead>
@@ -57,7 +57,7 @@ export function RecentApprovalsTable({ data, title = "Recent Approvals", subtitl
             ) : (
               data.map((req) => (
                 <TableRow key={req.id} className="hover:bg-muted/5 transition-colors group">
-                  <TableCell className="py-3 px-5">
+                  <TableCell className="py-3 px-5 md:sticky md:left-0 md:bg-card md:group-hover:bg-muted/5 md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] transition-colors">
                     <div className="flex items-center gap-2.5">
                       <div className="size-7 rounded-sm bg-muted text-foreground/40 flex items-center justify-center font-bold text-[9px] border border-border/40 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
                         {req.employeeName.slice(0, 2).toUpperCase()}
@@ -73,9 +73,19 @@ export function RecentApprovalsTable({ data, title = "Recent Approvals", subtitl
                       <span className="text-[11px] font-bold text-foreground/70 leading-none">
                         {req.startDate === req.endDate ? req.startDate : `${req.startDate} — ${req.endDate}`}
                       </span>
-                      <span className="text-[9px] text-muted-foreground/40 font-black uppercase mt-1">
-                        {req.duration} SESSION
-                      </span>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="text-[9px] text-muted-foreground/40 font-black uppercase">
+                          {req.duration} SESSION
+                        </span>
+                        {req.duration === "HALF" && req.halfDayType && (
+                          <span className={cn(
+                            "text-[8px] font-bold uppercase tracking-tight px-1 rounded-[2px] border",
+                            req.halfDayType === "FIRST_HALF" ? "bg-emerald-500/5 text-emerald-600 border-emerald-500/10" : "bg-amber-500/5 text-amber-600 border-amber-500/10"
+                          )}>
+                            {req.halfDayType === "FIRST_HALF" ? "1st Half" : "2nd Half"}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell className="py-3 px-4">
@@ -105,7 +115,7 @@ export function RecentApprovalsTable({ data, title = "Recent Approvals", subtitl
                     </span>
                   </TableCell>
                   <TableCell className="py-3 px-5 text-right">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <CancelLeaveButton requestId={req.id} employeeName={req.employeeName} />
                     </div>
                   </TableCell>

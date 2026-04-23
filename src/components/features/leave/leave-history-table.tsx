@@ -75,7 +75,7 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
             <Table>
               <TableHeader className="bg-muted/5">
                 <TableRow className="border-b border-border/40 hover:bg-transparent">
-                  <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 w-[200px] whitespace-nowrap">Timeline</TableHead>
+                  <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 w-[200px] whitespace-nowrap md:sticky md:left-0 md:bg-card md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Timeline</TableHead>
                   <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 text-center whitespace-nowrap">Duration</TableHead>
                   <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">Type</TableHead>
                   <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">Reason</TableHead>
@@ -90,7 +90,7 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
 
                   return (
                     <TableRow key={leave.id} className="hover:bg-muted/5 transition-colors border-b border-border/10 group last:border-0">
-                      <TableCell className="py-3 px-5">
+                      <TableCell className="py-3 px-5 md:sticky md:left-0 md:bg-card md:group-hover:bg-muted/5 md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] transition-colors">
                         <div className="flex items-center gap-2.5 min-w-[150px]">
                           <div className="size-7 rounded-sm bg-primary/5 text-primary flex items-center justify-center border border-primary/5 group-hover:bg-primary/10 transition-colors">
                             <CalendarRange className="size-3.5" />

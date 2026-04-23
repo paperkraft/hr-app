@@ -98,9 +98,8 @@ export function MasterReportTable({
               <TableHead className="py-2.5 px-5 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-right">Adjustment</TableHead>
             </TableRow>
 
-            {/* Header Tier 2: Column Titles */}
             <TableRow className="bg-card border-b border-border/40">
-              <TableHead className="py-3 px-5 text-[10px] font-bold text-foreground border-r border-border/10">Full Name</TableHead>
+              <TableHead className="py-3 px-5 text-[10px] font-bold text-foreground border-r border-border/10 md:sticky md:left-0 md:bg-card md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Full Name</TableHead>
               <TableHead className="py-3 px-4 text-[10px] font-bold text-foreground text-center bg-primary/1">Present</TableHead>
               <TableHead className="py-3 px-4 text-[10px] font-bold text-foreground text-center bg-primary/1">Late Mark</TableHead>
               <TableHead className="py-3 px-4 text-[10px] font-bold text-primary text-center border-r border-border/10 bg-primary/1">Allowance</TableHead>
@@ -127,7 +126,7 @@ export function MasterReportTable({
               filteredData.map((row) => (
                 <React.Fragment key={row.id}>
                   <TableRow className="hover:bg-muted/5 transition-colors border-b border-border/10 last:border-0 group">
-                    <TableCell className="py-3 px-5 border-r border-border/10">
+                    <TableCell className="py-3 px-5 border-r border-border/10 md:sticky md:left-0 md:bg-card md:group-hover:bg-muted/5 md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="size-7 rounded-sm bg-muted/50 text-muted-foreground/40 flex items-center justify-center font-bold text-[9px] border border-border/40 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
                           {row.name.slice(0, 2).toUpperCase()}
@@ -204,6 +203,7 @@ export function MasterReportTable({
                       }}
                       month={month}
                       year={year}
+                      colSpan={11}
                       onSuccess={() => {
                         setTimeout(() => setActiveSplitId(null), 1500);
                       }}

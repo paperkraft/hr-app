@@ -18,11 +18,13 @@ export function SplitActionRow({
   employee,
   month,
   year,
+  colSpan = 11,
   onSuccess
 }: {
   employee: { userId: string; name: string; remainingBalance: number };
   month: number;
   year: number;
+  colSpan?: number;
   onSuccess?: () => void;
 }) {
   // Policy Change: Carry forward is strictly capped at 1.0 day max.
@@ -90,10 +92,10 @@ export function SplitActionRow({
   if (isSuccess) {
     return (
       <tr className="bg-emerald-50/50">
-        <td colSpan={10} className="p-6 text-center text-emerald-700 font-medium">
+        <td colSpan={colSpan} className="p-4 text-center text-emerald-700 font-bold text-[10px] uppercase tracking-widest">
           <div className="flex items-center justify-center gap-2">
-            <CheckCircle2 className="w-5 h-5" />
-            Successfully processed manual split for {employee.name}.
+            <CheckCircle2 className="w-4 h-4" />
+            Processed for {employee.name}
           </div>
         </td>
       </tr>
@@ -101,25 +103,26 @@ export function SplitActionRow({
   }
 
   return (
-    <tr className="bg-muted/30 border-y-2 border-primary/20">
-      <td colSpan={10} className="p-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 max-w-4xl mx-auto">
-          <div className="flex flex-col gap-1">
-            <h4 className="font-bold text-lg text-foreground">Manual Split</h4>
-            <p className="text-sm text-muted-foreground">Adjusting for <span className="text-primary font-medium">{employee.name}</span></p>
+    <tr className="bg-muted/30 border-y border-primary/20">
+      <td colSpan={colSpan} className="p-2 md:p-4">
+        {/* Sticky/Fixed-Width Container for Mobile Viewability */}
+        <div className="flex flex-col items-center gap-3 w-full max-w-sm mx-auto bg-background/80 backdrop-blur-sm p-3 rounded-md border border-border shadow-lg">
+          <div className="flex flex-col gap-0.5 text-center">
+            <h4 className="font-black text-[10px] text-foreground uppercase tracking-widest">Manual Split Adjustment</h4>
+            <p className="text-[10px] text-muted-foreground font-medium">Employee: <span className="text-primary font-bold">{employee.name}</span></p>
           </div>
 
-          <div className="flex items-center gap-8 bg-background/50 p-4 rounded-xl border border-border shadow-sm">
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Total Balance</span>
-              <span className="text-2xl font-black text-primary">{employee.remainingBalance}</span>
+          <div className="flex items-center gap-6 w-full justify-center">
+            <div className="flex flex-col items-center">
+              <span className="text-[8px] uppercase font-bold text-muted-foreground/40 tracking-tighter">Total</span>
+              <span className="text-lg font-black text-primary tabular-nums">{employee.remainingBalance}</span>
             </div>
 
-            <div className="h-10 w-px bg-border" />
+            <div className="h-8 w-px bg-border/60" />
 
-            <div className="flex items-center gap-4">
-              <div className="flex flex-col gap-1.5 w-28">
-                <Label className="text-xs font-semibold">Carry Forward</Label>
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-1 w-20">
+                <Label className="text-[8px] font-black uppercase text-muted-foreground/60 tracking-widest">Carry</Label>
                 <Input
                   type="number"
                   step="0.5"
@@ -127,12 +130,12 @@ export function SplitActionRow({
                   max={Math.min(MAX_CARRY, employee.remainingBalance)}
                   value={carryForward}
                   onChange={(e) => handleCarryForwardChange(e.target.value)}
-                  className="text-center font-bold h-10 border-indigo-200 focus-visible:ring-indigo-500"
+                  className="text-center font-bold h-8 text-[11px] border-indigo-200 focus-visible:ring-indigo-500 bg-card"
                 />
               </div>
-              <span className="text-2xl font-light text-muted-foreground self-end mb-1">+</span>
-              <div className="flex flex-col gap-1.5 w-28">
-                <Label className="text-xs font-semibold">Encashment</Label>
+              <span className="text-lg font-light text-muted-foreground mt-4">+</span>
+              <div className="flex flex-col gap-1 w-20">
+                <Label className="text-[8px] font-black uppercase text-muted-foreground/60 tracking-widest">Encash</Label>
                 <Input
                   type="number"
                   step="0.5"
@@ -140,23 +143,24 @@ export function SplitActionRow({
                   max={employee.remainingBalance}
                   value={encashment}
                   onChange={(e) => handleEncashmentChange(e.target.value)}
-                  className="text-center font-bold h-10 border-emerald-200 focus-visible:ring-emerald-500 text-emerald-600"
+                  className="text-center font-bold h-8 text-[11px] border-emerald-200 focus-visible:ring-emerald-500 text-emerald-600 bg-card"
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 min-w-40">
+          <div className="w-full">
             <Button
               onClick={handleSubmit}
               disabled={isProcessing}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md shadow-primary/20"
+              size="sm"
+              className="w-full h-8 bg-primary hover:bg-primary/90 text-[10px] font-black uppercase tracking-widest"
             >
-              {isProcessing ? "Processing..." : "Confirm & Save"}
+              {isProcessing ? "Processing..." : "Confirm & Save Split"}
             </Button>
             {error && (
-              <span className="text-[10px] text-destructive font-medium flex items-center gap-1 justify-center animate-in fade-in zoom-in-95">
-                <AlertCircle className="w-3 h-3" /> {error}
+              <span className="text-[9px] text-destructive font-bold flex items-center gap-1 justify-center mt-1.5">
+                <AlertCircle className="w-2.5 h-2.5" /> {error}
               </span>
             )}
           </div>

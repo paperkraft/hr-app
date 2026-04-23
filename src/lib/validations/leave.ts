@@ -10,7 +10,7 @@ export const leaveApplicationSchema = z.object({
     required_error: "Please select which policy to deduct this leave from.",
   }),
   leaveType: z.enum(["CASUAL", "MEDICAL"]).optional(),
-  reason: z.string().min(10, "Please provide a reason (minimum 10 characters).").max(500),
+  reason: z.string().min(8, "Please provide a reason (minimum 8 characters).").max(500),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
   halfDayType: z.enum(["FIRST_HALF", "SECOND_HALF"]).optional(),

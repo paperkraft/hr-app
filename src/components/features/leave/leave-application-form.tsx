@@ -83,27 +83,56 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
         <Label className={labelClass}>Leave Category</Label>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {[
-            { id: "MONTHLY_POLICY_1", label: "Monthly", sub: "Casual / Medical", color: "primary" },
-            ...(semiAnnualEnabled ? [{ id: "SEMI_ANNUAL_POLICY_2", label: "Earned Leave", sub: "Hangout (3+ Days)", color: "amber-500" }] : []),
-            { id: "UNPAID", label: "Unpaid", sub: "No balance", color: "rose-500" }
-          ].map((cat) => (
-            <label
-              key={cat.id}
-              className={cn(
-                "relative flex flex-col p-2.5 cursor-pointer rounded-sm border transition-all",
-                selectedCategory === cat.id
-                  ? `border-${cat.color} bg-${cat.color}/5 ring-1 ring-${cat.color}/20`
-                  : "border-border/60 bg-muted/5 hover:bg-muted/10 transition-colors"
-              )}
-            >
-              <input type="radio" value={cat.id} className="sr-only" {...register("category")} />
-              <span className={cn("text-[11px] font-bold", selectedCategory === cat.id ? `text-${cat.color}` : "text-foreground")}>
-                {cat.label}
-              </span>
-              <span className="text-[9px] text-muted-foreground/50 font-medium uppercase tracking-tight">{cat.sub}</span>
-            </label>
-          ))}
+            { id: "MONTHLY_POLICY_1", label: "Monthly", sub: "Casual / Medical" },
+            ...(semiAnnualEnabled ? [{ id: "SEMI_ANNUAL_POLICY_2", label: "Earned Leave", sub: "Hangout (3+ Days)" }] : []),
+            { id: "UNPAID", label: "Unpaid", sub: "No balance" }
+          ].map((cat) => {
+            const isSelected = selectedCategory === cat.id;
+            
+            // Map categories to explicit Tailwind classes for JIT support
+            const categoryStyles: Record<string, { border: string, bg: string, ring: string, text: string }> = {
+              "MONTHLY_POLICY_1": {
+                border: "border-primary",
+                bg: "bg-primary/5",
+                ring: "ring-primary/20",
+                text: "text-primary"
+              },
+              "SEMI_ANNUAL_POLICY_2": {
+                border: "border-amber-500",
+                bg: "bg-amber-500/5",
+                ring: "ring-amber-500/20",
+                text: "text-amber-500"
+              },
+              "UNPAID": {
+                border: "border-rose-500",
+                bg: "bg-rose-500/5",
+                ring: "ring-rose-500/20",
+                text: "text-rose-500"
+              }
+            };
+
+            const styles = categoryStyles[cat.id] || categoryStyles["MONTHLY_POLICY_1"];
+
+            return (
+              <label
+                key={cat.id}
+                className={cn(
+                  "relative flex flex-col p-2.5 cursor-pointer rounded-sm border transition-all",
+                  isSelected
+                    ? `${styles.border} ${styles.bg} ring-1 ${styles.ring}`
+                    : "border-border/60 bg-muted/5 hover:bg-muted/10 transition-colors"
+                )}
+              >
+                <input type="radio" value={cat.id} className="sr-only" {...register("category")} />
+                <span className={cn("text-[11px] font-bold", isSelected ? styles.text : "text-foreground")}>
+                  {cat.label}
+                </span>
+                <span className="text-[9px] text-muted-foreground/50 font-medium uppercase tracking-tight">{cat.sub}</span>
+              </label>
+            );
+          })}
         </div>
+        {errors.category && <p className="text-[10px] text-rose-500 font-bold mt-1 animate-in fade-in slide-in-from-top-1">{errors.category.message}</p>}
       </div>
 
       {/* Monthly Sub-category */}
@@ -130,6 +159,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
               </label>
             ))}
           </div>
+          {errors.leaveType && <p className="text-[10px] text-rose-500 font-bold mt-1 animate-in fade-in slide-in-from-top-1">{errors.leaveType.message}</p>}
         </div>
       )}
 
@@ -154,6 +184,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
             );
           })}
         </div>
+        {errors.duration && <p className="text-[10px] text-rose-500 font-bold mt-1 animate-in fade-in slide-in-from-top-1">{errors.duration.message}</p>}
       </div>
 
       {/* Half Session Selection */}
@@ -162,53 +193,90 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
           <Label className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Select Session</Label>
           <div className="grid grid-cols-2 gap-2">
             {[
-              { id: "FIRST_HALF", label: "First Half", icon: Sun, color: "emerald-500" },
-              { id: "SECOND_HALF", label: "Second Half", icon: Moon, color: "amber-500" }
-            ].map((session) => (
-              <label
-                key={session.id}
-                className={cn(
-                  "flex items-center gap-2 p-2 cursor-pointer rounded-sm border transition-all",
-                  selectedHalf === session.id ? `border-${session.color} bg-${session.color}/10` : "border-border/40 bg-muted/5"
-                )}
-              >
-                <input type="radio" value={session.id} className="sr-only" {...register("halfDayType")} />
-                <session.icon className={cn("size-3", selectedHalf === session.id ? `text-${session.color}` : "text-muted-foreground/30")} />
-                <span className="text-[10px] font-bold">{session.label}</span>
-              </label>
-            ))}
+              { id: "FIRST_HALF", label: "First Half", icon: Sun },
+              { id: "SECOND_HALF", label: "Second Half", icon: Moon }
+            ].map((session) => {
+              const isSelected = selectedHalf === session.id;
+              const sessionStyles: Record<string, { border: string, bg: string, text: string }> = {
+                "FIRST_HALF": {
+                  border: "border-emerald-500",
+                  bg: "bg-emerald-500/10",
+                  text: "text-emerald-500"
+                },
+                "SECOND_HALF": {
+                  border: "border-amber-500",
+                  bg: "bg-amber-500/10",
+                  text: "text-amber-500"
+                }
+              };
+              const styles = sessionStyles[session.id];
+
+              return (
+                <label
+                  key={session.id}
+                  className={cn(
+                    "flex items-center gap-2 p-2 cursor-pointer rounded-sm border transition-all",
+                    isSelected ? `${styles.border} ${styles.bg}` : "border-border/40 bg-muted/5"
+                  )}
+                >
+                  <input type="radio" value={session.id} className="sr-only" {...register("halfDayType")} />
+                  <session.icon className={cn("size-3", isSelected ? styles.text : "text-muted-foreground/30")} />
+                  <span className="text-[10px] font-bold">{session.label}</span>
+                </label>
+              );
+            })}
           </div>
+          {errors.halfDayType && <p className="text-[10px] text-rose-500 font-bold mt-1 animate-in fade-in slide-in-from-top-1">{errors.halfDayType.message}</p>}
         </div>
       )}
 
       {/* Date Range */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <Label className={labelClass}>Starting Date</Label>
-          <Input type="date" {...register("startDate")} className={inputClass} />
+      <div className="space-y-2">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label className={labelClass}>Starting Date</Label>
+            <Input type="date" {...register("startDate")} className={inputClass} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className={labelClass}>Ending Date</Label>
+            <Input
+              type="date"
+              {...register("endDate")}
+              disabled={selectedDuration === "HALF" || selectedDuration === "SHORT"}
+              className={cn(inputClass, (selectedDuration === "HALF" || selectedDuration === "SHORT") && "opacity-50")}
+            />
+          </div>
         </div>
-        <div className="space-y-1.5">
-          <Label className={labelClass}>Ending Date</Label>
-          <Input
-            type="date"
-            {...register("endDate")}
-            disabled={selectedDuration === "HALF" || selectedDuration === "SHORT"}
-            className={cn(inputClass, (selectedDuration === "HALF" || selectedDuration === "SHORT") && "opacity-50")}
-          />
-        </div>
+        {(errors.startDate || errors.endDate) && (
+          <div className="flex gap-3">
+            <div className="flex-1">
+              {errors.startDate && <p className="text-[10px] text-rose-500 font-bold mt-1 animate-in fade-in slide-in-from-top-1">{errors.startDate.message}</p>}
+            </div>
+            <div className="flex-1">
+              {errors.endDate && <p className="text-[10px] text-rose-500 font-bold mt-1 animate-in fade-in slide-in-from-top-1">{errors.endDate.message}</p>}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Short Time Windows */}
       {selectedDuration === "SHORT" && (
-        <div className="grid grid-cols-2 gap-3 p-3 bg-primary/5 border border-primary/10 rounded-sm animate-in fade-in slide-in-from-top-2">
-          <div className="space-y-1.5">
-            <Label className="text-[9px] font-black text-primary uppercase flex items-center gap-1"><Clock className="size-3" /> Time From</Label>
-            <Input type="time" {...register("startTime")} className="h-8 text-xs bg-card border-border/40" />
+        <div className="p-3 bg-primary/5 border border-primary/10 rounded-sm space-y-2 animate-in fade-in slide-in-from-top-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-[9px] font-black text-primary uppercase flex items-center gap-1"><Clock className="size-3" /> Time From</Label>
+              <Input type="time" {...register("startTime")} className="h-8 text-xs bg-card border-border/40" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[9px] font-black text-primary uppercase flex items-center gap-1"><Clock className="size-3" /> Time To</Label>
+              <Input type="time" {...register("endTime")} className="h-8 text-xs bg-card border-border/40" />
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-[9px] font-black text-primary uppercase flex items-center gap-1"><Clock className="size-3" /> Time To</Label>
-            <Input type="time" {...register("endTime")} className="h-8 text-xs bg-card border-border/40" />
-          </div>
+          {(errors.startTime || errors.endTime) && (
+            <p className="text-[10px] text-rose-500 font-bold mt-1 animate-in fade-in slide-in-from-top-1">
+              {errors.startTime?.message || errors.endTime?.message}
+            </p>
+          )}
         </div>
       )}
 
@@ -220,6 +288,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
           className="min-h-[80px] bg-muted/5 border-border/60 text-xs rounded-sm resize-none focus:ring-primary/10"
           {...register("reason")}
         />
+        {errors.reason && <p className="text-[10px] text-rose-500 font-bold mt-1 animate-in fade-in slide-in-from-top-1">{errors.reason.message}</p>}
       </div>
 
       {/* Errors */}

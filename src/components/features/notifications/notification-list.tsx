@@ -181,7 +181,7 @@ export function NotificationList() {
               <div 
                 key={n.id}
                 className={cn(
-                  "p-5 flex flex-col sm:flex-row sm:items-center gap-4 transition-all group hover:bg-muted/5",
+                  "p-5 flex flex-row items-start sm:items-center gap-4 transition-all group hover:bg-muted/5",
                   !n.isRead && "bg-primary/3"
                 )}
               >
@@ -198,18 +198,18 @@ export function NotificationList() {
                   <div className="flex-1 space-y-1 min-w-0">
                     <div className="flex items-center gap-2">
                        <h4 className={cn(
-                         "text-sm font-bold tracking-tight",
+                         "text-sm font-bold tracking-tight truncate",
                          !n.isRead ? "text-foreground" : "text-muted-foreground"
                        )}>
                         {n.title}
                       </h4>
-                      {!n.isRead && <span className="size-1.5 rounded-full bg-primary" />}
+                      {!n.isRead && <span className="size-1.5 rounded-full bg-primary shrink-0" />}
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-ordered max-w-2xl font-medium">
+                    <p className="text-[11px] text-muted-foreground leading-ordered font-medium line-clamp-2 sm:line-clamp-none">
                       {n.content}
                     </p>
-                    <div className="flex items-center gap-4 pt-1 transition-opacity">
-                      <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
+                    <div className="flex flex-wrap items-center gap-3 pt-1">
+                      <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 whitespace-nowrap">
                         <Calendar className="h-3 w-3" />
                         {format(new Date(n.createdAt), "PPP p")}
                       </div>
@@ -219,14 +219,14 @@ export function NotificationList() {
                            onClick={() => router.push(n.link)}
                         >
                           <ExternalLink className="h-3 w-3" />
-                          View Details
+                          Details
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 self-end sm:self-center">
+                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                   {!n.isRead && (
                     <Button
                       variant="ghost"
@@ -241,7 +241,7 @@ export function NotificationList() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-50 opacity-0 group-hover:opacity-100 transition-all"
+                    className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-50 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all"
                     title="Delete notification"
                     onClick={() => handleDelete(n.id)}
                   >

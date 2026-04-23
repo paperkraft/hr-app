@@ -32,11 +32,11 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
     <header className="h-14 border-b border-border bg-card flex items-center justify-between px-4 sticky top-0 z-50 animate-fade-in">
       <div className="flex items-center gap-4">
         <SidebarTrigger className="-ml-1" />
-        
+
 
         {/* Page Title for Desktop */}
         <div className="hidden md:flex items-center gap-3 text-sm font-medium animate-fade-in-down">
-          <span className="text-muted-foreground hover:text-foreground transition-colors cursor-default capitalize text-[10px] font-black uppercase tracking-widest bg-muted/60 px-2 py-0.5 rounded-sm border border-border/40">
+          <span className="text-muted-foreground hover:text-foreground transition-colors cursor-default capitalize text-[10px] font-black tracking-widest bg-muted/60 px-2 py-0.5 rounded-sm border border-border/40">
             {userRole.replace('_', ' ').toLowerCase()}
           </span>
           <ChevronRight className="w-4 h-4 text-muted-foreground/40" />
@@ -44,7 +44,7 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
         </div>
 
         {/* Mobile Page Title - Now clickable to toggle sidebar */}
-        <div 
+        <div
           className="md:hidden flex items-center gap-2 text-sm font-semibold truncate max-w-[180px] cursor-pointer active:opacity-70 transition-opacity"
           onClick={() => toggleSidebar()}
         >
@@ -59,4 +59,4 @@ export function Header({ userName, userRole, isTeamLeader }: { userName: string;
       </div>
     </header>
   );
-}
+}

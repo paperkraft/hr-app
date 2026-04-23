@@ -74,7 +74,6 @@ export function AttendanceHistoryTable({ logs }: AttendanceHistoryTableProps) {
                 <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 w-[180px]">Date</TableHead>
                 <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Check In</TableHead>
                 <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Check Out</TableHead>
-                <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Location</TableHead>
                 <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 text-right">Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -108,17 +107,6 @@ export function AttendanceHistoryTable({ logs }: AttendanceHistoryTableProps) {
                       <Clock className="size-3 text-muted-foreground/20" />
                       <span className="text-[11px] font-bold text-foreground/60">
                         {log.punchOut ? new Date(log.punchOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "--:--"}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-3 px-4">
-                    <div className="flex items-center gap-1.5">
-                      <MapPin className={cn("size-3", log.isOutsideOffice ? "text-rose-400" : "text-emerald-400")} />
-                      <span className={cn(
-                        "text-[10px] font-black uppercase tracking-tight",
-                        log.isOutsideOffice ? "text-rose-500/70" : "text-emerald-600/70"
-                      )}>
-                        {log.isOutsideOffice ? "External Site" : "Main Office"}
                       </span>
                     </div>
                   </TableCell>

@@ -313,6 +313,12 @@ export async function submitLeaveRequest(formData: unknown) {
       approvalNote = "Unpaid Leave: Auto-approved by system.";
     }
 
+    // Ensure leaveType is null for non-monthly policies
+    let finalLeaveType = data.leaveType;
+    if (data.category !== "MONTHLY_POLICY_1") {
+      finalLeaveType = null as any;
+    }
+
     const newRequest = await prisma.leaveRequest.create({
       data: {
         userId,
@@ -320,7 +326,7 @@ export async function submitLeaveRequest(formData: unknown) {
         endDate: new Date(data.endDate),
         duration: data.duration,
         category: effectiveCategory as any,
-        leaveType: data.leaveType as any,
+        leaveType: finalLeaveType as any,
         reason: data.reason,
         startTime: data.startTime,
         endTime: data.endTime,

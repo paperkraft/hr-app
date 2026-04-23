@@ -47,6 +47,12 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
   }, []);
 
   useEffect(() => {
+    if (selectedCategory !== "MONTHLY_POLICY_1") {
+      setValue("leaveType", undefined);
+    }
+  }, [selectedCategory, setValue]);
+
+  useEffect(() => {
     if ((selectedDuration === "HALF" || selectedDuration === "SHORT") && startDate) {
       setValue("endDate", startDate);
     }

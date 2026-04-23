@@ -70,16 +70,16 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
         </div>
       ) : (
         <>
-          {/* Desktop Table View */}
-          <div className="hidden md:block overflow-x-auto scrollbar-hide">
+          {/* Scrollable Table View - Unified for all screen sizes */}
+          <div className="overflow-x-auto scrollbar-hide border-t border-border/10">
             <Table>
               <TableHeader className="bg-muted/5">
                 <TableRow className="border-b border-border/40 hover:bg-transparent">
-                  <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 w-[200px]">Timeline</TableHead>
-                  <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 text-center">Duration</TableHead>
-                  <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Type</TableHead>
-                  <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80">Reason</TableHead>
-                  <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 text-right">Status</TableHead>
+                  <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 w-[200px] whitespace-nowrap">Timeline</TableHead>
+                  <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 text-center whitespace-nowrap">Duration</TableHead>
+                  <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">Type</TableHead>
+                  <TableHead className="py-3 px-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">Reason</TableHead>
+                  <TableHead className="py-3 px-5 font-black text-[10px] uppercase tracking-widest text-muted-foreground/80 text-right whitespace-nowrap">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -91,7 +91,7 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
                   return (
                     <TableRow key={leave.id} className="hover:bg-muted/5 transition-colors border-b border-border/10 group last:border-0">
                       <TableCell className="py-3 px-5">
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-2.5 min-w-[150px]">
                           <div className="size-7 rounded-sm bg-primary/5 text-primary flex items-center justify-center border border-primary/5 group-hover:bg-primary/10 transition-colors">
                             <CalendarRange className="size-3.5" />
                           </div>
@@ -109,7 +109,7 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
                       </TableCell>
 
                       <TableCell className="py-3 px-4 text-center">
-                        <div className="inline-flex flex-col items-center">
+                        <div className="inline-flex flex-col items-center min-w-[80px]">
                           <span className={cn(
                             "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-sm border mb-0.5",
                             leave.duration === "FULL" ? "bg-muted/20 text-muted-foreground/80 border-border/20" : 
@@ -133,7 +133,7 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
                       </TableCell>
 
                       <TableCell className="py-3 px-4">
-                        <div className="flex flex-col">
+                        <div className="flex flex-col min-w-[100px]">
                           <span className="text-[11px] font-bold text-foreground/70 uppercase tracking-tight">
                             {leave.leaveType === "CASUAL" ? "Casual Leave" : leave.leaveType === "MEDICAL" ? "Sick Leave" : "Other Leave"}
                           </span>
@@ -143,8 +143,8 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
                         </div>
                       </TableCell>
 
-                      <TableCell className="py-3 px-4 max-w-[200px]">
-                        <div className="flex items-start gap-1.5 group/reason">
+                      <TableCell className="py-3 px-4">
+                        <div className="flex items-start gap-1.5 group/reason min-w-[150px]">
                           <MessageSquare className="size-3 text-muted-foreground/40 mt-0.5" />
                           <p className="text-[10px] font-medium text-muted-foreground/80 leading-snug line-clamp-2 italic" title={leave.reason || ""}>
                             {leave.reason || "No reason specified"}
@@ -153,7 +153,7 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
                       </TableCell>
 
                       <TableCell className="py-3 px-5 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                        <div className="flex items-center justify-end gap-1.5 min-w-[80px]">
                           <div className={cn(
                             "size-1.5 rounded-full",
                             leave.status === "APPROVED" && "bg-emerald-500",
@@ -175,79 +175,6 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
                 })}
               </TableBody>
             </Table>
-          </div>
-
-          {/* Mobile Card View - "Proper" responsive layout */}
-          <div className="md:hidden divide-y divide-border/10">
-            {filteredLeaves.map((leave) => {
-              const start = new Date(leave.startDate);
-              const end = new Date(leave.endDate);
-              const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-
-              return (
-                <div key={leave.id} className="p-4 space-y-3 hover:bg-muted/5 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="size-8 rounded-sm bg-primary/5 text-primary flex items-center justify-center border border-primary/10">
-                        <CalendarRange className="size-4" />
-                      </div>
-                      <div>
-                        <p className="text-[11px] font-bold text-foreground uppercase tracking-tight">
-                          {start.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </p>
-                        {start.getTime() !== end.getTime() && (
-                          <p className="text-[10px] text-muted-foreground font-bold opacity-50">
-                            to {end.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className={cn(
-                        "size-1.5 rounded-full",
-                        leave.status === "APPROVED" && "bg-emerald-500",
-                        leave.status === "REJECTED" && "bg-rose-500",
-                        leave.status === "PENDING" && "bg-amber-500 animate-pulse"
-                      )} />
-                      <span className={cn(
-                        "text-[9px] font-black uppercase tracking-widest",
-                        leave.status === "APPROVED" && "text-emerald-600",
-                        leave.status === "REJECTED" && "text-rose-600",
-                        leave.status === "PENDING" && "text-amber-600"
-                      )}>
-                        {leave.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-muted/10 p-2 rounded-sm border border-border/20">
-                      <p className="text-[8px] font-black text-muted-foreground/60 uppercase tracking-widest mb-1">Duration</p>
-                      <div className="flex items-center gap-2">
-                         <span className="text-[10px] font-bold text-foreground">{days} {days === 1 ? 'Day' : 'Days'}</span>
-                         <span className="text-[9px] text-muted-foreground/40 font-bold">• {leave.duration === "FULL" ? "Full" : (leave.duration === "HALF" ? (leave.halfDayType === "FIRST_HALF" ? "1st Half" : "2nd Half") : "Short")}</span>
-                      </div>
-                    </div>
-                    <div className="bg-muted/10 p-2 rounded-sm border border-border/20">
-                      <p className="text-[8px] font-black text-muted-foreground/60 uppercase tracking-widest mb-1">Type</p>
-                      <p className="text-[10px] font-bold text-foreground uppercase tracking-tight">
-                        {leave.leaveType === "CASUAL" ? "Casual" : leave.leaveType === "MEDICAL" ? "Sick" : "Other"} 
-                        <span className="text-[9px] text-muted-foreground/40 ml-1">({leave.category === "MONTHLY_POLICY_1" ? "Monthly" : "Unpaid"})</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  {leave.reason && (
-                    <div className="flex items-start gap-2 bg-muted/5 p-2 rounded-sm border border-border/10 italic">
-                      <MessageSquare className="size-3 text-muted-foreground/40 mt-0.5 shrink-0" />
-                      <p className="text-[10px] text-muted-foreground leading-snug">
-                        {leave.reason}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
           </div>
         </>
       )}

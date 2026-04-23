@@ -72,13 +72,13 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
         <table className="w-full border-collapse">
           <thead className="bg-muted/5 border-b border-border/40">
             <tr>
-              <th className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Employee</th>
-              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Date</th>
-              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Entry / Exit</th>
-              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Status</th>
-              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">IN Coordinates</th>
-              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">OUT Coordinates</th>
-              <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Map Views</th>
+              <th className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">Employee</th>
+              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">Date</th>
+              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">Entry / Exit</th>
+              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">Status</th>
+              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">IN Coordinates</th>
+              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">OUT Coordinates</th>
+              <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">Map Views</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/20">
@@ -96,30 +96,32 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
                 <tr key={log.id} className="hover:bg-muted/5 transition-colors group">
                   {/* Employee */}
                   <td className="py-3 px-5">
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2.5 min-w-[150px]">
                       <div className="size-7 rounded-sm bg-muted text-foreground/40 flex items-center justify-center font-bold text-[9px] border border-border/40 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
                         {log.userName.charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-[11px] font-bold text-foreground">{log.userName}</span>
+                      <span className="text-[11px] font-bold text-foreground truncate">{log.userName}</span>
                     </div>
                   </td>
 
                   {/* Date + IP */}
                   <td className="py-3 px-4">
-                    <p className="text-[11px] font-bold text-foreground/70">
-                      {format(new Date(log.date), "dd MMM, yyyy")}
-                    </p>
-                    <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-tight mt-0.5">
-                      {log.ipAddress || "No IP"}
-                    </p>
+                    <div className="min-w-[100px]">
+                      <p className="text-[11px] font-bold text-foreground/70 whitespace-nowrap">
+                        {format(new Date(log.date), "dd MMM, yyyy")}
+                      </p>
+                      <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-tight mt-0.5 whitespace-nowrap">
+                        {log.ipAddress || "No IP"}
+                      </p>
+                    </div>
                   </td>
 
                   {/* Entry / Exit times — plain text, no badges */}
                   <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-[120px]">
                       <div className="flex items-center gap-1">
                         <Clock className="size-2.5 text-muted-foreground/30" />
-                        <span className="text-[11px] font-bold text-foreground/70 tabular-nums">
+                        <span className="text-[11px] font-bold text-foreground/70 tabular-nums whitespace-nowrap">
                           {format(new Date(log.punchIn), "HH:mm")}
                         </span>
                       </div>
@@ -128,7 +130,7 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
                           <span className="text-muted-foreground/20">—</span>
                           <div className="flex items-center gap-1">
                             <Clock className="size-2.5 text-muted-foreground/30" />
-                            <span className="text-[11px] font-bold text-foreground/70 tabular-nums">
+                            <span className="text-[11px] font-bold text-foreground/70 tabular-nums whitespace-nowrap">
                               {format(new Date(log.punchOut), "HH:mm")}
                             </span>
                           </div>
@@ -139,48 +141,54 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
 
                   {/* Status — plain text, no badge */}
                   <td className="py-3 px-4">
-                    {log.isOutsideOffice ? (
-                      <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest flex items-center gap-1">
-                        <MapPin className="size-2.5" /> Outside
-                      </span>
-                    ) : (
-                      <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1">
-                        <MapPin className="size-2.5" /> In Office
-                      </span>
-                    )}
+                    <div className="min-w-[90px]">
+                      {log.isOutsideOffice ? (
+                        <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest flex items-center gap-1 whitespace-nowrap">
+                          <MapPin className="size-2.5" /> Outside
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1 whitespace-nowrap">
+                          <MapPin className="size-2.5" /> In Office
+                        </span>
+                      )}
+                    </div>
                   </td>
 
                   {/* GPS — IN / OUT */}
                   <td className="py-3 px-4">
-                    {log.punchInLat && log.punchInLng ? (
-                      <span className="text-[10px] font-mono font-bold text-foreground/60 tabular-nums">
-                        {log.punchInLat.toFixed(5)}, {log.punchInLng.toFixed(5)}
-                      </span>
-                    ) : (
-                      <span className="text-[9px] text-muted-foreground/30 font-bold uppercase tracking-tighter">—</span>
-                    )}
+                    <div className="min-w-[120px]">
+                      {log.punchInLat && log.punchInLng ? (
+                        <span className="text-[10px] font-mono font-bold text-foreground/60 tabular-nums whitespace-nowrap">
+                          {log.punchInLat.toFixed(5)}, {log.punchInLng.toFixed(5)}
+                        </span>
+                      ) : (
+                        <span className="text-[9px] text-muted-foreground/30 font-bold uppercase tracking-tighter">—</span>
+                      )}
+                    </div>
                   </td>
 
                   <td className="py-3 px-4">
-                    {log.punchOutLat && log.punchOutLng ? (
-                      <span className="text-[10px] font-mono font-bold text-foreground/60 tabular-nums">
-                        {log.punchOutLat.toFixed(5)}, {log.punchOutLng.toFixed(5)}
-                      </span>
-                    ) : (
-                      <span className="text-[9px] text-muted-foreground/30 font-bold uppercase tracking-tighter">—</span>
-                    )}
+                    <div className="min-w-[120px]">
+                      {log.punchOutLat && log.punchOutLng ? (
+                        <span className="text-[10px] font-mono font-bold text-foreground/60 tabular-nums whitespace-nowrap">
+                          {log.punchOutLat.toFixed(5)}, {log.punchOutLng.toFixed(5)}
+                        </span>
+                      ) : (
+                        <span className="text-[9px] text-muted-foreground/30 font-bold uppercase tracking-tighter">—</span>
+                      )}
+                    </div>
                   </td>
 
                   {/* Map links & Revert Action */}
                   <td className="py-3 px-5 text-right">
-                    <div className="flex flex-col items-end gap-2">
-                       <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-end gap-4 min-w-[180px]">
+                      <div className="flex items-center gap-3">
                         {log.punchInLat && log.punchInLng && (
                           <a
                             href={`https://www.google.com/maps/search/?api=1&query=${log.punchInLat},${log.punchInLng}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600/70 hover:text-emerald-600 transition-colors uppercase tracking-widest"
+                            className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600/70 hover:text-emerald-600 transition-colors uppercase tracking-widest whitespace-nowrap"
                           >
                             <ExternalLink className="size-2.5" /> IN
                           </a>
@@ -190,12 +198,12 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
                             href={`https://www.google.com/maps/search/?api=1&query=${log.punchOutLat},${log.punchOutLng}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-0.5 text-[9px] font-bold text-primary/50 hover:text-primary transition-colors uppercase tracking-widest"
+                            className="inline-flex items-center gap-0.5 text-[9px] font-bold text-primary/50 hover:text-primary transition-colors uppercase tracking-widest whitespace-nowrap"
                           >
                             <ExternalLink className="size-2.5" /> OUT
                           </a>
                         )}
-                       </div>
+                      </div>
                       {log.punchOut && format(new Date(log.date), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") && (
                         <RevertCheckoutButton logId={log.id} userName={log.userName} />
                       )}

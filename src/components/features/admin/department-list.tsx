@@ -39,9 +39,9 @@ export function DepartmentList({
         <table className="w-full border-collapse">
           <thead className="bg-muted/5 border-b border-border/40">
             <tr>
-              <th className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Department</th>
-              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Members</th>
-              <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Action</th>
+              <th className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">Department</th>
+              <th className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">Members</th>
+              <th className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/20">
@@ -49,13 +49,13 @@ export function DepartmentList({
               <tr key={dept.id} className="hover:bg-muted/5 transition-colors group">
                 {/* Department Name */}
                 <td className="py-3 px-5">
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2.5 min-w-[150px]">
                     <div className="size-7 rounded-sm bg-primary/5 text-primary flex items-center justify-center border border-primary/10 font-bold text-[9px]">
                       {dept.name.slice(0, 2).toUpperCase()}
                     </div>
-                    <div>
-                      <p className="text-[11px] font-bold text-foreground leading-none">{dept.name}</p>
-                      <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-tight mt-0.5">
+                    <div className="truncate">
+                      <p className="text-[11px] font-bold text-foreground leading-none truncate">{dept.name}</p>
+                      <p className="text-[9px] text-muted-foreground/80 font-bold uppercase tracking-tight mt-0.5 whitespace-nowrap">
                         {dept._count?.members || 0} {dept._count?.members === 1 ? "member" : "members"}
                       </p>
                     </div>
@@ -64,9 +64,9 @@ export function DepartmentList({
 
                 {/* Member Count */}
                 <td className="py-3 px-4">
-                  <div className="flex items-center gap-1.5">
-                    <Users className="size-3 text-muted-foreground/30" />
-                    <span className="text-[11px] font-bold text-foreground/70 tabular-nums">{dept._count?.members || 0}</span>
+                  <div className="flex items-center gap-1.5 min-w-[80px]">
+                    <Users className="size-3 text-muted-foreground" />
+                    <span className="text-[11px] font-bold text-foreground tabular-nums">{dept._count?.members || 0}</span>
                   </div>
                 </td>
 
@@ -75,7 +75,7 @@ export function DepartmentList({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 text-muted-foreground/30 hover:text-rose-500 hover:bg-rose-500/5 rounded-sm transition-all opacity-0 group-hover:opacity-100"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/5 rounded-sm transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                     onClick={() => handleDelete(dept.id)}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>

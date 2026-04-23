@@ -51,10 +51,10 @@ export function UserManagementTable({
           <table className="w-full border-collapse">
             <thead className="bg-muted/5 border-b border-border/60">
               <tr>
-                <th className="py-4 px-6 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 w-[300px]">Name</th>
-                <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Joining Date</th>
-                <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Department</th>
-                <th className="py-4 px-6 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Action</th>
+                <th className="py-4 px-6 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 w-[300px] whitespace-nowrap">Name</th>
+                <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">Joining Date</th>
+                <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">Department</th>
+                <th className="py-4 px-6 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 whitespace-nowrap">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/20">
@@ -62,18 +62,18 @@ export function UserManagementTable({
                 filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-muted/5 transition-colors group">
                     <td className="py-3 px-6">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 min-w-[200px]">
                         <div className="w-8 h-8 rounded-full bg-muted text-foreground/40 flex items-center justify-center font-bold text-[10px] border border-border/40 overflow-hidden group-hover:bg-primary/5 group-hover:text-primary transition-colors">
                           {user.name ? user.name.slice(0, 2).toUpperCase() : user.email.slice(0, 2).toUpperCase()}
                         </div>
-                        <div className="flex flex-col">
-                          <span className="font-bold text-xs text-foreground leading-snug group-hover:text-primary transition-colors">{user.name}</span>
-                          <span className="text-[10px] text-muted-foreground font-medium leading-none">{user.email}</span>
+                        <div className="flex flex-col truncate">
+                          <span className="font-bold text-xs text-foreground leading-snug group-hover:text-primary transition-colors truncate">{user.name}</span>
+                          <span className="text-[10px] text-muted-foreground font-medium leading-none truncate">{user.email}</span>
                         </div>
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="text-[11px] font-bold text-foreground/70">
+                      <span className="text-[11px] font-bold text-foreground/70 whitespace-nowrap">
                         {user.joiningDate
                           ? new Date(user.joiningDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
                           : new Date(user.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -81,12 +81,12 @@ export function UserManagementTable({
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="text-[11px] font-bold text-foreground/70 tracking-tight">
+                      <span className="text-[11px] font-bold text-foreground/70 tracking-tight whitespace-nowrap">
                         {user.department?.name || "Unassigned"}
                       </span>
                     </td>
                     <td className="py-3 px-6 text-right">
-                      <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex justify-end gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         <EditUserDialog
                           user={user}
                           managers={validManagers}

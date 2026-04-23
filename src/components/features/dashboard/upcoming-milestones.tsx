@@ -68,7 +68,7 @@ export function UpcomingMilestones({ holidays: initialHolidays, nextBirthday, ne
           <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Upcoming Events</h3>
           <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Team milestones & holidays</p>
         </div>
-        <PartyPopper className="size-4 text-primary/60" />
+        <PartyPopper className="size-4 text-muted-foreground/80" />
       </div>
 
       <div className="divide-y divide-border/20 flex-1 overflow-y-auto scrollbar-hide">

@@ -24,9 +24,7 @@ export function UpcomingLeave({ requests }: UpcomingLeaveProps) {
           <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Upcoming Leave</h3>
           <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Activity Pipeline</p>
         </div>
-        <div className="size-8 rounded-sm bg-primary/5 text-primary flex items-center justify-center border border-primary/10">
-          <Plane className="size-4" />
-        </div>
+        <Plane className="size-4 text-muted-foreground/80" />
       </div>
 
       <div className="space-y-2 flex-1 overflow-y-auto scrollbar-hide">

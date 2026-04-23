@@ -22,7 +22,7 @@ export function CommunicationHub({ announcements, notifications, className }: Co
           <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Communication Hub</h3>
           <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Notification and Events</p>
         </div>
-        <Megaphone className="size-4 text-primary/60" />
+        <Megaphone className="size-4 text-muted-foreground/80" />
       </div>
 
       <div className="p-4 divide-y divide-border/20 flex-1 flex flex-col overflow-hidden">

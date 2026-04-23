@@ -24,9 +24,7 @@ export function TeamOnLeave({ members }: TeamOnLeaveProps) {
           <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Team Visibility</h3>
           <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Availability Network</p>
         </div>
-        <div className="size-8 rounded-sm bg-primary/5 text-primary flex items-center justify-center border border-primary/10">
-          <Users className="size-4" />
-        </div>
+        <Users className="size-4 text-muted-foreground/80" />
       </div>
 
       <div className="space-y-1.5 flex-1">

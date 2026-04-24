@@ -18,7 +18,7 @@ interface TeamOnLeaveProps {
 
 export function TeamOnLeave({ members }: TeamOnLeaveProps) {
   return (
-    <div className="bg-card border border-border rounded-sm p-5 space-y-5 h-full animate-fade-in">
+    <div className="bg-card border border-border rounded-sm p-5 flex flex-col h-[430px] animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Team Visibility</h3>
@@ -27,7 +27,7 @@ export function TeamOnLeave({ members }: TeamOnLeaveProps) {
         <Users className="size-4 text-muted-foreground/80" />
       </div>
 
-      <div className="space-y-1.5 flex-1">
+      <div className="space-y-1.5 flex-1 mt-5 overflow-y-auto scrollbar-hide">
         {members.length === 0 ? (
           <div className="py-8 text-center flex flex-col items-center gap-2 opacity-20">
             <CalendarDays className="size-6" />

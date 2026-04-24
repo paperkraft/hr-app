@@ -1,9 +1,9 @@
 "use server";
 
+import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { leaveApplicationSchema } from "@/lib/validations/leave";
 import { createNotification } from "@/actions/notification";
-import prisma from "@/lib/prisma";
 import { getDaysDifference } from "@/lib/utils";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -367,11 +367,12 @@ export async function submitLeaveRequest(formData: unknown) {
         await prisma.notification.createMany({
           data: usersToNotify.map(u => {
             let link = "/dashboard";
-            if (u.role === "ACCOUNTANT") {
+            if (["ADMIN", "SYSTEM_ADMIN", "ACCOUNTANT"].includes(u.role)) {
               link = "/dashboard/accountant?tab=approvals";
-            } else if (u.role === "ADMIN" || u.role === "SYSTEM_ADMIN") {
-              link = "/dashboard/admin";
             }
+            
+            // Debugging log for the developer
+            console.log(`[LeaveNotification] Notifying ${u.id} (Role: ${u.role}) with link: ${link}`);
 
             return {
               userId: u.id,

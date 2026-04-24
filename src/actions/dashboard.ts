@@ -372,9 +372,9 @@ export async function getEmployeeDashboardStats() {
 // --- Accountant Dashboard Stats ---
 export async function getAccountantDashboardStats(reqMonth?: number, reqYear?: number) {
   const session = await getServerSession(authOptions);
-  const isAdmin = session?.user?.role === "ADMIN" || session?.user?.role === "SYSTEM_ADMIN";
-  if (!session?.user || (session.user.role !== "ACCOUNTANT" && !isAdmin)) {
-    throw new Error("Unauthorized");
+  const allowedRoles = ["ACCOUNTANT", "ADMIN", "SYSTEM_ADMIN"];
+  if (!session?.user || !allowedRoles.includes(session.user.role)) {
+    throw new Error(`Unauthorized access for role: ${session?.user?.role || 'UNKNOWN'}`);
   }
 
   const now = new Date();

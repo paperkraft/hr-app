@@ -42,7 +42,6 @@ export function RecentApprovalsTable({ data, title = "Recent Approvals", subtitl
               <TableHead className="py-3 px-5 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 md:sticky md:left-0 md:bg-card md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Employee</TableHead>
               <TableHead className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Period</TableHead>
               <TableHead className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Branch</TableHead>
-              <TableHead className="py-3 px-4 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">System Note</TableHead>
               <TableHead className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Date</TableHead>
               <TableHead className="py-3 px-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Action</TableHead>
             </TableRow>
@@ -50,7 +49,7 @@ export function RecentApprovalsTable({ data, title = "Recent Approvals", subtitl
           <TableBody className="divide-y divide-border/20">
             {data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-12 text-center text-[10px] text-muted-foreground/30 font-black uppercase tracking-widest">
+                <TableCell colSpan={5} className="py-12 text-center text-[10px] text-muted-foreground/30 font-black uppercase tracking-widest">
                   No approved records found
                 </TableCell>
               </TableRow>
@@ -95,19 +94,6 @@ export function RecentApprovalsTable({ data, title = "Recent Approvals", subtitl
                       </span>
                       <span className="text-[8px] text-muted-foreground/40 font-black uppercase">{req.leaveType || 'General'}</span>
                     </div>
-                  </TableCell>
-                  <TableCell className="py-3 px-4">
-                    {req.systemNote ? (
-                      <div className="flex items-center gap-1.5 overflow-hidden max-w-[140px]">
-                        <div className="size-1 bg-emerald-500 rounded-full shrink-0" />
-                        <span className="text-[10px] text-muted-foreground/60 font-medium truncate italic" title={req.systemNote}>"{req.systemNote}"</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1.5">
-                        <div className="size-1 bg-sky-500 rounded-full shrink-0" />
-                        <span className="text-[10px] text-muted-foreground/60 font-medium">Manual Log</span>
-                      </div>
-                    )}
                   </TableCell>
                   <TableCell className="py-3 px-5 text-right">
                     <span className="text-[10px] font-bold text-muted-foreground/40 tabular-nums">

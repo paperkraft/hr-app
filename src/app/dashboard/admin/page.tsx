@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import { UpcomingMilestones } from "@/components/features/dashboard/upcoming-milestones";
 import { TeamOnLeave } from "@/components/features/dashboard/team-on-leave";
 import { CommunicationHub } from "@/components/features/dashboard/communication-hub";
-
 import { getAdminDashboardStats } from "@/actions/dashboard";
 
 export const dynamic = 'force-dynamic';
@@ -64,17 +63,17 @@ export default async function AdminOverviewPage() {
       </div>
 
       {/* ROW 1: Attendance Pulse & Communication Hub */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Attendance Pulse (8/12) */}
         <div className="lg:col-span-8">
-          <div className="bg-card border border-border rounded-sm overflow-hidden h-full">
+          <div className="bg-card border border-border rounded-sm overflow-hidden h-[430px] flex flex-col">
             <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between bg-muted/5">
               <div>
                 <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Attendance Pulse</h3>
                 <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Live cluster monitoring</p>
               </div>
-              <Link 
-                href="/dashboard/admin/attendance" 
+              <Link
+                href="/dashboard/admin/attendance"
                 className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary/80 transition-colors bg-primary/5 px-2 py-1 rounded-sm border border-primary/10"
               >
                 View Detailed Pulse
@@ -105,20 +104,20 @@ export default async function AdminOverviewPage() {
                 </div>
               </div>
             </div>
-            
-            <div className="border-t border-border/30 p-5">
+
+            <div className="border-t border-border/30 p-5 flex-1 flex flex-col min-h-0">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">Workforce Status</p>
                 <span className="text-[9px] font-bold text-muted-foreground/40 tabular-nums">{totalStaff} Total Staff</span>
               </div>
-              
-              <div className="max-h-[300px] overflow-y-auto scrollbar-hide -mx-1 px-1">
+
+              <div className="flex-1 overflow-y-auto scrollbar-hide -mx-1 px-1">
                 <table className="w-full text-left border-collapse">
                   <thead className="sticky top-0 bg-card z-10">
                     <tr className="border-b border-border/40">
-                      <th className="pb-2 text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest">Employee</th>
-                      <th className="pb-2 text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest">Department</th>
-                      <th className="pb-2 text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest text-right">Status</th>
+                      <th className="pb-2 text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest bg-card">Employee</th>
+                      <th className="pb-2 text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest bg-card">Department</th>
+                      <th className="pb-2 text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest text-right bg-card">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/10">
@@ -127,27 +126,35 @@ export default async function AdminOverviewPage() {
                       ...stats.onLeaveEmployees.map(e => ({ ...e, status: 'On Leave', color: 'text-amber-600 bg-amber-500/10' })),
                       ...stats.absentEmployees.map(e => ({ ...e, status: 'Absent', color: 'text-rose-600 bg-rose-500/10' }))
                     ]
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((item) => (
-                      <tr key={item.id} className="group hover:bg-muted/5 transition-colors">
-                        <td className="py-2">
-                          <span className="text-[11px] font-bold text-foreground/80">{item.name}</span>
-                        </td>
-                        <td className="py-2">
-                          <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tight">{(item as any).department || "N/A"}</span>
-                        </td>
-                        <td className="py-2 text-right">
-                          <span className={cn("text-[8px] font-black px-1.5 py-0.5 rounded-sm uppercase tracking-tighter border border-border/10", item.color)}>
-                            {item.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((item) => (
+                        <tr key={item.id} className="group hover:bg-muted/5 transition-colors">
+                          <td className="py-2.5">
+                            <span className="text-[11px] font-bold text-foreground/80">{item.name}</span>
+                          </td>
+                          <td className="py-2.5">
+                            <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tight">{(item as any).department || "N/A"}</span>
+                          </td>
+                          <td className="py-2.5 text-right">
+                            <span className={cn("text-[8px] font-black px-1.5 py-0.5 rounded-sm uppercase tracking-tighter border border-border/10", item.color)}>
+                              {item.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
+
+              <Link
+                href="/dashboard/admin/attendance"
+                className="mt-2 flex items-center justify-center gap-1.5 w-full text-[10px] font-black text-primary uppercase tracking-widest py-2.5 bg-primary/5 border-t border-border/40 hover:bg-primary/10 transition-all shrink-0"
+              >
+                View Full Workforce Pulse
+                <ArrowUpRight className="size-3" />
+              </Link>
             </div>
-            
+
           </div>
         </div>
 
@@ -161,11 +168,11 @@ export default async function AdminOverviewPage() {
       </div>
 
       {/* ROW 2: Operational Visibility Cluster (Saturation, Milestones, Team) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
         {/* Saturation Trends (4/12) */}
         <div className="lg:col-span-4">
-          <div className="bg-card border border-border rounded-sm overflow-hidden h-full">
+          <div className="bg-card border border-border rounded-sm overflow-hidden h-[430px] flex flex-col">
             <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between bg-muted/5">
               <div>
                 <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Saturation Trends</h3>
@@ -174,7 +181,7 @@ export default async function AdminOverviewPage() {
               <FileText className="size-4 text-muted-foreground/80" />
             </div>
 
-            <div className="divide-y divide-border/20 max-h-[350px] overflow-y-auto scrollbar-hide">
+            <div className="divide-y divide-border/20 flex-1 overflow-y-auto scrollbar-hide">
               {stats.monthlyLeaveSummary.length === 0 ? (
                 <div className="py-12 text-center flex flex-col items-center gap-2 opacity-20">
                   <FileText className="size-6" />
@@ -209,8 +216,8 @@ export default async function AdminOverviewPage() {
 
         {/* Upcoming Milestones (4/12) */}
         <div className="lg:col-span-4">
-          <UpcomingMilestones 
-            holidays={stats.holidays || []} 
+          <UpcomingMilestones
+            holidays={stats.holidays || []}
             nextBirthday={stats.nextBirthday}
             nextAnniversary={stats.nextAnniversary}
           />
@@ -221,6 +228,7 @@ export default async function AdminOverviewPage() {
           <TeamOnLeave members={stats.teamOnLeave} />
         </div>
       </div>
+
     </PageContainer>
   );
 }

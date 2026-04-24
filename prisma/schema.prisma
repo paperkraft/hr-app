@@ -94,6 +94,7 @@ model Attendance {
   ipAddress         String?
   isOutsideOffice   Boolean   @default(false)
   isAutoPunchOut    Boolean   @default(false)
+  isEarlyLogoff     Boolean   @default(false)
   user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
@@ -157,6 +158,8 @@ model SystemConfig {
   semiAnnualPolicyEnabled      Boolean  @default(true)
   specialCaseEnabled           Boolean  @default(true)
   specialCaseExtraMinutes      Int      @default(0)
+  earlyLogoffAllowedCount      Int      @default(3)
+  earlyLogoffEnabled           Boolean  @default(true)
 }
 
 enum Role {

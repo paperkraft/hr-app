@@ -25,6 +25,8 @@ export async function getSystemConfig() {
       semiAnnualCycleStartMonth: 4,
       firstHalfEndTime: "13:30",
       secondHalfStartTime: "13:30",
+      earlyLogoffAllowedCount: 3,
+      earlyLogoffEnabled: true,
     },
   })
   
@@ -46,6 +48,8 @@ export async function updateSystemConfig(data: {
   semiAnnualCycleStartMonth: number;
   firstHalfEndTime: string;
   secondHalfStartTime: string;
+  earlyLogoffAllowedCount: number;
+  earlyLogoffEnabled: boolean;
 }) {
   const session = await getServerSession(authOptions)
   
@@ -71,6 +75,8 @@ export async function updateSystemConfig(data: {
         semiAnnualCycleStartMonth: data.semiAnnualCycleStartMonth,
         firstHalfEndTime: data.firstHalfEndTime,
         secondHalfStartTime: data.secondHalfStartTime,
+        earlyLogoffAllowedCount: data.earlyLogoffAllowedCount,
+        earlyLogoffEnabled: data.earlyLogoffEnabled,
       },
     })
     

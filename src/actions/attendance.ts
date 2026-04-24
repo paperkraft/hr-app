@@ -36,7 +36,18 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
     // Priority for timings: Shift > Location > System Default
     const startTime = user.shift?.startTime || user.location?.startTime || config?.defaultOfficeStartTime || "09:00"
     const endTime = user.shift?.endTime || user.location?.endTime || config?.defaultOfficeEndTime || "18:00"
-    const graceMinutes = user.location?.graceTimeMinutes ?? config?.defaultGraceTimeMinutes ?? 15
+    const graceMinutes = user.location?.graceTimeMinutes ?? config?.defaultGraceTimeMinutes ?? 0
+
+    // Fetch approved SHORT leave for today
+    const approvedShortLeave = await prisma.leaveRequest.findFirst({
+      where: {
+        userId: user.id,
+        status: "APPROVED",
+        duration: "SHORT",
+        startDate: { lte: end },
+        endDate: { gte: start }
+      }
+    });
 
     // 2. Geofencing Logic based on Work Mode
     let isOutsideOffice = false;
@@ -75,12 +86,21 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
 
     if (!existingLog) {
       const punchInTime = new Date()
-      const [hours, minutes] = startTime.split(":").map(Number)
       
+      // Calculate Late Threshold
+      let effectiveStartTime = startTime;
+      if (approvedShortLeave?.startTime && approvedShortLeave.endTime) {
+        // If short leave covers the shift start (e.g. starts at 09:30 or earlier)
+        if (approvedShortLeave.startTime <= startTime) {
+          effectiveStartTime = approvedShortLeave.endTime;
+        }
+      }
+
+      const [hours, minutes] = effectiveStartTime.split(":").map(Number)
       const lateThreshold = new Date(start)
       lateThreshold.setHours(hours, minutes + graceMinutes, 0, 0)
       
-      const lateMarkEnabled = config?.lateMarkEnabled ?? true;
+      const lateMarkEnabled = config?.lateMarkEnabled ?? false;
       const isLate = lateMarkEnabled ? (punchInTime > lateThreshold) : false;
 
       await prisma.attendance.create({
@@ -98,8 +118,33 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
     } else if (!existingLog.punchOut) {
       const punchOutTime = new Date();
       
+      // Calculate Early Log-off
+      let isEarlyLogoff = false;
+      const earlyLogoffEnabled = config?.earlyLogoffEnabled ?? false;
+
+      const [eH, eM] = endTime.split(":").map(Number);
+      const shiftEnd = new Date(start);
+      shiftEnd.setHours(eH, eM, 0, 0);
+
+      if (earlyLogoffEnabled && punchOutTime < shiftEnd) {
+        isEarlyLogoff = true;
+        // Check if covered by short leave
+        if (approvedShortLeave?.startTime && approvedShortLeave.endTime) {
+          // If short leave covers the shift end (e.g. ends at 18:00 or later)
+          if (approvedShortLeave.endTime >= endTime) {
+            // If they punch out at or after the start of their approved short leave
+            const [slH, slM] = approvedShortLeave.startTime.split(":").map(Number);
+            const slStart = new Date(start);
+            slStart.setHours(slH, slM, 0, 0);
+            if (punchOutTime >= slStart) {
+              isEarlyLogoff = false;
+            }
+          }
+        }
+      }
+
       let isSpecialCase = false;
-      const specialCaseEnabled = config?.specialCaseEnabled ?? true;
+      const specialCaseEnabled = config?.specialCaseEnabled ?? false;
       const extraMinutes = config?.specialCaseExtraMinutes ?? 0;
 
       if (specialCaseEnabled && existingLog.isLate) {
@@ -119,6 +164,7 @@ export async function punchInOutAction(coords?: { lat: number; lng: number }) {
         data: {
           punchOut: punchOutTime,
           isLateSpecialCase: isSpecialCase,
+          isEarlyLogoff,
           punchOutLat: coords?.lat,
           punchOutLng: coords?.lng,
           ipAddress: ipAddress ?? (existingLog as any).ipAddress,

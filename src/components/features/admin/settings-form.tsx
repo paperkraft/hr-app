@@ -35,6 +35,8 @@ interface SettingsFormProps {
         semiAnnualCycleStartMonth: number;
         firstHalfEndTime: string;
         secondHalfStartTime: string;
+        earlyLogoffAllowedCount: number;
+        earlyLogoffEnabled: boolean;
     },
     initialLocations: any[];
     initialHolidays: { id: string; name: string; date: Date }[];
@@ -260,7 +262,30 @@ export function SettingsForm({ initialData, initialLocations, initialHolidays, i
                                 </FieldRow>
                             </SectionCard>
 
-                            {/* Card 2: Intelligent Waiver */}
+                            {/* Card 2: Early Log-off Enforcement */}
+                            <SectionCard title="Early Log-off Policy" description="Penalties for early departures" icon={Timer} iconColor="text-rose-600" iconBg="bg-rose-500/5">
+                                <ToggleRow
+                                    label="Enable Early Log-off Policy"
+                                    description="Monitor and penalize early departures system-wide."
+                                    checked={formData.earlyLogoffEnabled}
+                                    onCheckedChange={(v) => setFormData(prev => ({ ...prev, earlyLogoffEnabled: v }))}
+                                />
+                                <p className="text-[10px] text-muted-foreground/60 leading-relaxed mb-2 mt-2">
+                                    Every X early log-offs (before shift end) will count as a 0.5 day LWP deduction.
+                                </p>
+                                <FieldRow label="Early Log-offs Per 0.5 Day" disabled={!formData.earlyLogoffEnabled}>
+                                    <Input
+                                        type="number"
+                                        min="1"
+                                        value={formData.earlyLogoffAllowedCount}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, earlyLogoffAllowedCount: parseInt(e.target.value) || 0 }))}
+                                        className={inputClass}
+                                        disabled={!formData.earlyLogoffEnabled}
+                                    />
+                                </FieldRow>
+                            </SectionCard>
+
+                            {/* Card 3: Intelligent Waiver */}
                             <SectionCard title="Intelligent Waiver" description="Waive late mark on full-hour completion" icon={Timer} iconColor="text-emerald-600" iconBg="bg-emerald-500/5">
                                 <ToggleRow
                                     label="Enable Waiver Rule"

@@ -440,6 +440,10 @@ export async function getAccountantDashboardStats(reqMonth?: number, reqYear?: n
   let totalLwpSystemWide = 0;
   let totalAllowancesSystemWide = 0;
 
+  const config = await prisma.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
+  const lateAllowed = config?.lateMarkAllowedCount ?? 0;
+  const earlyAllowed = config?.earlyLogoffAllowedCount ?? 0;
+
   const reportData = users.map(user => {
     const attendances = user.attendances;
     const currentBalance = user.leaveBalances.find(lb => lb.month === currentMonth && lb.year === currentYear);
@@ -461,10 +465,18 @@ export async function getAccountantDashboardStats(reqMonth?: number, reqYear?: n
     const totalLate = attendances.filter(a => a.isLate).length;
     const specialCaseLate = attendances.filter(a => a.isLate && a.isLateSpecialCase).length;
     const punishableLate = totalLate - specialCaseLate;
-    const lateDeduction = punishableLate > 3 ? Math.ceil((punishableLate - 3) / 3) * 0.5 : 0;
+    const lateDeduction = (lateAllowed > 0 && punishableLate > lateAllowed) 
+      ? Math.ceil((punishableLate - lateAllowed) / lateAllowed) * 0.5 
+      : 0;
+
+    const earlyEnabled = config?.earlyLogoffEnabled ?? false;
+    const totalEarlyLogoff = earlyEnabled ? attendances.filter(a => (a as any).isEarlyLogoff).length : 0;
+    const earlyLogoffDeduction = (earlyEnabled && earlyAllowed > 0) 
+      ? (Math.floor(totalEarlyLogoff / earlyAllowed) * 0.5) 
+      : 0;
 
     totalLatesSystemWide += totalLate;
-    const lwpDays = unpaidTaken + lateDeduction;
+    const lwpDays = unpaidTaken + lateDeduction + earlyLogoffDeduction;
     totalLwpSystemWide += lwpDays;
     totalEncashments += (currentBalance?.encashed ?? 0);
     totalAllowancesSystemWide += allowanceDays;
@@ -478,6 +490,7 @@ export async function getAccountantDashboardStats(reqMonth?: number, reqYear?: n
       totalLate,
       specialCaseLate,
       punishableLate,
+      totalEarlyLogoff,
       lwpDays,
       encashableDays: currentBalance?.encashed ?? 0,
       allowanceDays,

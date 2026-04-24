@@ -25,6 +25,7 @@ type ReportData = {
   totalLate: number;
   specialCaseLate: number;
   punishableLate: number;
+  totalEarlyLogoff: number;
   lwpDays: number;
   encashableDays: number;
   allowanceDays: number;
@@ -91,7 +92,7 @@ export function MasterReportTable({
             {/* Header Tier 1: Grouping */}
             <TableRow className="bg-muted/5 hover:bg-muted/5 border-b border-border/40">
               <TableHead className="py-2.5 px-5 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 border-r border-border/20">Staff Identity</TableHead>
-              <TableHead colSpan={3} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-center border-r border-border/20 bg-primary/2">Attendance Summary</TableHead>
+              <TableHead colSpan={4} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-center border-r border-border/20 bg-primary/2">Attendance Summary</TableHead>
               <TableHead className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-center border-r border-border/20 bg-amber-500/2">Usage</TableHead>
               <TableHead colSpan={3} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-center border-r border-border/20 bg-emerald-500/2">Balance Frameworks</TableHead>
               <TableHead colSpan={2} className="py-2.5 px-4 font-black text-[9px] uppercase tracking-widest text-muted-foreground/80 text-center border-r border-border/20 bg-rose-500/2">Payroll Deductions</TableHead>
@@ -102,6 +103,7 @@ export function MasterReportTable({
               <TableHead className="py-3 px-5 text-[10px] font-bold text-foreground border-r border-border/10 md:sticky md:left-0 md:bg-card md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Full Name</TableHead>
               <TableHead className="py-3 px-4 text-[10px] font-bold text-foreground text-center bg-primary/1">Present</TableHead>
               <TableHead className="py-3 px-4 text-[10px] font-bold text-foreground text-center bg-primary/1">Late Mark</TableHead>
+              <TableHead className="py-3 px-4 text-[10px] font-bold text-rose-500 text-center bg-primary/1">Early Log</TableHead>
               <TableHead className="py-3 px-4 text-[10px] font-bold text-primary text-center border-r border-border/10 bg-primary/1">Allowance</TableHead>
               <TableHead className="py-3 px-4 text-[10px] font-bold text-foreground text-center border-r border-border/10 bg-amber-500/1">Taken</TableHead>
               <TableHead className="py-3 px-4 text-[10px] font-bold text-emerald-600 text-center bg-emerald-500/1">Monthly</TableHead>
@@ -115,7 +117,7 @@ export function MasterReportTable({
           <TableBody>
             {filteredData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={11} className="py-20 text-center">
+                <TableCell colSpan={12} className="py-20 text-center">
                   <div className="flex flex-col items-center gap-2 opacity-20">
                     <Search className="size-8" />
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">No matches found</p>
@@ -153,6 +155,15 @@ export function MasterReportTable({
                       {row.punishableLate > 0 ? (
                         <div className="inline-flex h-5 px-1.5 items-center justify-center rounded-sm bg-amber-500/10 text-amber-600 text-[10px] font-bold border border-amber-500/10 min-w-[20px]">
                           {row.punishableLate}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground/20 text-[10px] font-bold">--</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-center bg-primary/1">
+                      {row.totalEarlyLogoff > 0 ? (
+                        <div className="inline-flex h-5 px-1.5 items-center justify-center rounded-sm bg-rose-500/10 text-rose-600 text-[10px] font-bold border border-rose-500/10 min-w-[20px]">
+                          {row.totalEarlyLogoff}
                         </div>
                       ) : (
                         <span className="text-muted-foreground/20 text-[10px] font-bold">--</span>
@@ -203,7 +214,7 @@ export function MasterReportTable({
                       }}
                       month={month}
                       year={year}
-                      colSpan={11}
+                      colSpan={12}
                       onSuccess={() => {
                         setTimeout(() => setActiveSplitId(null), 1500);
                       }}

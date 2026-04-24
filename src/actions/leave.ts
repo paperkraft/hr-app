@@ -70,7 +70,7 @@ export async function ensureBalance(userId: string, month: number, year: number,
   let startMonth = configStartMonth;
   if (startMonth === undefined) {
     const config = await prisma.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
-    startMonth = config?.semiAnnualCycleStartMonth ?? 4;
+    startMonth = config?.semiAnnualCycleStartMonth ?? 0;
   }
 
   // Find the predecessor
@@ -564,7 +564,7 @@ async function processLeaveRequestStatus(requestId: string, status: "APPROVED" |
 
     // Cascade updates for all subsequent months
     const config = await tx.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
-    const startMonthConfig = (config as any)?.semiAnnualCycleStartMonth ?? 4;
+    const startMonthConfig = (config as any)?.semiAnnualCycleStartMonth ?? 0;
 
     const firstMonth = monthParts[0];
     let m = firstMonth.month;
@@ -743,7 +743,7 @@ export async function cancelApprovedLeave(requestId: string, note?: string) {
       });
 
       const config = await tx.systemConfig.findUnique({ where: { id: "GLOBAL_CONFIG" } });
-      const startMonthConfig = (config as any)?.semiAnnualCycleStartMonth ?? 4;
+      const startMonthConfig = (config as any)?.semiAnnualCycleStartMonth ?? 0;
 
       // Final Step: Cascade updates throughout the rest of the year
       let m = monthParts[0].month;

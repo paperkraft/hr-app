@@ -112,7 +112,11 @@ export async function getAdminDashboardStats() {
       totalEmployees,
       pendingCount: allPendingRequests.length,
       attendanceRate,
-      presentEmployees: presentEmployees.map(e => ({ id: e.id, name: e.name || e.email })),
+      presentEmployees: presentEmployees.map(e => ({ 
+        id: e.id, 
+        name: e.name || e.email,
+        isOutsideOffice: todayAttendance.find(a => a.userId === e.id)?.isOutsideOffice || false
+      })),
       absentEmployees: absentEmployees.map(e => ({ id: e.id, name: e.name || e.email })),
       onLeaveEmployees: onLeaveEmployees.map(e => ({ id: e.id, name: e.name || e.email })),
       monthlyLeaveSummary,
@@ -316,6 +320,7 @@ export async function getEmployeeDashboardStats() {
     data: {
       userName: user?.name || "Employee",
       sessionStatus,
+      punchInTime: todaysLog?.punchIn ? todaysLog.punchIn : null,
       autoPunchOutCount: user?.autoPunchOutCount ?? 0,
       balances: {
         casualTaken,

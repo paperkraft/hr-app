@@ -98,6 +98,32 @@ export default async function AdminOverviewPage() {
                 </div>
               </div>
             </div>
+            
+            {stats.presentEmployees.length > 0 && (
+              <div className="border-t border-border/30 p-5 space-y-2">
+                <p className="text-[10px] font-black text-emerald-500/60 uppercase tracking-widest mb-3">Active Workforce</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {stats.presentEmployees.slice(0, 6).map(e => (
+                    <div key={e.id} className="flex items-center justify-between py-2 px-3 rounded-sm bg-emerald-500/2 border border-emerald-500/10 group hover:border-emerald-500/20 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <div className="size-7 rounded-sm bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-[9px]">
+                          {e.name.slice(0, 2).toUpperCase()}
+                        </div>
+                        <span className="text-xs font-bold text-foreground/80 truncate max-w-[80px]">{e.name}</span>
+                      </div>
+                      {(e as any).isOutsideOffice ? (
+                        <span className="text-[8px] font-black text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded-sm uppercase tracking-tighter border border-amber-500/20">Off-site</span>
+                      ) : (
+                        <span className="text-[8px] font-black text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded-sm uppercase tracking-tighter border border-emerald-500/20">On-site</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {stats.presentEmployees.length > 6 && (
+                  <p className="text-[9px] text-muted-foreground/40 font-bold text-center pt-1">+{stats.presentEmployees.length - 6} more active</p>
+                )}
+              </div>
+            )}
 
             {stats.absentEmployees.length > 0 && (
               <div className="border-t border-border/30 p-5 space-y-2">

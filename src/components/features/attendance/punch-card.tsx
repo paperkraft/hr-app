@@ -8,11 +8,12 @@ import { cn } from "@/lib/utils";
 
 interface AttendanceCardProps {
   initialStatus: "PENDING" | "PUNCHED_IN" | "PUNCHED_OUT";
+  punchInTime?: Date | string | null;
   autoPunchOutCount?: number;
   warningThreshold?: number;
 }
 
-export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningThreshold = 3 }: AttendanceCardProps) {
+export function AttendanceCard({ initialStatus, punchInTime, autoPunchOutCount = 0, warningThreshold = 3 }: AttendanceCardProps) {
   const [status, setStatus] = useState(initialStatus);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -169,9 +170,19 @@ export function AttendanceCard({ initialStatus, autoPunchOutCount = 0, warningTh
           )}
 
           {status === "PUNCHED_IN" && !isPending && (
-            <div className="animate-fade-in flex items-center gap-2 px-3 py-1.5 rounded-sm bg-emerald-500/10 border border-emerald-500/20">
-              <div className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Active Session</span>
+            <div className="flex flex-col items-center gap-2 animate-fade-in">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm bg-emerald-500/10 border border-emerald-500/20">
+                <div className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Active Session</span>
+              </div>
+              {punchInTime && (
+                <div className="text-[10px] font-bold text-muted-foreground/60 flex items-center gap-1">
+                  <Clock className="size-3 text-muted-foreground/40" />
+                  <span>
+                    Started at {new Date(punchInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </div>

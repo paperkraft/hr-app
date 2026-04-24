@@ -55,6 +55,7 @@ export const roleNavigation: Record<string, NavGroup[]> = {
         { title: "System Overview", href: "/dashboard/admin", icon: LayoutDashboard },
         { title: "Employees", href: "/dashboard/admin/users", icon: Users },
         { title: "Departments", href: "/dashboard/admin/departments", icon: Building2 },
+        { title: "Location Status", href: "/dashboard/accountant/location-logs", icon: MapPin },
         { title: "Configuration", href: "/dashboard/admin/settings", icon: Settings },
       ]
     },
@@ -78,6 +79,7 @@ export const roleNavigation: Record<string, NavGroup[]> = {
         { title: "System Overview", href: "/dashboard/admin", icon: LayoutDashboard },
         { title: "Employees", href: "/dashboard/admin/users", icon: Users },
         { title: "Departments", href: "/dashboard/admin/departments", icon: Building2 },
+        { title: "Location Status", href: "/dashboard/accountant/location-logs", icon: MapPin },
         { title: "Configuration", href: "/dashboard/admin/settings", icon: Settings },
       ]
     },

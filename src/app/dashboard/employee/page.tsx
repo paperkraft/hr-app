@@ -48,6 +48,7 @@ export default async function EmployeeDashboard() {
         <div className="lg:col-span-5">
           <AttendanceCard
             initialStatus={data.sessionStatus}
+            punchInTime={data.punchInTime}
             autoPunchOutCount={data.autoPunchOutCount}
             warningThreshold={3}
           />

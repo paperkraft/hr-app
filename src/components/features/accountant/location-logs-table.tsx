@@ -2,7 +2,14 @@
 
 import React, { useState } from "react";
 import { MapPin, Search, ExternalLink, Clock, Filter } from "lucide-react";
-import { Input } from "@/components/ui";
+import {
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -26,12 +33,20 @@ interface AttendanceLog {
 export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterOutsideOnly, setFilterOutsideOnly] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const filteredData = data.filter((log) => {
     const matchesSearch = log.userName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterOutsideOnly ? log.isOutsideOffice : true;
     return matchesSearch && matchesFilter;
   });
+
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   return (
     <div className="bg-card border border-border rounded-sm overflow-hidden animate-fade-in">
@@ -42,7 +57,10 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
           <Input
             placeholder="Search by employee..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="pl-9 h-9 border-border/60 focus:ring-primary/20 transition-all rounded-sm text-xs bg-muted/20"
           />
         </div>
@@ -53,7 +71,10 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
           <Button
             variant={filterOutsideOnly ? "default" : "outline"}
             size="sm"
-            onClick={() => setFilterOutsideOnly(!filterOutsideOnly)}
+            onClick={() => {
+              setFilterOutsideOnly(!filterOutsideOnly);
+              setCurrentPage(1);
+            }}
             className={cn(
               "h-9 px-3 text-[10px] font-bold uppercase tracking-widest rounded-sm transition-all",
               filterOutsideOnly
@@ -82,7 +103,7 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-border/20">
-            {filteredData.length === 0 ? (
+            {paginatedData.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-16 text-center">
                   <div className="flex flex-col items-center gap-2 opacity-20">
@@ -92,9 +113,9 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
                 </td>
               </tr>
             ) : (
-              filteredData.map((log) => (
+              paginatedData.map((log) => (
                 <tr key={log.id} className="hover:bg-muted/5 transition-colors group">
-                  {/* Employee */}
+                  {/* ... rest of mapping remains same ... */}
                   <td className="py-3 px-5">
                     <div className="flex items-center gap-2.5 min-w-[150px]">
                       <div className="size-7 rounded-sm bg-muted text-foreground/40 flex items-center justify-center font-bold text-[9px] border border-border/40 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
@@ -104,7 +125,6 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
                     </div>
                   </td>
 
-                  {/* Date + IP */}
                   <td className="py-3 px-4">
                     <div className="min-w-[100px]">
                       <p className="text-[11px] font-bold text-foreground/70 whitespace-nowrap">
@@ -116,7 +136,6 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
                     </div>
                   </td>
 
-                  {/* Entry / Exit times — plain text, no badges */}
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3 min-w-[120px]">
                       <div className="flex items-center gap-1">
@@ -139,7 +158,6 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
                     </div>
                   </td>
 
-                  {/* Status — plain text, no badge */}
                   <td className="py-3 px-4">
                     <div className="min-w-[90px]">
                       {log.isOutsideOffice ? (
@@ -154,7 +172,6 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
                     </div>
                   </td>
 
-                  {/* GPS — IN / OUT */}
                   <td className="py-3 px-4">
                     <div className="min-w-[120px]">
                       {log.punchInLat && log.punchInLng ? (
@@ -179,7 +196,6 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
                     </div>
                   </td>
 
-                  {/* Map links & Revert Action */}
                   <td className="py-3 px-5 text-right">
                     <div className="flex items-center justify-end gap-4 min-w-[180px]">
                       <div className="flex items-center gap-3">
@@ -214,6 +230,83 @@ export function LocationLogsTable({ data }: { data: AttendanceLog[] }) {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="px-5 py-3 border-t border-border/40 bg-muted/5 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest whitespace-nowrap">
+              Show
+            </span>
+            <Select
+              value={pageSize.toString()}
+              onValueChange={(val) => {
+                setPageSize(parseInt(val));
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger className="h-7 w-[70px] text-[10px] font-bold border-border/60 bg-muted/20 rounded-sm">
+                <SelectValue placeholder={pageSize.toString()} />
+              </SelectTrigger>
+              <SelectContent>
+                {[5, 10, 20, 100].map((size) => (
+                  <SelectItem key={size} value={size.toString()} className="text-[10px] font-bold">
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest border-l border-border/40 pl-4">
+            Page {currentPage} of {totalPages || 1}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 px-3 text-[10px] font-black uppercase tracking-widest rounded-sm border-border/60 hover:bg-muted/10 transition-all disabled:opacity-30"
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            Prev
+          </Button>
+          <div className="flex items-center gap-1 px-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+              if (
+                totalPages > 5 &&
+                p !== 1 &&
+                p !== totalPages &&
+                Math.abs(p - currentPage) > 1
+              ) {
+                if (p === 2 || p === totalPages - 1) return <span key={p} className="text-muted-foreground/30 text-[10px]">...</span>;
+                return null;
+              }
+              return (
+                <button
+                  key={p}
+                  onClick={() => setCurrentPage(p)}
+                  className={cn(
+                    "size-6 rounded-sm text-[10px] font-bold transition-all",
+                    currentPage === p ? "bg-primary text-white" : "text-muted-foreground/40 hover:bg-muted/10"
+                  )}
+                >
+                  {p}
+                </button>
+              );
+            })}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 px-3 text-[10px] font-black uppercase tracking-widest rounded-sm border-border/60 hover:bg-muted/10 transition-all disabled:opacity-30"
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages || totalPages === 0}
+          >
+            Next
+          </Button>
+        </div>
       </div>
     </div>
   );

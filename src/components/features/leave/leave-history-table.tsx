@@ -9,6 +9,12 @@ import {
   TableHead,
   Input,
   TableCell,
+  Button,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui";
 import { CalendarRange, MessageSquare, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,6 +39,8 @@ interface LeaveHistoryTableProps {
 
 export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const formatTime = (timeStr?: string | null) => {
     if (!timeStr) return "--:--";
@@ -77,8 +85,14 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
     });
   }, [leaves, searchTerm]);
 
+  const totalPages = Math.ceil(filteredLeaves.length / pageSize);
+  const paginatedLeaves = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredLeaves.slice(start, start + pageSize);
+  }, [filteredLeaves, currentPage, pageSize]);
+
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in flex flex-col h-full">
       {/* Table Controls - Consistent with Attendance */}
       <div className="px-5 py-3.5 flex items-center justify-between gap-4 border-b border-border/40 bg-muted/5">
         <div className="relative flex-1 max-w-xs">
@@ -86,7 +100,10 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
           <Input
             placeholder="Search leaves or status..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="pl-9 h-8 border-border/60 focus:ring-primary/20 transition-all rounded-sm text-xs bg-muted/20"
           />
         </div>
@@ -105,7 +122,7 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
       ) : (
         <>
           {/* Scrollable Table View - Unified for all screen sizes */}
-          <div className="overflow-x-auto scrollbar-hide border-t border-border/10">
+          <div className="overflow-x-auto scrollbar-hide border-t border-border/10 flex-1">
             <Table>
               <TableHeader className="bg-muted/5">
                 <TableRow className="border-b border-border/40 hover:bg-transparent">
@@ -117,7 +134,7 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredLeaves.map((leave) => {
+                {paginatedLeaves.map((leave) => {
                   const start = new Date(leave.startDate);
                   const end = new Date(leave.endDate);
                   const days = (() => {
@@ -221,6 +238,84 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
                 })}
               </TableBody>
             </Table>
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="px-5 py-3 border-t border-border/40 bg-muted/5 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest whitespace-nowrap">
+                  Show
+                </span>
+                <Select
+                  value={pageSize.toString()}
+                  onValueChange={(val) => {
+                    setPageSize(parseInt(val));
+                    setCurrentPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-7 w-[70px] text-[10px] font-bold border-border/60 bg-muted/20 rounded-sm">
+                    <SelectValue placeholder={pageSize.toString()} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[5, 10, 20, 100].map((size) => (
+                      <SelectItem key={size} value={size.toString()} className="text-[10px] font-bold">
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest border-l border-border/40 pl-4">
+                Page {currentPage} of {totalPages || 1}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 px-3 text-[10px] font-black uppercase tracking-widest rounded-sm border-border/60 hover:bg-muted/10 transition-all disabled:opacity-30"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                Prev
+              </Button>
+              <div className="flex items-center gap-1 px-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                  // Show only first, last, and pages around current
+                  if (
+                    totalPages > 5 &&
+                    p !== 1 &&
+                    p !== totalPages &&
+                    Math.abs(p - currentPage) > 1
+                  ) {
+                    if (p === 2 || p === totalPages - 1) return <span key={p} className="text-muted-foreground/30 text-[10px]">...</span>;
+                    return null;
+                  }
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p)}
+                      className={cn(
+                        "size-6 rounded-sm text-[10px] font-bold transition-all",
+                        currentPage === p ? "bg-primary text-white" : "text-muted-foreground/40 hover:bg-muted/10"
+                      )}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 px-3 text-[10px] font-black uppercase tracking-widest rounded-sm border-border/60 hover:bg-muted/10 transition-all disabled:opacity-30"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages || totalPages === 0}
+              >
+                Next
+              </Button>
+            </div>
           </div>
         </>
       )}

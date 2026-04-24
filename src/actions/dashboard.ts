@@ -133,7 +133,7 @@ export async function getAdminDashboardStats() {
           id: l.user.id, 
           name: l.user.name || l.user.email,
           department: l.user.department?.name || "Team Member",
-          leaveType: l.leaveType || (l.category === "UNPAID" ? "Unpaid" : "Paid"),
+          leaveType: l.duration === "SHORT" ? "Short Leave" : (l.leaveType || (l.category === "UNPAID" ? "Unpaid" : "Paid")),
           duration: l.duration,
           startDate: l.startDate,
           endDate: l.endDate
@@ -304,7 +304,7 @@ export async function getEmployeeDashboardStats() {
       endDate: l.endDate,
       duration: l.duration,
       halfDayType: l.halfDayType,
-      leaveType: l.category === "UNPAID" ? "Unpaid" : "Paid"
+      leaveType: l.duration === "SHORT" ? "Short Leave" : (l.leaveType || (l.category === "UNPAID" ? "Unpaid" : "Paid"))
     }));
 
   const allEmps = await prisma.user.findMany({

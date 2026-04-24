@@ -94,13 +94,9 @@ export default async function EmployeeDashboard() {
           <UpcomingLeave requests={data.leaveRequests
             .filter(r => new Date(r.endDate).getTime() >= new Date().setHours(0, 0, 0, 0))
             .map(r => ({
-            id: r.id,
-            category: r.category === "MONTHLY_POLICY_1" ? (r.leaveType === "CASUAL" ? "Casual" : "Sick") : "Paid",
-            startDate: r.startDate,
-            endDate: r.endDate,
-            status: r.status,
-            days: Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
-          }))} />
+              ...r,
+              days: Math.ceil((new Date(r.endDate).getTime() - new Date(r.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
+            }))} />
         </div>
 
         {/* 3. Broadcast & Feed Hub */}

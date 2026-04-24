@@ -4,10 +4,12 @@ import { cn } from "@/lib/utils";
 interface LeaveRequest {
   id: string;
   category: string;
+  leaveType?: string | null;
+  duration: string;
   startDate: Date;
   endDate: Date;
   status: string;
-  days: number;
+  days?: number;
 }
 
 interface UpcomingLeaveProps {
@@ -16,6 +18,29 @@ interface UpcomingLeaveProps {
 
 export function UpcomingLeave({ requests }: UpcomingLeaveProps) {
   const activeRequests = requests.filter(r => r.status === "PENDING" || r.status === "APPROVED").slice(0, 10);
+
+  const getLeaveLabel = (request: LeaveRequest) => {
+    if (request.duration === "SHORT") return "Short Leave";
+    if (request.category === "UNPAID") return "Unpaid Leave";
+    if (request.category === "SEMI_ANNUAL_POLICY_2") return "Semi-Annual";
+    if (request.category === "MONTHLY_POLICY_1") {
+      if (request.leaveType === "CASUAL") return "Casual Leave";
+      if (request.leaveType === "MEDICAL") return "Medical Leave";
+      return "Paid Leave";
+    }
+    return "Leave";
+  };
+
+  const formatDateRange = (start: Date, end: Date) => {
+    const s = new Date(start);
+    const e = new Date(end);
+    const sStr = s.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    if (s.toDateString() === e.toDateString()) {
+      return sStr;
+    }
+    const eStr = e.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    return `${sStr} - ${eStr}`;
+  };
 
   return (
     <div className="bg-card border border-border rounded-sm p-4 space-y-4 h-[430px] flex flex-col animate-fade-in">
@@ -34,45 +59,51 @@ export function UpcomingLeave({ requests }: UpcomingLeaveProps) {
             <p className="text-[10px] font-black uppercase tracking-widest">No scheduled departures</p>
           </div>
         ) : (
-          activeRequests.map((request) => (
-            <div
-              key={request.id}
-              className={cn(
-                "p-3 rounded-sm border transition-all duration-200 flex items-start gap-3",
-                request.status === "PENDING"
-                  ? "bg-amber-500/2 border-amber-500/10"
-                  : "bg-emerald-500/2 border-emerald-500/10"
-              )}
-            >
-              <div className={cn(
-                "size-8 rounded-sm flex items-center justify-center shrink-0 border",
-                request.status === "PENDING" ? "bg-amber-500/10 text-amber-600 border-amber-500/10" : "bg-emerald-500/10 text-emerald-600 border-emerald-500/10"
-              )}>
-                {request.status === "PENDING" ? <Hourglass className="size-4" /> : <CheckCircle2 className="size-4" />}
-              </div>
+          activeRequests.map((request) => {
+            const label = getLeaveLabel(request);
+            const dateDisplay = formatDateRange(request.startDate, request.endDate);
+            const days = request.days || 1;
 
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-1.5 mb-0.5">
-                  <span className="font-bold text-[12px] text-foreground truncate">{request.category}</span>
-                  <span className={cn(
-                    "text-[9px] font-black uppercase tracking-tighter",
-                    request.status === "PENDING" ? "text-amber-600" : "text-emerald-600"
-                  )}>
-                    {request.status === "PENDING" ? "Pending" : "Confirmed"}
-                  </span>
+            return (
+              <div
+                key={request.id}
+                className={cn(
+                  "p-3 rounded-sm border transition-all duration-200 flex items-start gap-3",
+                  request.status === "PENDING"
+                    ? "bg-amber-500/2 border-amber-500/10"
+                    : "bg-emerald-500/2 border-emerald-500/10"
+                )}
+              >
+                <div className={cn(
+                  "size-8 rounded-sm flex items-center justify-center shrink-0 border",
+                  request.status === "PENDING" ? "bg-amber-500/10 text-amber-600 border-amber-500/10" : "bg-emerald-500/10 text-emerald-600 border-emerald-500/10"
+                )}>
+                  {request.status === "PENDING" ? <Hourglass className="size-4" /> : <CheckCircle2 className="size-4" />}
                 </div>
-                <div className="flex items-center gap-2">
-                  <p className="text-[10px] font-bold text-muted-foreground/50 leading-none">
-                    {new Date(request.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - {new Date(request.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                  </p>
-                  <div className="size-0.5 rounded-full bg-border/40" />
-                  <span className="text-[9px] font-black text-primary uppercase tracking-widest">
-                    {request.days} {request.days === 1 ? 'Day' : 'Days'}
-                  </span>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1.5 mb-0.5">
+                    <span className="font-bold text-[12px] text-foreground truncate">{label}</span>
+                    <span className={cn(
+                      "text-[9px] font-black uppercase tracking-tighter",
+                      request.status === "PENDING" ? "text-amber-600" : "text-emerald-600"
+                    )}>
+                      {request.status === "PENDING" ? "Pending" : "Confirmed"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[10px] font-bold text-muted-foreground/50 leading-none">
+                      {dateDisplay}
+                    </p>
+                    <div className="size-0.5 rounded-full bg-border/40" />
+                    <span className="text-[9px] font-black text-primary uppercase tracking-widest">
+                      {days} {days === 1 ? 'Day' : 'Days'}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

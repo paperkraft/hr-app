@@ -13,7 +13,7 @@ export const leaveApplicationSchema = z.object({
   reason: z.string().min(8, "Please provide a reason (minimum 8 characters).").max(500),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
-  halfDayType: z.enum(["FIRST_HALF", "SECOND_HALF"]).optional(),
+  halfDayType: z.enum(["FIRST_HALF", "SECOND_HALF"]).optional().nullable(),
 }).refine((data) => {
   // Requirement: Monthly leaves need a type (Casual or Medical)
   if (data.category === "MONTHLY_POLICY_1" && !data.leaveType) return false;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -10,7 +10,7 @@ import {
   Input,
   TableCell,
 } from "@/components/ui";
-import { Calendar, CalendarRange, Clock, MessageSquare, Search, Info } from "lucide-react";
+import { CalendarRange, MessageSquare, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LeaveRequest {
@@ -23,6 +23,8 @@ interface LeaveRequest {
   category: string;
   status: string;
   reason: string | null;
+  startTime: string | null;
+  endTime: string | null;
 }
 
 interface LeaveHistoryTableProps {
@@ -31,6 +33,38 @@ interface LeaveHistoryTableProps {
 
 export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
+
+  const formatTime = (timeStr?: string | null) => {
+    if (!timeStr) return "--:--";
+
+    // If it already seems to be formatted (contains AM or PM), return as is
+    if (timeStr.toUpperCase().includes("AM") || timeStr.toUpperCase().includes("PM")) {
+      return timeStr;
+    }
+
+    try {
+      // Expecting HH:mm format
+      const parts = timeStr.split(':');
+      if (parts.length < 2) return timeStr;
+
+      const hours = parseInt(parts[0], 10);
+      const minutes = parseInt(parts[1], 10);
+
+      if (isNaN(hours) || isNaN(minutes)) return timeStr;
+
+      // Create a dummy date and set hours/minutes to get localized AM/PM
+      const date = new Date();
+      date.setHours(hours, minutes, 0, 0);
+
+      return date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch (e) {
+      return timeStr;
+    }
+  };
 
   const filteredLeaves = useMemo(() => {
     if (!searchTerm) return leaves;
@@ -120,9 +154,9 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
                         <div className="inline-flex flex-col items-center min-w-[80px]">
                           <span className={cn(
                             "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-sm border mb-0.5",
-                            leave.duration === "FULL" ? "bg-muted/20 text-muted-foreground/80 border-border/20" : 
-                            leave.duration === "HALF" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/10" : 
-                            "bg-primary/10 text-primary border-primary/10"
+                            leave.duration === "FULL" ? "bg-muted/20 text-muted-foreground/80 border-border/20" :
+                              leave.duration === "HALF" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/10" :
+                                "bg-primary/10 text-primary border-primary/10"
                           )}>
                             {leave.duration === "FULL" ? "Full day" : leave.duration === "HALF" ? "Half day" : "Short"}
                           </span>
@@ -135,7 +169,11 @@ export function LeaveHistoryTable({ leaves }: LeaveHistoryTableProps) {
                             </span>
                           )}
                           <span className="text-[9px] font-bold text-muted-foreground/40 tabular-nums">
-                            {days} {days === 1 ? 'day' : 'days'}
+                            {leave.duration === "SHORT" ? (
+                              `${formatTime(leave.startTime)} - ${formatTime(leave.endTime)}`
+                            ) : (
+                              `${days} ${days === 1 ? 'day' : 'days'}`
+                            )}
                           </span>
                         </div>
                       </TableCell>

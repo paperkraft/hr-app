@@ -58,6 +58,26 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
     }
   }, [selectedDuration, startDate, setValue]);
 
+  const startTime = watch("startTime");
+  useEffect(() => {
+    if (selectedDuration === "SHORT" && startTime) {
+      const [hours, minutes] = startTime.split(":").map(Number);
+      const endHours = (hours + 2) % 24;
+      const endTimeString = `${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      setValue("endTime", endTimeString);
+    }
+  }, [startTime, selectedDuration, setValue]);
+
+  useEffect(() => {
+    if (selectedDuration !== "SHORT") {
+      setValue("startTime", undefined);
+      setValue("endTime", undefined);
+    }
+    if (selectedDuration === "FULL") {
+      setValue("halfDayType", undefined);
+    }
+  }, [selectedDuration, setValue]);
+
   const onSubmit = async (data: LeaveApplicationValues) => {
     setIsSubmitting(true);
     setServerError(null);

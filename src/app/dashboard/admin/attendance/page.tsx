@@ -1,24 +1,18 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import { getAdminDashboardStats } from "@/actions/dashboard";
 import { PageContainer } from "@/components/ui";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
 } from "@/components/ui/tabs";
-import { 
-  CheckCircle2, 
-  Clock, 
-  MapPin, 
-  Calendar, 
+import {
+  CheckCircle2,
+  Clock,
+  Calendar,
   XCircle,
-  Activity,
-  Search
+  Activity
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export const dynamic = 'force-dynamic';
 
@@ -29,10 +23,10 @@ export default async function DailyAttendancePage() {
 
   const formatTime = (date: Date | string | null) => {
     if (!date) return "--:--";
-    return new Date(date).toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit', 
-      hour12: true 
+    return new Date(date).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
     });
   };
 

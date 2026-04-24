@@ -31,6 +31,7 @@ export function LeaveApplicationForm({ onSuccess }: { onSuccess?: () => void }) 
     formState: { errors },
   } = useForm<LeaveApplicationValues>({
     resolver: zodResolver(leaveApplicationSchema),
+    mode: "onChange",
     defaultValues: {
       duration: "FULL",
       category: "MONTHLY_POLICY_1",

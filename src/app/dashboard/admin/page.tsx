@@ -1,4 +1,5 @@
-import { Users, FileText, Activity, CheckCircle2, Calendar, Clock } from "lucide-react";
+import { Users, FileText, Activity, CheckCircle2, Calendar, Clock, ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 import { PageContainer, StatCard } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { UpcomingMilestones } from "@/components/features/dashboard/upcoming-milestones";
@@ -72,7 +73,13 @@ export default async function AdminOverviewPage() {
                 <h3 className="text-sm font-bold text-foreground tracking-tight leading-none mb-1">Attendance Pulse</h3>
                 <p className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-widest">Live cluster monitoring</p>
               </div>
-              <Activity className="size-4 text-muted-foreground/80" />
+              <Link 
+                href="/dashboard/admin/attendance" 
+                className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary/80 transition-colors bg-primary/5 px-2 py-1 rounded-sm border border-primary/10"
+              >
+                View Detailed Pulse
+                <ArrowUpRight className="size-3" />
+              </Link>
             </div>
 
             <div className="grid grid-cols-3 divide-x divide-border/30">
@@ -99,51 +106,48 @@ export default async function AdminOverviewPage() {
               </div>
             </div>
             
-            {stats.presentEmployees.length > 0 && (
-              <div className="border-t border-border/30 p-5 space-y-2">
-                <p className="text-[10px] font-black text-emerald-500/60 uppercase tracking-widest mb-3">Active Workforce</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {stats.presentEmployees.slice(0, 6).map(e => (
-                    <div key={e.id} className="flex items-center justify-between py-2 px-3 rounded-sm bg-emerald-500/2 border border-emerald-500/10 group hover:border-emerald-500/20 transition-colors">
-                      <div className="flex items-center gap-2.5">
-                        <div className="size-7 rounded-sm bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-[9px]">
-                          {e.name.slice(0, 2).toUpperCase()}
-                        </div>
-                        <span className="text-xs font-bold text-foreground/80 truncate max-w-[80px]">{e.name}</span>
-                      </div>
-                      {(e as any).isOutsideOffice ? (
-                        <span className="text-[8px] font-black text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded-sm uppercase tracking-tighter border border-amber-500/20">Off-site</span>
-                      ) : (
-                        <span className="text-[8px] font-black text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded-sm uppercase tracking-tighter border border-emerald-500/20">On-site</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                {stats.presentEmployees.length > 6 && (
-                  <p className="text-[9px] text-muted-foreground/40 font-bold text-center pt-1">+{stats.presentEmployees.length - 6} more active</p>
-                )}
+            <div className="border-t border-border/30 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">Workforce Status</p>
+                <span className="text-[9px] font-bold text-muted-foreground/40 tabular-nums">{totalStaff} Total Staff</span>
               </div>
-            )}
-
-            {stats.absentEmployees.length > 0 && (
-              <div className="border-t border-border/30 p-5 space-y-2">
-                <p className="text-[10px] font-black text-rose-500/60 uppercase tracking-widest mb-3">Unaccounted Today</p>
-                {stats.absentEmployees.slice(0, 3).map(e => (
-                  <div key={e.id} className="flex items-center justify-between py-2 px-3 rounded-sm bg-rose-500/2 border border-rose-500/10 group hover:border-rose-500/20 transition-colors">
-                    <div className="flex items-center gap-2.5">
-                      <div className="size-7 rounded-sm bg-rose-500/10 text-rose-500 flex items-center justify-center font-bold text-[9px]">
-                        {e.name.slice(0, 2).toUpperCase()}
-                      </div>
-                      <span className="text-xs font-bold text-foreground/80">{e.name}</span>
-                    </div>
-                    <span className="text-[9px] font-black text-rose-500/70 uppercase tracking-widest">Missing</span>
-                  </div>
-                ))}
-                {stats.absentEmployees.length > 3 && (
-                  <p className="text-[9px] text-muted-foreground/40 font-bold text-center pt-1">+{stats.absentEmployees.length - 3} more</p>
-                )}
+              
+              <div className="max-h-[300px] overflow-y-auto scrollbar-hide -mx-1 px-1">
+                <table className="w-full text-left border-collapse">
+                  <thead className="sticky top-0 bg-card z-10">
+                    <tr className="border-b border-border/40">
+                      <th className="pb-2 text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest">Employee</th>
+                      <th className="pb-2 text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest">Department</th>
+                      <th className="pb-2 text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest text-right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/10">
+                    {[
+                      ...stats.presentEmployees.map(e => ({ ...e, status: 'Present', color: 'text-emerald-600 bg-emerald-500/10' })),
+                      ...stats.onLeaveEmployees.map(e => ({ ...e, status: 'On Leave', color: 'text-amber-600 bg-amber-500/10' })),
+                      ...stats.absentEmployees.map(e => ({ ...e, status: 'Absent', color: 'text-rose-600 bg-rose-500/10' }))
+                    ]
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((item) => (
+                      <tr key={item.id} className="group hover:bg-muted/5 transition-colors">
+                        <td className="py-2">
+                          <span className="text-[11px] font-bold text-foreground/80">{item.name}</span>
+                        </td>
+                        <td className="py-2">
+                          <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tight">{(item as any).department || "N/A"}</span>
+                        </td>
+                        <td className="py-2 text-right">
+                          <span className={cn("text-[8px] font-black px-1.5 py-0.5 rounded-sm uppercase tracking-tighter border border-border/10", item.color)}>
+                            {item.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            )}
+            </div>
+            
           </div>
         </div>
 

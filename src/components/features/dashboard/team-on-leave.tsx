@@ -57,7 +57,11 @@ export function TeamOnLeave({ members }: TeamOnLeaveProps) {
                   )}
                 </div>
                 <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-tighter">
-                  Until {new Date(member.endDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
+                  {new Date(member.startDate).toDateString() === new Date(member.endDate).toDateString() ? (
+                    new Date(member.startDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })
+                  ) : (
+                    `${new Date(member.startDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })} - ${new Date(member.endDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}`
+                  )}
                 </span>
               </div>
             </div>

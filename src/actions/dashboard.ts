@@ -112,13 +112,32 @@ export async function getAdminDashboardStats() {
       totalEmployees,
       pendingCount: allPendingRequests.length,
       attendanceRate,
-      presentEmployees: presentEmployees.map(e => ({ 
+      presentEmployees: presentEmployees.map(e => {
+        const log = todayAttendance.find(a => a.userId === e.id);
+        return { 
+          id: e.id, 
+          name: e.name || e.email,
+          department: e.department?.name || "Team Member",
+          punchIn: log?.punchIn,
+          isOutsideOffice: log?.isOutsideOffice || false
+        };
+      }),
+      absentEmployees: absentEmployees.map(e => ({ 
         id: e.id, 
         name: e.name || e.email,
-        isOutsideOffice: todayAttendance.find(a => a.userId === e.id)?.isOutsideOffice || false
+        department: e.department?.name || "Team Member"
       })),
-      absentEmployees: absentEmployees.map(e => ({ id: e.id, name: e.name || e.email })),
-      onLeaveEmployees: onLeaveEmployees.map(e => ({ id: e.id, name: e.name || e.email })),
+      onLeaveEmployees: todayLeaves
+        .filter(l => !presentIds.has(l.userId))
+        .map(l => ({ 
+          id: l.user.id, 
+          name: l.user.name || l.user.email,
+          department: l.user.department?.name || "Team Member",
+          leaveType: l.leaveType || (l.category === "UNPAID" ? "Unpaid" : "Paid"),
+          duration: l.duration,
+          startDate: l.startDate,
+          endDate: l.endDate
+        })),
       monthlyLeaveSummary,
       holidays: (await getUpcomingHolidays(5)).data || [],
       nextBirthday,

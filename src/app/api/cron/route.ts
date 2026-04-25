@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { processAllAutoPunchOuts } from "@/lib/auto-punch-out";
 import { generateAllMonthlyBalances } from "@/lib/balance-accrual";
+import { processReminders } from "@/lib/reminders";
 
 /**
  * SECURE CRON ENDPOINT
@@ -35,11 +36,16 @@ export async function GET(request: NextRequest) {
     const accrualCount = await generateAllMonthlyBalances();
     console.log(`[CRON] Processed ${accrualCount} user leave balances.`);
 
+    // 3. Reminders for check-in/out
+    const reminderCount = await processReminders();
+    console.log(`[CRON] Sent ${reminderCount} reminders.`);
+
     return NextResponse.json({
       success: true,
       processed: {
         autoPunchOuts: punchOutCount,
         monthlyBalancesCount: accrualCount,
+        remindersCount: reminderCount,
       },
       time: new Date().toISOString()
     });
